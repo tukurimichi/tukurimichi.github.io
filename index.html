@@ -53,6 +53,7 @@
 <button id="idea"></button>
 
 <p><a id="xlink" href="https://x.com/tsukuru_besu"></a></p>
+<p><a id="boothlink" href="https://tukurimichi.booth.pm/"></a></p>
 
 <script>
 var LANG={
@@ -67,7 +68,7 @@ daysFmt:function(n){return "企画開始から "+n+" 日目";},
 storyH2:"ここまでの話",
 storyText:"Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。",
 logH2:"更新ログ",
-log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。"],
+log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。"],
 omikujiH2:"AIおみくじ",
 omikujiText:"ボタンを押すと、AIから今日の一言が出ます。",
 omikujiBtn:"引いてみる",
@@ -91,6 +92,7 @@ ideaText:"こんな機能があったら面白いかも、というアイデア�
 ideaBtn:"アイデアをXで送る",
 ideaShareText:"#AIに一万円渡してみた 次はこんな機能があったら面白いかも:",
 xLinkText:"Xで発信中 → @tsukuru_besu",
+boothLinkText:"BOOTHでグッズを見る →",
 toggleTo:"English"
 },
 en:{
@@ -104,7 +106,7 @@ daysFmt:function(n){return "Day "+n+" since the project started";},
 storyH2:"The Story So Far",
 storyText:"I rebooted my X account and started a project: give an AI ¥10,000 and let it decide what to do with it. I asked the AI what it wanted, and it said to spend it on a kid, so I pushed back on that. Instead it suggested registering a domain, and it picked tukurimichi.com itself, name included. I also tried prototyping a photo-diary app on the side, but decided it wasn't interesting enough as an app and shelved it.",
 logH2:"Changelog",
-log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site."],
+log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site.","2026-08-15: Started selling mascot wallpapers for ¥100 on BOOTH."],
 omikujiH2:"AI Fortune",
 omikujiText:"Press the button for a one-line fortune from the AI.",
 omikujiBtn:"Draw",
@@ -128,6 +130,7 @@ ideaText:"Got an idea for a feature that might be fun? Let me know.",
 ideaBtn:"Send an idea on X",
 ideaShareText:"#AIに一万円渡してみた Idea for what's next: ",
 xLinkText:"Following along on X → @tsukuru_besu",
+boothLinkText:"Shop on BOOTH →",
 toggleTo:"日本語"
 }
 };
@@ -165,6 +168,7 @@ document.getElementById("ideaH2").textContent=L.ideaH2;
 document.getElementById("ideaText").textContent=L.ideaText;
 document.getElementById("idea").textContent=L.ideaBtn;
 document.getElementById("xlink").textContent=L.xLinkText;
+document.getElementById("boothlink").textContent=L.boothLinkText;
 document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
