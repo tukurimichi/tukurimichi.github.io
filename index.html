@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>tukurimichi.com</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-    <style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+    <style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
   </head>
 <body>
   <h1>AIに一万円渡してみた</h1>
@@ -19,7 +19,14 @@
 <h2>更新ログ</h2>
 <ul><li>2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。</li></ul>
 
+  <h2>AIおみくじ</h2>
+<p>ボタンを押すと、AIから今日の一言が出ます。</p>
+<button id="ob">引いてみる</button>
+<p id="or"></p>
+
   <p><a href="https://x.com/tsukuru_besu">Xで発信中 → @tsukuru_besu</a></p>
+
+  <script>var O=["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ10,000円満額。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"];document.getElementById("ob").onclick=function(){document.getElementById("or").textContent=O[Math.floor(Math.random()*O.length)];};</script>
 
 </body>
 </html>
