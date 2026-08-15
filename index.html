@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" id="htmlRoot">
 <head>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
-<title>tukurimichi.com</title>
-<meta name="description" content="べす、AIと開発中の記録です。#AIに一万円渡してみた">
+<title id="pageTitle">tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="べす、AIと開発中の記録です。#AIに一万円渡してみた">
 <meta property="og:title" content="AIに一万円渡してみた">
 <meta property="og:description" content="べす、AIと開発中の記録です。ITが素人のべすが、AIと一緒に手を動かして何かを作っていく過程の記録。">
 <meta property="og:url" content="https://tukurimichi.com/">
@@ -17,71 +17,187 @@
 <meta name="twitter:description" content="べす、AIと開発中の記録です。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;margin-right:8px;margin-bottom:8px;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}#sh a{display:inline-block;margin-top:.5em;font-size:.9em;}#days{color:#8A8470;font-size:.9em;}.jhand{font-size:1.3em;}#jresult{font-weight:bold;margin-top:.6em;line-height:1.6;}#jstats{color:#8A8470;font-size:.9em;}#jshare a{display:inline-block;margin-top:.3em;font-size:.9em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;margin-right:8px;margin-bottom:8px;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}#sh a{display:inline-block;margin-top:.5em;font-size:.9em;}#days{color:#8A8470;font-size:.9em;}.jhand{font-size:1.3em;}#jresult{font-weight:bold;margin-top:.6em;line-height:1.6;}#jstats{color:#8A8470;font-size:.9em;}#jshare a{display:inline-block;margin-top:.3em;font-size:.9em;}#langWrap{text-align:right;margin-bottom:-8px;}#langBtn{background:none;border:1px solid #D97757;color:#C15F3C;border-radius:8px;padding:4px 10px;font-size:.8em;cursor:pointer;margin:0;}#langBtn:hover{background:#D97757;color:#fff;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
 </head>
 <body>
-<img src="mascot_site.jpg" alt="べす" style="display:block;margin:0 auto 16px;width:110px;border-radius:14px;"><h1>AIに一万円渡してみた</h1>
-<p>べす、AIと開発中の記録です。#AIに一万円渡してみた</p>
+<div id="langWrap"><button id="langBtn"></button></div>
+<img src="mascot_site.jpg" alt="mascot" style="display:block;margin:0 auto 16px;width:110px;border-radius:14px;">
+<h1 id="h1t"></h1>
+<p id="introT"></p>
 
-<h2>今の予算</h2>
-<p>元手 10,000円 / 支出 0円 / 残高 10,000円</p>
+<h2 id="budgetH2"></h2>
+<p id="budgetText"></p>
 <p id="days"></p>
 
-<h2>ここまでの話</h2>
-<p>Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。</p>
+<h2 id="storyH2"></h2>
+<p id="storyText"></p>
 
-<h2>更新ログ</h2>
-<ul><li>2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。</li><li>2026-08-15:独自ドメインを接続し、見た目をデザインし直した。</li><li>2026-08-15:「AIおみくじ」を追加した。</li><li>2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。</li><li>2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。</li><li>2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。</li><li>2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。</li><li>2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。</li><li>2026-08-15:マスコットキャラクターの画像を追加した。</li></ul>
+<h2 id="logH2"></h2>
+<ul id="logList"></ul>
 
-<h2>AIおみくじ</h2>
-<p>ボタンを押すと、AIから今日の一言が出ます。</p>
-<button id="ob">引いてみる</button>
+<h2 id="omikujiH2"></h2>
+<p id="omikujiText"></p>
+<button id="ob"></button>
 <p id="or"></p>
 <p id="sh"></p>
 
-<h2>AI対戦じゃんけん</h2>
-<p>AIとじゃんけん勝負。連勝記録に挑戦してみて。</p>
-<button id="jg" class="jhand">✊ グー</button><button id="jc" class="jhand">✌️ チョキ</button><button id="jp" class="jhand">✋ パー</button>
+<h2 id="jankenH2"></h2>
+<p id="jankenText"></p>
+<button id="jg" class="jhand"></button><button id="jc" class="jhand"></button><button id="jp" class="jhand"></button>
 <p id="jresult"></p>
 <p id="jstats"></p>
 <p id="jshare"></p>
 
-<h2>アイデア募集</h2>
-<p>こんな機能があったら面白いかも、というアイデアがあれば教えてください。</p>
-<button id="idea">アイデアをXで送る</button>
+<h2 id="ideaH2"></h2>
+<p id="ideaText"></p>
+<button id="idea"></button>
 
-<p><a href="https://x.com/tsukuru_besu">Xで発信中 → @tsukuru_besu</a></p>
+<p><a id="xlink" href="https://x.com/tsukuru_besu"></a></p>
 
 <script>
-var O=["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ10,000円満額。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"];
-document.getElementById("ob").onclick=function(){
-var m=O[Math.floor(Math.random()*O.length)];
-document.getElementById("or").textContent=m;
-var shareText="AIおみくじ結果:"+m;
-var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>この結果をXでシェア →</a>";
-if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+var LANG={
+ja:{
+title:"tukurimichi.com",
+desc:"べす、AIと開発中の記録です。#AIに一万円渡してみた",
+h1:"AIに一万円渡してみた",
+intro:"べす、AIと開発中の記録です。#AIに一万円渡してみた",
+budgetH2:"今の予算",
+budgetText:"元手 10,000円 / 支出 0円 / 残高 10,000円",
+daysFmt:function(n){return "企画開始から "+n+" 日目";},
+storyH2:"ここまでの話",
+storyText:"Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。",
+logH2:"更新ログ",
+log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。"],
+omikujiH2:"AIおみくじ",
+omikujiText:"ボタンを押すと、AIから今日の一言が出ます。",
+omikujiBtn:"引いてみる",
+omikuji:["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ10,000円満額。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"],
+omikujiShareLabel:"AIおみくじ結果:",
+shareLinkLabel:"この結果をXでシェア →",
+jankenH2:"AI対戦じゃんけん",
+jankenText:"AIとじゃんけん勝負。連勝記録に挑戦してみて。",
+jankenBtn:{g:"✊ グー",c:"✌️ チョキ",p:"✋ パー"},
+jhands:{g:"✊",c:"✌️",p:"✋"},
+jnames:{g:"グー",c:"チョキ",p:"パー"},
+winMsgs:["やった、AIに勝った!","AIの弱点を見つけたかも","この調子で連勝しよう"],
+loseMsgs:["AIの完全勝利...精進します","負けた、AIは強い","次こそは"],
+drawMsg:"あいこ!もう一回勝負しよう",
+statsFmt:function(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.streak+"連勝)";},
+resultWin:"勝った!",resultLose:"負けた…",resultDraw:"あいこ!",
+youLabel:"あなた:",
+jankenShareFmt:function(resultLabel,s){return "AIとじゃんけん対決して"+resultLabel+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";},
+ideaH2:"アイデア募集",
+ideaText:"こんな機能があったら面白いかも、というアイデアがあれば教えてください。",
+ideaBtn:"アイデアをXで送る",
+ideaShareText:"#AIに一万円渡してみた 次はこんな機能があったら面白いかも:",
+xLinkText:"Xで発信中 → @tsukuru_besu",
+toggleTo:"English"
+},
+en:{
+title:"tukurimichi.com",
+desc:"Notes from Bes, building things with AI. #AIに一万円渡してみた",
+h1:"I Gave an AI ¥10,000 and Let It Do Whatever It Wants",
+intro:"Notes from Bes, building things with AI. #AIに一万円渡してみた",
+budgetH2:"Current Budget",
+budgetText:"Starting funds ¥10,000 / Spent ¥0 / Remaining ¥10,000",
+daysFmt:function(n){return "Day "+n+" since the project started";},
+storyH2:"The Story So Far",
+storyText:"I rebooted my X account and started a project: give an AI ¥10,000 and let it decide what to do with it. I asked the AI what it wanted, and it said to spend it on a kid, so I pushed back on that. Instead it suggested registering a domain, and it picked tukurimichi.com itself, name included. I also tried prototyping a photo-diary app on the side, but decided it wasn't interesting enough as an app and shelved it.",
+logH2:"Changelog",
+log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site."],
+omikujiH2:"AI Fortune",
+omikujiText:"Press the button for a one-line fortune from the AI.",
+omikujiBtn:"Draw",
+omikuji:["Great blessing: Great chemistry with AI today. Try something new.","Great blessing: Budget is still a full ¥10,000. Good time to take a step.","Blessing: Try small, and walk away without regret if it fails. That's the shortcut.","Blessing: No need to rush. Today's small task becomes tomorrow's foundation.","Small blessing: Resting without guilt is progress too, today.","Small blessing: Asking honestly when you don't know something is the real shortcut.","Near blessing: Even an off day is a valuable entry in the dev log.","Curse: Some days just don't go your way. Learn and move on."],
+omikujiShareLabel:"My AI Fortune result: ",
+shareLinkLabel:"Share this result on X →",
+jankenH2:"Rock-Paper-Scissors vs AI",
+jankenText:"Play rock-paper-scissors against the AI. Try to build a win streak.",
+jankenBtn:{g:"✊ Rock",c:"✌️ Scissors",p:"✋ Paper"},
+jhands:{g:"✊",c:"✌️",p:"✋"},
+jnames:{g:"Rock",c:"Scissors",p:"Paper"},
+winMsgs:["I beat the AI!","Maybe I found its weak spot","Let's keep this streak going"],
+loseMsgs:["Total AI victory... back to the drawing board","Lost. The AI is strong.","Next time for sure"],
+drawMsg:"Draw! Let's go again",
+statsFmt:function(s){return s.win+"W "+s.lose+"L "+s.draw+"D (current streak: "+s.streak+")";},
+resultWin:"Won!",resultLose:"Lost...",resultDraw:"Draw!",
+youLabel:"You: ",
+jankenShareFmt:function(resultLabel,s){return "Played rock-paper-scissors against an AI and "+resultLabel+" (total "+s.win+"W "+s.lose+"L "+s.draw+"D)";},
+ideaH2:"Suggest an Idea",
+ideaText:"Got an idea for a feature that might be fun? Let me know.",
+ideaBtn:"Send an idea on X",
+ideaShareText:"#AIに一万円渡してみた Idea for what's next: ",
+xLinkText:"Following along on X → @tsukuru_besu",
+toggleTo:"日本語"
+}
 };
-document.getElementById("idea").onclick=function(){
-var ideaText="#AIに一万円渡してみた 次はこんな機能があったら面白いかも:";
-var ideaUrl="https://x.com/intent/post?text="+encodeURIComponent(ideaText);
-window.open(ideaUrl,"_blank");
-if(window.gtag){gtag("event","idea_click");}
-};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function jRenderStats(lang){
+var L=LANG[lang];
+var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
+if(s.win+s.lose+s.draw>0){document.getElementById("jstats").textContent=L.statsFmt(s);}
+else{document.getElementById("jstats").textContent="";}
+}
+function render(lang){
+var L=LANG[lang];
+document.getElementById("htmlRoot").lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+document.getElementById("h1t").textContent=L.h1;
+document.getElementById("introT").textContent=L.intro;
+document.getElementById("budgetH2").textContent=L.budgetH2;
+document.getElementById("budgetText").textContent=L.budgetText;
+document.getElementById("storyH2").textContent=L.storyH2;
+document.getElementById("storyText").textContent=L.storyText;
+document.getElementById("logH2").textContent=L.logH2;
+var logHtml="";
+for(var i=0;i<L.log.length;i++){logHtml+="<li>"+L.log[i]+"</li>";}
+document.getElementById("logList").innerHTML=logHtml;
+document.getElementById("omikujiH2").textContent=L.omikujiH2;
+document.getElementById("omikujiText").textContent=L.omikujiText;
+document.getElementById("ob").textContent=L.omikujiBtn;
+document.getElementById("jankenH2").textContent=L.jankenH2;
+document.getElementById("jankenText").textContent=L.jankenText;
+document.getElementById("jg").textContent=L.jankenBtn.g;
+document.getElementById("jc").textContent=L.jankenBtn.c;
+document.getElementById("jp").textContent=L.jankenBtn.p;
+document.getElementById("ideaH2").textContent=L.ideaH2;
+document.getElementById("ideaText").textContent=L.ideaText;
+document.getElementById("idea").textContent=L.ideaBtn;
+document.getElementById("xlink").textContent=L.xLinkText;
+document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
 var diff=Math.floor((today-start)/86400000)+1;
-document.getElementById("days").textContent="企画開始から "+diff+" 日目";
-
-var JHANDS={g:"✊",c:"✌️",p:"✋"};
-var JNAMES={g:"グー",c:"チョキ",p:"パー"};
-function jStatsText(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.streak+"連勝)";}
-function jRender(){
-var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
-if(s.win+s.lose+s.draw>0){document.getElementById("jstats").textContent=jStatsText(s);}
+document.getElementById("days").textContent=L.daysFmt(diff);
+jRenderStats(lang);
+document.getElementById("or").textContent="";
+document.getElementById("sh").innerHTML="";
+document.getElementById("jresult").innerHTML="";
+document.getElementById("jshare").innerHTML="";
 }
-jRender();
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+document.getElementById("ob").onclick=function(){
+var L=LANG[currentLang];
+var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
+document.getElementById("or").textContent=m;
+var shareText=L.omikujiShareLabel+m;
+var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
+document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
+if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+};
+document.getElementById("idea").onclick=function(){
+var L=LANG[currentLang];
+var ideaUrl="https://x.com/intent/post?text="+encodeURIComponent(L.ideaShareText);
+window.open(ideaUrl,"_blank");
+if(window.gtag){gtag("event","idea_click");}
+};
 function jankenPlay(userHand){
+var L=LANG[currentLang];
 var hands=["g","c","p"];
 var aiHand=hands[Math.floor(Math.random()*3)];
 var result;
@@ -90,21 +206,22 @@ else if((userHand==="g"&&aiHand==="c")||(userHand==="c"&&aiHand==="p")||(userHan
 else{result="lose";}
 var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
 var msg;
-if(result==="win"){s.win++;s.streak++;var wm=["やった、AIに勝った!","AIの弱点を見つけたかも","この調子で連勝しよう"];msg=wm[Math.floor(Math.random()*wm.length)];}
-else if(result==="lose"){s.lose++;s.streak=0;var lm=["AIの完全勝利...精進します","負けた、AIは強い","次こそは"];msg=lm[Math.floor(Math.random()*lm.length)];}
-else{s.draw++;msg="あいこ!もう一回勝負しよう";}
+if(result==="win"){s.win++;s.streak++;msg=L.winMsgs[Math.floor(Math.random()*L.winMsgs.length)];}
+else if(result==="lose"){s.lose++;s.streak=0;msg=L.loseMsgs[Math.floor(Math.random()*L.loseMsgs.length)];}
+else{s.draw++;msg=L.drawMsg;}
 localStorage.setItem("jstats",JSON.stringify(s));
-document.getElementById("jresult").innerHTML="あなた:"+JHANDS[userHand]+JNAMES[userHand]+" vs AI:"+JHANDS[aiHand]+JNAMES[aiHand]+"<br>"+msg;
-document.getElementById("jstats").textContent=jStatsText(s);
-var resultLabel=result==="win"?"勝った!":(result==="lose"?"負けた…":"あいこ!");
-var shareText="AIとじゃんけん対決して"+resultLabel+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";
+document.getElementById("jresult").innerHTML=L.youLabel+L.jhands[userHand]+L.jnames[userHand]+" vs AI:"+L.jhands[aiHand]+L.jnames[aiHand]+"<br>"+msg;
+document.getElementById("jstats").textContent=L.statsFmt(s);
+var resultLabel=result==="win"?L.resultWin:(result==="lose"?L.resultLose:L.resultDraw);
+var shareText=L.jankenShareFmt(resultLabel,s);
 var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>この結果をXでシェア →</a>";
+document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
 if(window.gtag){gtag("event","janken_play",{"result":result});}
 }
 document.getElementById("jg").onclick=function(){jankenPlay("g");};
 document.getElementById("jc").onclick=function(){jankenPlay("c");};
 document.getElementById("jp").onclick=function(){jankenPlay("p");};
+render(currentLang);
 </script>
 
 </body>
