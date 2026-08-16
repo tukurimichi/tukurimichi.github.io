@@ -2,23 +2,30 @@
 """
 tukurimichi-deploy-tool
 
-tukurimichi.github.io リポジトリへファイルをコミットする専用CLIツール。
+GitHubリポジトリへファイルをコミットする汎用CLIツール。
 GitHubのウェブ編集画面をキーボード操作でハックする(Ctrl+A→Delete→貼り付け→diff確認)
 という力技をやめて、GitHub Contents APIを直接叩いて1コマンドでデプロイする。
 
+対象リポジトリ・ブランチ・トークンの場所は環境変数で指定する(未指定時はデフォルト値を使用):
+    DEPLOY_REPO         例: your-name/your-repo.github.io  (デフォルト: tukurimichi/tukurimichi.github.io)
+    DEPLOY_BRANCH       例: main                            (デフォルト: main)
+    DEPLOY_TOKEN_PATH   例: ~/.your_project/token.txt        (デフォルト: ~/.tukurimichi_deploy/token.txt)
+
 使い方:
-    python deploy_to_github.py <ローカルファイル> [リポジトリ内のパス] [コミットメッセージ]
+    python deploy_to_github.py <ローカルファイル> [リポジトリ内のパス] [コミットメッセージ] [--dry-run]
 
 例:
     python deploy_to_github.py index.html
     python deploy_to_github.py C:\\path\\to\\diary.html diary.html "Update diary"
     python deploy_to_github.py mascot_hero.jpg mascot_hero.jpg "Add hero image"
+    python deploy_to_github.py index.html index.html "Update" --dry-run   # 実際にはpushしない
 
-トークンは G:\\マイドライブ\\00Claude\\つくるみち\\tools とは別の、
-Google Drive同期対象外のローカルファイル(%USERPROFILE%\\.tukurimichi_deploy\\token.txt)
-から読み込む。このスクリプト自体にトークンを書かないこと。
+トークンはこのスクリプトとは別の、バージョン管理・クラウド同期の対象外にした
+ローカルファイル(デフォルト: %USERPROFILE%\\.tukurimichi_deploy\\token.txt)から読み込む。
+このスクリプト自体にトークンを書かないこと。
 """
 
+import argparse
 import base64
 import io
 import json
@@ -31,9 +38,9 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-REPO = "tukurimichi/tukurimichi.github.io"
-BRANCH = "main"
-TOKEN_PATH = os.path.expanduser("~/.tukurimichi_deploy/token.txt")
+REPO = os.environ.get("DEPLOY_REPO", "tukurimichi/tukurimichi.github.io")
+BRANCH = os.environ.get("DEPLOY_BRANCH", "main")
+TOKEN_PATH = os.path.expanduser(os.environ.get("DEPLOY_TOKEN_PATH", "~/.tukurimichi_deploy/token.txt"))
 API_BASE = f"https://api.github.com/repos/{REPO}/contents"
 
 
@@ -60,24 +67,38 @@ def api_request(method, url, token, body=None):
         return e.code, json.loads(e.read().decode("utf-8"))
 
 
-def get_existing_sha(repo_path, token):
+def get_existing(repo_path, token):
+    """既存ファイルのsha/contentを返す。無ければ (None, None)。"""
     status, payload = api_request("GET", f"{API_BASE}/{repo_path}?ref={BRANCH}", token)
     if status == 200:
-        return payload.get("sha")
-    return None
+        return payload.get("sha"), payload.get("content", "")
+    return None, None
 
 
-def deploy(local_path, repo_path, message):
+def deploy(local_path, repo_path, message, dry_run=False):
     if not os.path.exists(local_path):
         sys.exit(f"ローカルファイルが見つかりません: {local_path}")
 
     token = load_token()
 
     with open(local_path, "rb") as f:
-        content_b64 = base64.b64encode(f.read()).decode("ascii")
+        raw = f.read()
+    content_b64 = base64.b64encode(raw).decode("ascii")
 
-    sha = get_existing_sha(repo_path, token)
+    sha, existing_b64 = get_existing(repo_path, token)
     is_update = sha is not None
+
+    if dry_run:
+        action = "更新" if is_update else "新規作成"
+        print(f"[DRY RUN] {REPO} ({BRANCH}) の {repo_path} を{action}予定")
+        print(f"[DRY RUN] ローカルサイズ: {len(raw)} bytes")
+        if is_update:
+            existing_norm = (existing_b64 or "").replace("\n", "")
+            same = existing_norm == content_b64
+            print(f"[DRY RUN] 既存内容と{'同一(変更なし)' if same else '差分あり'}")
+        print(f"[DRY RUN] commit message: {message}")
+        print("[DRY RUN] 実際にpushするには --dry-run を外して再実行してください")
+        return
 
     body = {
         "message": message,
@@ -100,16 +121,24 @@ def deploy(local_path, repo_path, message):
         sys.exit(1)
 
 
+def build_parser():
+    parser = argparse.ArgumentParser(
+        description="tukurimichi-deploy-tool: GitHub Contents API経由でファイルをコミットする",
+    )
+    parser.add_argument("local_path", help="アップロードするローカルファイル")
+    parser.add_argument("repo_path", nargs="?", default=None, help="リポジトリ内の配置先パス(省略時はファイル名)")
+    parser.add_argument("message", nargs="?", default=None, help="コミットメッセージ(省略時は自動生成)")
+    parser.add_argument("--dry-run", action="store_true", help="実際にはpushせず、変更予定だけ表示する")
+    return parser
+
+
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(1)
+    args = build_parser().parse_args()
 
-    local_path = sys.argv[1]
-    repo_path = sys.argv[2] if len(sys.argv) > 2 else os.path.basename(local_path)
-    message = sys.argv[3] if len(sys.argv) > 3 else f"Update {repo_path} via deploy tool"
+    repo_path = args.repo_path or os.path.basename(args.local_path)
+    message = args.message or f"Update {repo_path} via deploy tool"
 
-    deploy(local_path, repo_path, message)
+    deploy(args.local_path, repo_path, message, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
