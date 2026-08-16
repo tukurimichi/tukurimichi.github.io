@@ -39,6 +39,12 @@ a{color:inherit;}
 .hero img{width:100%;display:block;filter:brightness(.88) contrast(1.05);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,11,.05) 0%,rgba(10,10,11,.2) 45%,rgba(10,10,11,.96) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 28px;}
 .langToggle{position:absolute;top:14px;right:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:5px 12px;font-size:.78em;cursor:pointer;backdrop-filter:blur(2px);}
+.menuBtn{position:absolute;top:14px;left:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;backdrop-filter:blur(2px);z-index:5;}
+.navOverlay{position:fixed;inset:0;background:rgba(8,8,9,.98);z-index:50;display:none;flex-direction:column;padding:24px;overflow-y:auto;}
+.navOverlay.open{display:flex;}
+.navOverlay .navClose{align-self:flex-end;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;margin-bottom:20px;}
+.navOverlay a{display:block;color:#fff;text-decoration:none;font-size:1.15em;font-weight:700;padding:16px 4px;border-bottom:1px solid var(--line);}
+.navOverlay a .en{display:block;font-size:.6em;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.55);margin-top:3px;}
 .badge{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;font-size:.72em;font-weight:700;letter-spacing:.05em;padding:5px 12px;border-radius:3px;margin-bottom:14px;align-self:flex-start;}
 .hero h1{font-size:2.4em;font-weight:900;line-height:1.18;margin:0 0 .3em;letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.6);}
 .hero .sub{font-size:.9em;color:var(--muted);margin:0;line-height:1.7;}
@@ -99,7 +105,18 @@ a{color:inherit;}
 <h1 id="h1t"></h1>
 <p class="sub" id="introT"></p>
 </div>
+<button id="menuBtn" class="menuBtn">☰</button>
 <button id="langBtn" class="langToggle"></button>
+</div>
+
+<div id="navOverlay" class="navOverlay">
+<button id="navClose" class="navClose">✕</button>
+<a href="index.html" id="navHome"></a>
+<a href="#log" id="navLog"></a>
+<a href="claude-code.html" id="navCC"></a>
+<a href="claude-code-news.html" id="navNews"></a>
+<a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
+<a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX"></a>
 </div>
 
 <div class="shareRow">
@@ -213,6 +230,12 @@ ideaShareText:"#AIに一万円渡してみた 次はこんな機能があった�
 xBarLabel:"Xをフォロー",
 boothBarLabel:"BOOTHショップ",
 boothBarEn:"GOODS",
+navHomeText:"ホーム",
+navLogText:"更新ログ",
+navCCText:"Claude Codeで作ってみた",
+navNewsText:"Claude Codeニュース",
+navBoothText:"BOOTHショップ",
+navXText:"Xをフォロー",
 toggleTo:"English"
 },
 en:{
@@ -264,6 +287,12 @@ ideaShareText:"#AIに一万円渡してみた Idea for what's next: ",
 xBarLabel:"Follow on X",
 boothBarLabel:"BOOTH Shop",
 boothBarEn:"GOODS",
+navHomeText:"Home",
+navLogText:"Changelog",
+navCCText:"Built with Claude Code",
+navNewsText:"Claude Code News",
+navBoothText:"BOOTH Shop",
+navXText:"Follow on X",
 toggleTo:"日本語"
 }
 };
@@ -318,6 +347,12 @@ document.getElementById("ideaBarEn").textContent=L.ideaBarEn;
 document.getElementById("xBarLabel").textContent=L.xBarLabel;
 document.getElementById("boothBarLabel").textContent=L.boothBarLabel;
 document.getElementById("boothBarEn").textContent=L.boothBarEn;
+document.getElementById("navHome").textContent=L.navHomeText;
+document.getElementById("navLog").textContent=L.navLogText;
+document.getElementById("navCC").textContent=L.navCCText;
+document.getElementById("navNews").textContent=L.navNewsText;
+document.getElementById("navBooth").textContent=L.navBoothText;
+document.getElementById("navX").textContent=L.navXText;
 document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
@@ -374,6 +409,9 @@ if(window.gtag){gtag("event","janken_play",{"result":result});}
 document.getElementById("jg").onclick=function(){jankenPlay("g");};
 document.getElementById("jc").onclick=function(){jankenPlay("c");};
 document.getElementById("jp").onclick=function(){jankenPlay("p");};
+document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");};
+document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
+document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
 render(currentLang);
 </script>
 
