@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>更新ログ | tukurimichi.com</title>
+<meta name="description" content="tukurimichi.comの更新履歴、全件はこちら。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.section{padding:22px;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.logList{list-style:none;padding:0;margin:0;}
+.logList li{font-size:.9em;color:#D9D6D0;padding:14px 0;border-bottom:1px solid var(--line);line-height:1.7;}
+.logList li:last-child{border-bottom:none;}
+.logList .date{color:var(--muted);font-weight:700;margin-right:.4em;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html">← トップに戻る</a>
+<div class="banner">
+<h1>更新ログ</h1>
+<p>tukurimichi.comのこれまでの更新を、すべてここに記録しています。</p>
+</div>
+<div class="section">
+<ul class="logList" id="logList"></ul>
+</div>
+<div class="footer"><a href="index.html">← トップに戻る</a></div>
+</div>
+<script>
+var log=["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。","2026-08-16:Claude Codeニュースページを追加した。","2026-08-16:サイト全体を赤×黒のデザインにリニューアルした。"];
+var html="";
+for(var i=log.length-1;i>=0;i--){
+var parts=log[i].split(/:(.+)/);
+html+="<li><span class=\"date\">"+parts[0]+"</span>"+parts[1]+"</li>";
+}
+document.getElementById("logList").innerHTML=html;
+</script>
+</body>
+</html>
