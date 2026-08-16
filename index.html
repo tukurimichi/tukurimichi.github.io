@@ -17,7 +17,7 @@
 <meta name="twitter:description" content="べす、AIと開発中の記録です。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;margin-right:8px;margin-bottom:8px;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}#sh a{display:inline-block;margin-top:.5em;font-size:.9em;}#days{color:#8A8470;font-size:.9em;}.jhand{font-size:1.3em;}#jresult{font-weight:bold;margin-top:.6em;line-height:1.6;}#jstats{color:#8A8470;font-size:.9em;}#jshare a{display:inline-block;margin-top:.3em;font-size:.9em;}#langWrap{text-align:right;margin-bottom:-8px;}#langBtn{background:none;border:1px solid #D97757;color:#C15F3C;border-radius:8px;padding:4px 10px;font-size:.8em;cursor:pointer;margin:0;}#langBtn:hover{background:#D97757;color:#fff;}#ccTeaserCard{background:#FBF0EA;border:1px solid #F0D9CC;border-radius:14px;padding:18px 20px;margin:1em 0;}#ccTeaserCard p{margin:0 0 10px;}#ccTeaserLink{font-weight:bold;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;margin-right:8px;margin-bottom:8px;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}#sh a{display:inline-block;margin-top:.5em;font-size:.9em;}#days{color:#8A8470;font-size:.9em;}.jhand{font-size:1.3em;}#jresult{font-weight:bold;margin-top:.6em;line-height:1.6;}#jstats{color:#8A8470;font-size:.9em;}#jshare a{display:inline-block;margin-top:.3em;font-size:.9em;}#langWrap{text-align:right;margin-bottom:-8px;}#langBtn{background:none;border:1px solid #D97757;color:#C15F3C;border-radius:8px;padding:4px 10px;font-size:.8em;cursor:pointer;margin:0;}#langBtn:hover{background:#D97757;color:#fff;}#ccTeaserCard{background:#FBEDE7;border-radius:14px;padding:18px 20px;}#ccTeaserCard p{margin:.4em 0;}#storyGallery{display:flex;overflow-x:auto;gap:14px;padding:4px 2px 10px;-webkit-overflow-scrolling:touch;}#storyGallery figure{margin:0;flex:0 0 150px;}#storyGallery img{width:150px;border-radius:12px;display:block;box-shadow:0 2px 10px rgba(0,0,0,.08);}#storyGallery figcaption{font-size:.8em;color:#8A8470;margin-top:8px;line-height:1.5;}#storyNote{font-size:.9em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
 </head>
 <body>
 <div id="langWrap"><button id="langBtn"></button></div>
@@ -32,14 +32,24 @@
 <h2 id="storyH2"></h2>
 <p id="storyText"></p>
 
-<h2 id="ccTeaserH2"></h2>
-<div id="ccTeaserCard">
-<p id="ccTeaserText"></p>
-<a id="ccTeaserLink" href="claude-code.html"></a>
+<h2 id="galleryH2"></h2>
+<p id="galleryText"></p>
+<div id="storyGallery">
+<figure><img src="story1.jpg" alt="story1"><figcaption id="cap1"></figcaption></figure>
+<figure><img src="story2.jpg" alt="story2"><figcaption id="cap2"></figcaption></figure>
+<figure><img src="story3.jpg" alt="story3"><figcaption id="cap3"></figcaption></figure>
+<figure><img src="story4.jpg" alt="story4"><figcaption id="cap4"></figcaption></figure>
 </div>
+<p id="storyNote"><a id="storyBoothLink" href="https://tukurimichi.booth.pm/items/8722714"></a></p>
 
 <h2 id="logH2"></h2>
 <ul id="logList"></ul>
+
+<h2 id="ccH2"></h2>
+<div id="ccTeaserCard">
+<p id="ccTeaserText"></p>
+<p><a id="ccTeaserLink" href="claude-code.html"></a></p>
+</div>
 
 <h2 id="omikujiH2"></h2>
 <p id="omikujiText"></p>
@@ -73,11 +83,18 @@ budgetText:"元手 10,000円 / 支出 0円 / 残高 10,000円",
 daysFmt:function(n){return "企画開始から "+n+" 日目";},
 storyH2:"ここまでの話",
 storyText:"Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。",
-ccTeaserH2:"Claude Codeで作ってみた",
+galleryH2:"ここまでの道のり",
+galleryText:"マスコットが歩んできた道を、4枚のイラストにしました。",
+cap1:"①旅立ち：1万円を渡された、企画の始まり",
+cap2:"②試行錯誤：散らかった机で四苦八苦している場面",
+cap3:"③世に出す：カーテンを開けて、初めて公開する場面",
+cap4:"④振り返る：夕暮れの道を歩きながら、ここまでを振り返る場面",
+storyNoteText:"この4枚はBOOTHで無料配布中です →",
+logH2:"更新ログ",
+log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。"],
+ccH2:"Claude Codeで作ってみた",
 ccTeaserText:"このサイトも、マスコットも、BOOTHのショップも、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直にまとめた記録はこちら。",
 ccTeaserLink:"続きを読む →",
-logH2:"更新ログ",
-log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。"],
 omikujiH2:"AIおみくじ",
 omikujiText:"ボタンを押すと、AIから今日の一言が出ます。",
 omikujiBtn:"引いてみる",
@@ -114,11 +131,18 @@ budgetText:"Starting funds ¥10,000 / Spent ¥0 / Remaining ¥10,000",
 daysFmt:function(n){return "Day "+n+" since the project started";},
 storyH2:"The Story So Far",
 storyText:"I rebooted my X account and started a project: give an AI ¥10,000 and let it decide what to do with it. I asked the AI what it wanted, and it said to spend it on a kid, so I pushed back on that. Instead it suggested registering a domain, and it picked tukurimichi.com itself, name included. I also tried prototyping a photo-diary app on the side, but decided it wasn't interesting enough as an app and shelved it.",
-ccTeaserH2:"Built with Claude Code",
-ccTeaserText:"This whole site, the mascot, the BOOTH shop — all built through conversation with Claude Code alone. An honest account of what worked and what didn't.",
-ccTeaserLink:"Read more →",
+galleryH2:"The Road So Far",
+galleryText:"Four illustrations of the road the mascot has walked so far.",
+cap1:"1. Departure: given ¥10,000, the project begins",
+cap2:"2. Trial and Error: buried in a messy desk",
+cap3:"3. Into the World: opening the curtains to go public",
+cap4:"4. Looking Back: walking the road at dusk",
+storyNoteText:"These 4 images are free on BOOTH →",
 logH2:"Changelog",
-log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site.","2026-08-15: Started selling mascot wallpapers for ¥100 on BOOTH.","2026-08-16: Added a page about building this with Claude Code."],
+log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site.","2026-08-15: Started selling mascot wallpapers for ¥100 on BOOTH.","2026-08-16: Added a page about making this with Claude Code.","2026-08-16: Added the Tsukurimichi Story gallery, and a free 4-image wallpaper set on BOOTH."],
+ccH2:"Built with Claude Code",
+ccTeaserText:"This site, the mascot, and the BOOTH shop were all built through conversation with Claude Code. Here's an honest account of what worked and what didn't.",
+ccTeaserLink:"Read more →",
 omikujiH2:"AI Fortune",
 omikujiText:"Press the button for a one-line fortune from the AI.",
 omikujiBtn:"Draw",
@@ -164,13 +188,20 @@ document.getElementById("budgetH2").textContent=L.budgetH2;
 document.getElementById("budgetText").textContent=L.budgetText;
 document.getElementById("storyH2").textContent=L.storyH2;
 document.getElementById("storyText").textContent=L.storyText;
-document.getElementById("ccTeaserH2").textContent=L.ccTeaserH2;
-document.getElementById("ccTeaserText").textContent=L.ccTeaserText;
-document.getElementById("ccTeaserLink").textContent=L.ccTeaserLink;
+document.getElementById("galleryH2").textContent=L.galleryH2;
+document.getElementById("galleryText").textContent=L.galleryText;
+document.getElementById("cap1").textContent=L.cap1;
+document.getElementById("cap2").textContent=L.cap2;
+document.getElementById("cap3").textContent=L.cap3;
+document.getElementById("cap4").textContent=L.cap4;
+document.getElementById("storyBoothLink").textContent=L.storyNoteText;
 document.getElementById("logH2").textContent=L.logH2;
 var logHtml="";
 for(var i=0;i<L.log.length;i++){logHtml+="<li>"+L.log[i]+"</li>";}
 document.getElementById("logList").innerHTML=logHtml;
+document.getElementById("ccH2").textContent=L.ccH2;
+document.getElementById("ccTeaserText").textContent=L.ccTeaserText;
+document.getElementById("ccTeaserLink").textContent=L.ccTeaserLink;
 document.getElementById("omikujiH2").textContent=L.omikujiH2;
 document.getElementById("omikujiText").textContent=L.omikujiText;
 document.getElementById("ob").textContent=L.omikujiBtn;
