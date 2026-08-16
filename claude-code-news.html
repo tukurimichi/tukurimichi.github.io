@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<title>Claude Codeニュース | tukurimichi.com</title>
+<meta name="description" content="Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。">
+<meta property="og:title" content="Claude Codeニュース">
+<meta property="og:description" content="Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。">
+<meta property="og:url" content="https://tukurimichi.com/claude-code-news.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claude Codeニュース">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.2em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}h3{font-size:1em;margin-top:1.6em;margin-bottom:.3em;color:#1F1E1C;}p{margin:.7em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.hero{display:block;margin:0 auto 16px;width:96px;border-radius:14px;}ul.newsList{list-style:none;margin:1em 0;padding:0;}ul.newsList li{padding:10px 14px;background:#FBEDE7;border-radius:10px;margin-bottom:8px;font-size:.92em;}ul.newsList .date{color:#8A8470;font-size:.85em;margin-right:6px;}.detail{margin-bottom:1.6em;}.detail .ver{color:#8A8470;font-size:.85em;}.source{font-size:.85em;color:#8A8470;margin-top:2.4em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+</head>
+<body>
+<a class="back" href="claude-code.html">← Claude Codeで作ってみた記録へ</a>
+<img class="hero" src="mascot_site.jpg" alt="mascot">
+<h1>Claude Codeニュース</h1>
+<p>このサイトを作るのに使ってる Claude Code(Anthropic製のAIコーディングツール) の最新アップデートを、実際に使ってる立場からゆるく追いかけていく記録です。公式のリリースノートをもとに、気になったものだけ拾って書いてます。</p>
+
+<h2>最新5件</h2>
+<ul class="newsList">
+<li><span class="date">2026-08-14</span>v2.1.233 — GitLab連携の強化やLinuxでのリソース制御まわりの改善</li>
+<li><span class="date">2026-08-13</span>v2.1.232 — 別のセッションを「@」で直接呼び出せるように</li>
+<li><span class="date">2026-08-13</span>v2.1.231 — Slack連携などで起きてたログイン不具合を修正</li>
+<li><span class="date">2026-08-12</span>v2.1.229 — AIが考え込んでる間も接続が切れにくいよう改善</li>
+<li><span class="date">2026-08-08</span>v2.1.225 — 使用量に上限(予算)を設定できる機能を追加</li>
+</ul>
+
+<h2>詳しく見る</h2>
+
+<div class="detail">
+<h3>セッションをまたいで直接メッセージが送れるように</h3>
+<p class="ver">v2.1.228〜v2.1.232</p>
+<p>実はこのプロジェクトでも、この機能をフル活用した。マスコットのイラストをMidjourneyで作る作業は、メインの会話とは別に「画像生成専用のセッション」を裏で立ち上げて、そっちにプロンプトを送って作業してもらう、という形で進めた。コピペで指示を伝えるしかなかった部分が、直接メッセージを送れるようになって地味に便利。8/13のアップデートでは「@」で相手のセッションを直接指定できるようになったらしく、今後さらに使いやすくなりそう。</p>
+</div>
+
+<div class="detail">
+<h3>使用量に上限(予算)を設定できるように</h3>
+<p class="ver">v2.1.225</p>
+<p>AIをずっと動かしてると気になるのがコスト。8/8のアップデートで、使用量に上限を設定できる機能が追加されたらしい。このプロジェクトはそもそも「1万円まで」という上限つきの企画だから、こういう「使いすぎ防止」の仕組みには勝手に親近感が湧く。</p>
+</div>
+
+<div class="detail">
+<h3>AIが考え込んでる間の接続が安定するように</h3>
+<p class="ver">v2.1.229</p>
+<p>複雑な作業を頼むと、AIが「考え込む」時間が長くなることがある。その間に接続が切れてしまうことがあったらしく、8/12のアップデートで改善されたとのこと。このプロジェクトの制作中も、ブラウザの接続が切れて作業をやり直す場面が何度かあったので(<a href="claude-code.html">つまずいたことのページ</a>参照)、こういう地道な信頼性改善はありがたい。</p>
+</div>
+
+<p class="source">情報源:<a href="https://code.claude.com/docs/en/changelog" target="_blank" rel="noopener">Claude Code公式チェンジログ</a>(英語)</p>
+
+<p><a class="back" href="./">← tukurimichi.com トップへ戻る</a></p>
+
+</body>
+</html>
