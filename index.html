@@ -616,33 +616,38 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
     }
     window.addEventListener("resize",onResize);
 
-    function easeOutQuint(x){return 1-Math.pow(1-x,5);}
-    function easeOutBack(x){
-      var c1=1.4,c3=c1+1;
-      return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
     }
     function rollOnce(onDone){
-      var startDX=-(210+Math.random()*70);
-      var startDY=-(240+Math.random()*80);
-      var startScale=0.32;
-      var startX=anchorX+startDX,startY=anchorY+startDY;
-      var baseRotX=die.rotation.x,baseRotZ=die.rotation.z;
-      var tumbleX=Math.PI*0.9+Math.random()*0.6;
-      var duration=1450;
+      var dropHeight=250+Math.random()*70;
+      var startX=anchorX+(Math.random()*2-1)*18;
+      var startY=anchorY-dropHeight;
+      var startScale=0.55;
+      var baseRotX=die.rotation.x,baseRotY=die.rotation.y,baseRotZ=die.rotation.z;
+      var tumbleX=(Math.random()*2-1)*(Math.PI*0.8+Math.random()*Math.PI*0.6);
+      var tumbleY=(Math.random()*2-1)*(Math.PI*0.6+Math.random()*Math.PI*0.5);
+      var duration=1500;
       var t0=null;
       die.visible=true;
       function frame(t){
         if(t0===null)t0=t;
         var p=Math.min((t-t0)/duration,1);
-        var ePos=easeOutQuint(p);
-        var eScale=easeOutBack(p);
-        var curX=startX+(anchorX-startX)*ePos;
-        var curY=startY+(anchorY-startY)*ePos;
-        var curScale=Math.max(startScale+(1-startScale)*eScale,0.05);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(Math.min(p*1.4,1));
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
         die.position.set(curX,curY,0);
         die.scale.setScalar(curScale);
-        die.rotation.z=baseRotZ+(curX-startX)/R;
-        die.rotation.x=baseRotX+tumbleX*ePos;
+        die.rotation.x=baseRotX+tumbleX*eSettle;
+        die.rotation.y=baseRotY+tumbleY*eSettle;
+        die.rotation.z=baseRotZ;
         renderer.render(scene,camera);
         if(p<1){requestAnimationFrame(frame);}
         else{
