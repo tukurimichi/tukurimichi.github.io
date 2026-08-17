@@ -80,9 +80,8 @@ a{color:inherit;}
 .omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
 #omikujiDieAnchor{width:140px;height:140px;}
 #omikujiFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
-.jankenHandWrap{display:flex;justify-content:center;margin:4px 0 10px;}
-#jankenHandAnchor{width:120px;height:120px;}
-#jankenFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.jankenHandWrap{display:flex;justify-content:center;align-items:center;margin:4px 0 10px;height:150px;perspective:600px;}
+#jankenHandImg{max-width:150px;max-height:150px;width:auto;height:auto;object-fit:contain;display:none;transition:transform .09s linear;backface-visibility:hidden;}
 .ghostBtn{display:inline-block;background:transparent;border:1px solid var(--red);color:#fff;border-radius:6px;padding:10px 20px;font-size:.85em;font-weight:700;margin-top:10px;margin-right:8px;margin-bottom:0;cursor:pointer;text-decoration:none;}
 .ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
 .ghostBtnSolid:hover{background:var(--red-dark);}
@@ -179,7 +178,7 @@ a{color:inherit;}
 <p id="sh"></p>
 <hr class="hr">
 <p id="jankenText"></p>
-<div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
+<div class="jankenHandWrap"><img id="jankenHandImg" src="" alt="janken hand"></div>
 <button id="jg" class="jhand"></button><button id="jc" class="jhand"></button><button id="jp" class="jhand"></button>
 <p id="jresult"></p>
 <p id="jstats"></p>
@@ -200,7 +199,6 @@ a{color:inherit;}
 </div>
 
 <canvas id="omikujiFxCanvas"></canvas>
-<canvas id="jankenFxCanvas"></canvas>
 
 <script>
 var LANG={
@@ -702,188 +700,44 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
 
 (function(){
   var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function initJankenHand(){
-    if(typeof THREE==="undefined")return;
-    var canvas=document.getElementById("jankenFxCanvas");
-    var anchor=document.getElementById("jankenHandAnchor");
-    if(!canvas||!anchor)return;
+  var JANKEN_IMG={g:"janken_g.jpg",c:"janken_c.jpg",p:"janken_p.jpg"};
+  var order=["g","c","p"];
+  var rolling=false;
 
-    var W=window.innerWidth,H=window.innerHeight;
-    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-    renderer.setSize(W,H,false);
-
-    var scene=new THREE.Scene();
-    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
-    camera.position.z=1000;
-    scene.add(new THREE.AmbientLight(0xffffff,0.6));
-    var key=new THREE.DirectionalLight(0xffffff,0.9);
-    key.position.set(200,-400,500);
-    scene.add(key);
-    var rim=new THREE.DirectionalLight(0xff8a80,0.5);
-    rim.position.set(-250,300,-200);
-    scene.add(rim);
-
-    var R=38;
-    var MASCOT_ORANGE=0xFD9729,MASCOT_CREAM=0xF3EBD6,MASCOT_DARK=0x5D2A2B;
-    var edgeMat=new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:0.28});
-    function withEdges(obj,geo){
-      obj.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat));
-      return obj;
+  window.__jankenReveal=function(finalHand,onDone){
+    var img=document.getElementById("jankenHandImg");
+    if(!img){if(onDone)onDone();return;}
+    if(rolling){return;}
+    rolling=true;
+    img.style.display="block";
+    if(reduceMotion){
+      img.src=JANKEN_IMG[finalHand];
+      img.style.transform="rotateY(0deg)";
+      rolling=false;if(onDone)onDone();return;
     }
-    var orangeMat=new THREE.MeshStandardMaterial({color:MASCOT_ORANGE,roughness:0.45,metalness:0.1,flatShading:true});
-    var creamMat=new THREE.MeshStandardMaterial({color:MASCOT_CREAM,roughness:0.5,metalness:0.05,flatShading:true});
-    var rivetMat=new THREE.MeshStandardMaterial({color:MASCOT_DARK,roughness:0.4,metalness:0.2,flatShading:true});
-    function rivetAt(x,y,z){
-      var m=new THREE.Mesh(new THREE.SphereGeometry(R*0.13,10,8),rivetMat);
-      m.position.set(x,y,z);
-      return m;
+    var flips=7,count=0;
+    function flipOut(){
+      img.style.transform="rotateY(90deg)";
+      setTimeout(flipIn,90);
     }
-
-    var rockGroup=new THREE.Group();
-    var fistGeo=new THREE.IcosahedronGeometry(R*0.95,1);
-    var fistPos=fistGeo.attributes.position;
-    for(var vi=0;vi<fistPos.count;vi++){
-      var vx=fistPos.getX(vi),vy=fistPos.getY(vi),vz=fistPos.getZ(vi);
-      var jitter=1+(Math.random()*0.16-0.05);
-      fistPos.setXYZ(vi,vx*jitter,vy*jitter,vz*jitter);
-    }
-    fistGeo.computeVertexNormals();
-    var fistMesh=withEdges(new THREE.Mesh(fistGeo,orangeMat),fistGeo);
-    fistMesh.position.set(0,R*0.1,0);
-    var cuffGeo=new THREE.TorusGeometry(R*0.66,R*0.16,8,16);
-    var cuff=withEdges(new THREE.Mesh(cuffGeo,creamMat),cuffGeo);
-    cuff.position.set(0,-R*0.62,0);
-    cuff.rotation.x=Math.PI/2;
-    rockGroup.add(fistMesh,cuff,rivetAt(-R*0.3,R*0.25,R*0.75),rivetAt(R*0.32,R*0.15,R*0.7));
-
-    var paperGroup=new THREE.Group();
-    var wristGeo1=new THREE.SphereGeometry(R*0.4,12,10);
-    var wrist1=new THREE.Mesh(wristGeo1,creamMat);
-    wrist1.position.set(0,-R*0.68,0);
-    paperGroup.add(wrist1);
-    var digitGeo=new THREE.BoxGeometry(R*0.36,R*1.5,R*0.24);
-    var digitAngles=[-0.62,-0.2,0.2,0.62];
-    for(var di=0;di<digitAngles.length;di++){
-      var digit=withEdges(new THREE.Mesh(digitGeo,orangeMat),digitGeo);
-      var ang=digitAngles[di];
-      digit.position.set(Math.sin(ang)*R*0.5,R*0.05+Math.cos(ang)*R*0.15,0);
-      digit.rotation.z=ang*0.9;
-      paperGroup.add(digit);
-    }
-    paperGroup.add(rivetAt(0,-R*0.4,R*0.3));
-
-    var scissorsGroup=new THREE.Group();
-    var wristGeo2=new THREE.SphereGeometry(R*0.38,12,10);
-    var wrist2=new THREE.Mesh(wristGeo2,creamMat);
-    wrist2.position.set(0,-R*0.6,0);
-    var clawGeo=new THREE.ConeGeometry(R*0.24,R*1.7,4);
-    var clawL=withEdges(new THREE.Mesh(clawGeo,orangeMat),clawGeo);
-    clawL.position.set(-R*0.3,R*0.45,0);
-    clawL.rotation.z=0.48;
-    var clawR=withEdges(new THREE.Mesh(clawGeo,orangeMat),clawGeo);
-    clawR.position.set(R*0.3,R*0.45,0);
-    clawR.rotation.z=-0.48;
-    scissorsGroup.add(wrist2,clawL,clawR,rivetAt(0,-R*0.15,R*0.3));
-
-    var rockMesh=rockGroup,paperMesh=paperGroup;
-
-    var shapes={g:rockMesh,c:scissorsGroup,p:paperMesh};
-    rockMesh.visible=false;paperMesh.visible=false;scissorsGroup.visible=false;
-    scene.add(rockMesh,paperMesh,scissorsGroup);
-
-    var anchorX=0,anchorY=0,rolling=false;
-    function anchorCenter(){
-      var r=anchor.getBoundingClientRect();
-      return {x:r.left+r.width/2,y:r.top+r.height/2};
-    }
-    function onResize(){
-      W=window.innerWidth;H=window.innerHeight;
-      renderer.setSize(W,H,false);
-      camera.right=W;camera.bottom=H;
-      camera.updateProjectionMatrix();
-      renderer.render(scene,camera);
-    }
-    window.addEventListener("resize",onResize);
-
-    function showOnly(k){
-      rockMesh.visible=(k==="g");
-      paperMesh.visible=(k==="p");
-      scissorsGroup.visible=(k==="c");
-    }
-
-    function playReveal(finalHand,onDone){
-      var order=["g","c","p"];
-      var cycleDuration=760;
-      var cycleStep=110;
-      var t0=null,lastIdx=-1;
-      function cycleFrame(t){
-        if(t0===null)t0=t;
-        var elapsed=t-t0;
-        if(elapsed<cycleDuration){
-          var idx=Math.floor(elapsed/cycleStep)%3;
-          if(idx!==lastIdx){lastIdx=idx;showOnly(order[idx]);}
-          var wob=Math.sin(elapsed*0.02)*0.15;
-          var m=shapes[order[idx]];
-          m.position.set(anchorX,anchorY,0);
-          m.scale.setScalar(1);
-          m.rotation.set(0,0,wob);
-          renderer.render(scene,camera);
-          requestAnimationFrame(cycleFrame);
-        }else{
-          settle(t);
-        }
+    function flipIn(){
+      count++;
+      if(count<flips){
+        img.src=JANKEN_IMG[order[count%3]];
+      }else{
+        img.src=JANKEN_IMG[finalHand];
       }
-      var s0=null;
-      function settle(){
-        showOnly(finalHand);
-        var mesh=shapes[finalHand];
-        var dur=420;
-        function frame(t){
-          if(s0===null)s0=t;
-          var p=Math.min((t-s0)/dur,1);
-          mesh.position.set(anchorX,anchorY,0);
-          mesh.scale.setScalar(0.82+0.33*Math.min(p*2,1));
-          mesh.rotation.set(0,0,(1-p)*0.55);
-          renderer.render(scene,camera);
-          if(p<1){requestAnimationFrame(frame);}
-          else{
-            mesh.scale.setScalar(1);
-            mesh.rotation.set(0,0,0);
-            renderer.render(scene,camera);
-            if(onDone)onDone();
-          }
-        }
-        requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(cycleFrame);
-    }
-
-    window.__jankenReveal=function(finalHand,onDone){
-      if(rolling){return;}
-      var c=anchorCenter();
-      anchorX=c.x;anchorY=c.y;
-      rolling=true;
-      if(reduceMotion){
-        showOnly(finalHand);
-        var mesh=shapes[finalHand];
-        mesh.position.set(anchorX,anchorY,0);
-        mesh.scale.setScalar(1);
-        renderer.render(scene,camera);
-        rolling=false;if(onDone)onDone();return;
-      }
-      var done=false;
-      function finish(){
-        if(done)return;
-        done=true;
+      img.style.transform="rotateY(0deg)";
+      if(count<flips){
+        setTimeout(flipOut,90);
+      }else{
         rolling=false;
-        if(onDone)onDone();
+        setTimeout(function(){if(onDone)onDone();},150);
       }
-      playReveal(finalHand,finish);
-      setTimeout(finish,2200);
-    };
-  }
-  if(document.readyState==="complete"){initJankenHand();}else{window.addEventListener("load",initJankenHand);}
+    }
+    img.src=JANKEN_IMG[order[0]];
+    setTimeout(flipOut,80);
+  };
 })();
 </script>
 
