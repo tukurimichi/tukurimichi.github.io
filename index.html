@@ -37,6 +37,7 @@ a{color:inherit;}
 
 .hero{position:relative;overflow:hidden;}
 .hero img{width:100%;display:block;filter:brightness(.88) contrast(1.05);}
+.hero canvas{position:absolute;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,11,.05) 0%,rgba(10,10,11,.2) 45%,rgba(10,10,11,.96) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 28px;}
 .langToggle{position:absolute;top:14px;right:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:5px 12px;font-size:.78em;cursor:pointer;backdrop-filter:blur(2px);}
 .menuBtn{position:absolute;top:14px;left:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;backdrop-filter:blur(2px);z-index:5;}
@@ -100,6 +101,7 @@ a{color:inherit;}
 
 <div class="hero">
 <img src="mascot_hero.jpg" alt="mascot">
+<canvas id="heroCanvas"></canvas>
 <div class="hero-overlay">
 <span class="badge" id="heroBadge"></span>
 <h1 id="h1t"></h1>
@@ -417,6 +419,120 @@ document.getElementById("menuBtn").onclick=function(){document.getElementById("n
 document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
 document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
 render(currentLang);
+</script>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js" defer></script>
+<script defer>
+(function(){
+function initHeroFX(){
+  if(typeof THREE==="undefined")return;
+  var canvas=document.getElementById("heroCanvas");
+  var hero=document.querySelector(".hero");
+  if(!canvas||!hero)return;
+  var w=hero.clientWidth,h=hero.clientHeight;
+  if(w<10||h<10)return;
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setSize(w,h,false);
+
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(50,w/h,1,1000);
+  camera.position.z=260;
+
+  var COUNT=42;
+  var bounds={x:170,y:210,z:110};
+  var positions=new Float32Array(COUNT*3);
+  var velocities=[];
+  for(var i=0;i<COUNT;i++){
+    positions[i*3]=(Math.random()*2-1)*bounds.x;
+    positions[i*3+1]=(Math.random()*2-1)*bounds.y;
+    positions[i*3+2]=(Math.random()*2-1)*bounds.z;
+    velocities.push({x:(Math.random()*2-1)*0.14,y:(Math.random()*2-1)*0.14,z:(Math.random()*2-1)*0.09});
+  }
+  var geo=new THREE.BufferGeometry();
+  geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
+
+  function dotTexture(){
+    var c=document.createElement("canvas");c.width=64;c.height=64;
+    var ctx=c.getContext("2d");
+    var g=ctx.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,"rgba(255,255,255,1)");
+    g.addColorStop(0.4,"rgba(255,138,128,0.85)");
+    g.addColorStop(1,"rgba(227,30,36,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
+  }
+  var pts=new THREE.Points(geo,new THREE.PointsMaterial({size:9,map:dotTexture(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0.8}));
+  scene.add(pts);
+
+  var maxLines=COUNT*COUNT;
+  var lineGeo=new THREE.BufferGeometry();
+  var linePositions=new Float32Array(maxLines*3*2);
+  lineGeo.setAttribute("position",new THREE.BufferAttribute(linePositions,3));
+  var lineMat=new THREE.LineBasicMaterial({color:0xE31E24,transparent:true,opacity:0.16,blending:THREE.AdditiveBlending});
+  var lines=new THREE.LineSegments(lineGeo,lineMat);
+  scene.add(lines);
+  var LINK_DIST=92;
+
+  function updateLines(){
+    var idx=0;
+    var arr=lineGeo.attributes.position.array;
+    for(var i=0;i<COUNT;i++){
+      for(var j=i+1;j<COUNT;j++){
+        var dx=positions[i*3]-positions[j*3];
+        var dy=positions[i*3+1]-positions[j*3+1];
+        var dz=positions[i*3+2]-positions[j*3+2];
+        var d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(d<LINK_DIST&&idx<maxLines){
+          arr[idx*6]=positions[i*3];arr[idx*6+1]=positions[i*3+1];arr[idx*6+2]=positions[i*3+2];
+          arr[idx*6+3]=positions[j*3];arr[idx*6+4]=positions[j*3+1];arr[idx*6+5]=positions[j*3+2];
+          idx++;
+        }
+      }
+    }
+    lineGeo.setDrawRange(0,idx*2);
+    lineGeo.attributes.position.needsUpdate=true;
+  }
+
+  function step(){
+    for(var i=0;i<COUNT;i++){
+      positions[i*3]+=velocities[i].x;
+      positions[i*3+1]+=velocities[i].y;
+      positions[i*3+2]+=velocities[i].z;
+      if(positions[i*3]>bounds.x||positions[i*3]<-bounds.x)velocities[i].x*=-1;
+      if(positions[i*3+1]>bounds.y||positions[i*3+1]<-bounds.y)velocities[i].y*=-1;
+      if(positions[i*3+2]>bounds.z||positions[i*3+2]<-bounds.z)velocities[i].z*=-1;
+    }
+    geo.attributes.position.needsUpdate=true;
+    updateLines();
+  }
+
+  step();
+  renderer.render(scene,camera);
+
+  if(!reduceMotion){
+    (function loop(t){
+      if(!document.hidden){
+        step();
+        camera.position.x=Math.sin((t||0)*0.00012)*22;
+        camera.lookAt(0,0,0);
+        renderer.render(scene,camera);
+      }
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  window.addEventListener("resize",function(){
+    var nw=hero.clientWidth,nh=hero.clientHeight;
+    if(nw<10||nh<10)return;
+    camera.aspect=nw/nh;camera.updateProjectionMatrix();
+    renderer.setSize(nw,nh,false);
+  });
+}
+if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener("load",initHeroFX);}
+})();
 </script>
 
 </body>
