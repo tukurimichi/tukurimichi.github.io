@@ -467,6 +467,8 @@ render(currentLang);
 </script>
 
 <script src="https://unpkg.com/three@0.128.0/build/three.min.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js" defer></script>
 <script defer>
 (function(){
 function initHeroFX(){
@@ -703,7 +705,7 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
 (function(){
   var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function initJankenCard(){
-    if(typeof THREE==="undefined")return;
+    if(typeof THREE==="undefined"||typeof THREE.GLTFLoader==="undefined")return;
     var canvas=document.getElementById("jankenFxCanvas");
     var anchor=document.getElementById("jankenHandAnchor");
     if(!canvas||!anchor)return;
@@ -715,38 +717,54 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
     if("outputEncoding" in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
 
     var scene=new THREE.Scene();
-    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
+    // top/bottom kept in standard (non-inverted) orientation here, unlike the
+    // omikuji die's camera, so glTF's native Y-up meshes need no extra flip.
+    var camera=new THREE.OrthographicCamera(0,W,H,0,1,2000);
     camera.position.z=1000;
 
-    var order=["g","c","p"];
-    var IMG_URLS={g:"janken_g_sq.jpg",c:"janken_c_sq.jpg",p:"janken_p_sq.jpg"};
-    var loader=new THREE.TextureLoader();
-    var textures={};
-    order.forEach(function(k){
-      var t=loader.load(IMG_URLS[k]);
-      if("encoding" in t)t.encoding=THREE.sRGBEncoding;
-      t.flipY=false;
-      textures[k]=t;
-    });
+    scene.add(new THREE.AmbientLight(0xffffff,0.8));
+    var keyLight=new THREE.DirectionalLight(0xffffff,0.9);
+    keyLight.position.set(200,400,600);
+    scene.add(keyLight);
+    var rimLight=new THREE.DirectionalLight(0xfff2df,0.45);
+    rimLight.position.set(-300,120,-400);
+    scene.add(rimLight);
 
-    var CARD=150;
-    var geo=new THREE.BoxGeometry(CARD,CARD,CARD*0.12);
-    var sideMat=new THREE.MeshBasicMaterial({color:0xF3EBD6});
-    var frontMat=new THREE.MeshBasicMaterial({map:textures.g});
-    var backMat=new THREE.MeshBasicMaterial({color:0xFD9729});
-    var card=new THREE.Mesh(geo,[sideMat,sideMat,sideMat,sideMat,backMat,frontMat]);
-    card.visible=false;
-    scene.add(card);
+    var order=["g","c","p"];
+    var GLB_URLS={g:"janken_g.glb",c:"janken_c.glb",p:"janken_p.glb"};
+    var HAND_SCALE=150;
+
+    var draco=new THREE.DRACOLoader();
+    draco.setDecoderPath("https://unpkg.com/three@0.128.0/examples/js/libs/draco/gltf/");
+    var loader=new THREE.GLTFLoader();
+    loader.setDRACOLoader(draco);
+
+    var rig=new THREE.Group();
+    rig.visible=false;
+    scene.add(rig);
+
+    var models={};
+    order.forEach(function(k){
+      loader.load(GLB_URLS[k],function(gltf){
+        var root=gltf.scene;
+        root.scale.setScalar(HAND_SCALE);
+        root.visible=false;
+        rig.add(root);
+        models[k]=root;
+      });
+    });
+    function allLoaded(){return order.every(function(k){return !!models[k];});}
+    function showOnly(k){order.forEach(function(o){if(models[o])models[o].visible=(o===k);});}
 
     var anchorX=0,anchorY=0,rolling=false;
     function anchorCenter(){
       var r=anchor.getBoundingClientRect();
-      return {x:r.left+r.width/2,y:r.top+r.height/2};
+      return {x:r.left+r.width/2,y:H-(r.top+r.height/2)};
     }
     function onResize(){
       W=window.innerWidth;H=window.innerHeight;
       renderer.setSize(W,H,false);
-      camera.right=W;camera.bottom=H;
+      camera.right=W;camera.top=H;
       camera.updateProjectionMatrix();
       renderer.render(scene,camera);
     }
@@ -761,25 +779,25 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       else return n1*(x-=2.625/d1)*x+0.984375;
     }
 
+    function settleTo(finalHand){
+      showOnly(finalHand);
+      rig.visible=true;
+      rig.position.set(anchorX,anchorY,0);
+      rig.scale.setScalar(1);
+      rig.rotation.set(0,0,0);
+      renderer.render(scene,camera);
+    }
+
     function playReveal(finalHand,onDone){
       var dropHeight=260+Math.random()*60;
       var startX=anchorX+(Math.random()*2-1)*16;
-      var startY=anchorY-dropHeight;
+      var startY=anchorY+dropHeight;
       var startScale=0.5;
       var totalSpin=Math.PI*(6+Math.random()*3)*(Math.random()<0.5?-1:1);
       var duration=1500;
       var t0=null,lastHalf=0,stopped=false;
-      frontMat.map=textures[order[0]];
-      frontMat.needsUpdate=true;
-      card.visible=true;
-      function forceSettle(){
-        frontMat.map=textures[finalHand];
-        frontMat.needsUpdate=true;
-        card.position.set(anchorX,anchorY,0);
-        card.scale.setScalar(1);
-        card.rotation.set(0,0,0);
-        renderer.render(scene,camera);
-      }
+      showOnly(order[0]);
+      rig.visible=true;
       function frame(t){
         if(stopped)return;
         if(t0===null)t0=t;
@@ -790,28 +808,25 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
         var curY=startY+(anchorY-startY)*eBounce;
         var curScale=startScale+(1-startScale)*eSettle;
         var curRotY=totalSpin*eSettle;
-        card.position.set(curX,curY,0);
-        card.scale.setScalar(curScale);
-        card.rotation.y=curRotY;
-        card.rotation.x=0.06*(1-eSettle);
+        rig.position.set(curX,curY,0);
+        rig.scale.setScalar(curScale);
+        rig.rotation.y=curRotY;
+        rig.rotation.x=0.06*(1-eSettle);
         var halfIdx=Math.floor(Math.abs(curRotY)/Math.PI);
         if(halfIdx!==lastHalf){
           lastHalf=halfIdx;
-          if(p<0.97){
-            frontMat.map=textures[order[halfIdx%3]];
-            frontMat.needsUpdate=true;
-          }
+          if(p<0.97){showOnly(order[halfIdx%3]);}
         }
         renderer.render(scene,camera);
         if(p<1){requestAnimationFrame(frame);}
         else{
           stopped=true;
-          forceSettle();
+          settleTo(finalHand);
           if(onDone)onDone();
         }
       }
       requestAnimationFrame(frame);
-      return{stop:function(){stopped=true;forceSettle();}};
+      return{stop:function(){stopped=true;settleTo(finalHand);}};
     }
 
     window.__jankenReveal=function(finalHand,onDone){
@@ -819,14 +834,8 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       var c=anchorCenter();
       anchorX=c.x;anchorY=c.y;
       rolling=true;
-      if(reduceMotion){
-        frontMat.map=textures[finalHand];
-        frontMat.needsUpdate=true;
-        card.visible=true;
-        card.position.set(anchorX,anchorY,0);
-        card.scale.setScalar(1);
-        card.rotation.set(0,0,0);
-        renderer.render(scene,camera);
+      if(reduceMotion||!allLoaded()){
+        settleTo(finalHand);
         rolling=false;if(onDone)onDone();return;
       }
       var done=false,handle=null;
