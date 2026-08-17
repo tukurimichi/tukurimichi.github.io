@@ -77,6 +77,8 @@ a{color:inherit;}
 .gallery figcaption{font-size:.68em;color:var(--muted);margin-top:6px;line-height:1.5;}
 .galleryLink{font-size:.85em;display:inline-block;margin-top:4px;}
 
+.omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
+#omikujiCanvas{cursor:pointer;touch-action:manipulation;}
 .ghostBtn{display:inline-block;background:transparent;border:1px solid var(--red);color:#fff;border-radius:6px;padding:10px 20px;font-size:.85em;font-weight:700;margin-top:10px;margin-right:8px;margin-bottom:0;cursor:pointer;text-decoration:none;}
 .ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
 .ghostBtnSolid:hover{background:var(--red-dark);}
@@ -167,6 +169,7 @@ a{color:inherit;}
 <div class="banner"><h2>PLAY<span class="en" id="playTagline"></span></h2></div>
 <div class="section">
 <p id="omikujiText"></p>
+<div class="omikujiDieWrap"><canvas id="omikujiCanvas" width="140" height="140"></canvas></div>
 <button id="ob" class="ghostBtnSolid"></button>
 <p id="or"></p>
 <p id="sh"></p>
@@ -386,12 +389,17 @@ render(currentLang);
 };
 document.getElementById("ob").onclick=function(){
 var L=LANG[currentLang];
-var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
-document.getElementById("or").textContent=m;
-var shareText=L.omikujiShareLabel+m;
-var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
-if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+var reveal=function(){
+  var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
+  document.getElementById("or").textContent=m;
+  var shareText=L.omikujiShareLabel+m;
+  var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
+  document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
+  if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+};
+document.getElementById("or").textContent="";
+document.getElementById("sh").innerHTML="";
+if(window.__omikujiRoll){window.__omikujiRoll(reveal);}else{reveal();}
 };
 document.getElementById("idea").onclick=function(){
 var L=LANG[currentLang];
@@ -554,6 +562,80 @@ function initHeroFX(){
   });
 }
 if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener("load",initHeroFX);}
+})();
+
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initOmikujiDie(){
+    if(typeof THREE==="undefined")return;
+    var canvas=document.getElementById("omikujiCanvas");
+    if(!canvas)return;
+    var size=140;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(size,size,false);
+
+    var scene=new THREE.Scene();
+    var camera=new THREE.PerspectiveCamera(40,1,0.1,100);
+    camera.position.set(0,0,6);
+    scene.add(new THREE.AmbientLight(0xffffff,0.55));
+    var key=new THREE.DirectionalLight(0xffffff,0.9);
+    key.position.set(3,4,5);
+    scene.add(key);
+    var rim=new THREE.DirectionalLight(0xff8a80,0.5);
+    rim.position.set(-4,-2,-3);
+    scene.add(rim);
+
+    var geo=new THREE.DodecahedronGeometry(1.6,0);
+    var mat=new THREE.MeshStandardMaterial({color:0xE31E24,roughness:0.35,metalness:0.15,flatShading:true});
+    var die=new THREE.Mesh(geo,mat);
+    var edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xF2F0EC,transparent:true,opacity:0.55}));
+    die.add(edges);
+    die.rotation.set(0.4,0.6,0);
+    scene.add(die);
+    renderer.render(scene,camera);
+
+    var rolling=false;
+    function rollOnce(onDone){
+      var startX=die.rotation.x,startY=die.rotation.y,startZ=die.rotation.z;
+      var spinX=Math.PI*4+Math.random()*Math.PI*2;
+      var spinY=Math.PI*6+Math.random()*Math.PI*2;
+      var tiltZ=(Math.random()*2-1)*0.7;
+      var duration=1250;
+      var t0=null;
+      function frame(t){
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var e=1-Math.pow(1-p,3);
+        die.rotation.x=startX+spinX*e;
+        die.rotation.y=startY+spinY*e;
+        die.rotation.z=startZ+tiltZ*e;
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else if(onDone){onDone();}
+      }
+      requestAnimationFrame(frame);
+    }
+    window.__omikujiRoll=function(onDone){
+      if(rolling){return;}
+      rolling=true;
+      if(reduceMotion){rolling=false;if(onDone)onDone();return;}
+      var done=false;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(onDone)onDone();
+      }
+      rollOnce(finish);
+      setTimeout(finish,1700);
+    };
+    canvas.addEventListener("click",function(){
+      var btn=document.getElementById("ob");
+      if(btn)btn.click();
+    });
+  }
+  if(document.readyState==="complete"){initOmikujiDie();}else{window.addEventListener("load",initOmikujiDie);}
 })();
 </script>
 
