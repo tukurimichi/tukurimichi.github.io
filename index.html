@@ -630,8 +630,10 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       var startY=anchorY-dropHeight;
       var startScale=0.55;
       var baseRotX=die.rotation.x,baseRotY=die.rotation.y,baseRotZ=die.rotation.z;
-      var tumbleX=(Math.random()*2-1)*(Math.PI*0.8+Math.random()*Math.PI*0.6);
-      var tumbleY=(Math.random()*2-1)*(Math.PI*0.6+Math.random()*Math.PI*0.5);
+      var spinDir=Math.random()<0.5?-1:1;
+      var tumbleX=spinDir*(Math.PI*4+Math.random()*Math.PI*3);
+      var tumbleY=spinDir*(Math.PI*3+Math.random()*Math.PI*2.5)*(Math.random()<0.5?-1:1);
+      var tumbleZ=(Math.random()*2-1)*(Math.PI*2+Math.random()*Math.PI*2);
       var duration=1500;
       var t0=null;
       die.visible=true;
@@ -640,14 +642,15 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
         var p=Math.min((t-t0)/duration,1);
         var eBounce=easeOutBounce(p);
         var eSettle=easeOutCubic(Math.min(p*1.4,1));
+        var eRot=easeOutCubic(p);
         var curX=startX+(anchorX-startX)*eSettle;
         var curY=startY+(anchorY-startY)*eBounce;
         var curScale=startScale+(1-startScale)*eSettle;
         die.position.set(curX,curY,0);
         die.scale.setScalar(curScale);
-        die.rotation.x=baseRotX+tumbleX*eSettle;
-        die.rotation.y=baseRotY+tumbleY*eSettle;
-        die.rotation.z=baseRotZ;
+        die.rotation.x=baseRotX+tumbleX*eRot;
+        die.rotation.y=baseRotY+tumbleY*eRot;
+        die.rotation.z=baseRotZ+tumbleZ*eRot;
         renderer.render(scene,camera);
         if(p<1){requestAnimationFrame(frame);}
         else{
