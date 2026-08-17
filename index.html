@@ -725,54 +725,68 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
     scene.add(rim);
 
     var R=38;
+    var MASCOT_ORANGE=0xFD9729,MASCOT_CREAM=0xF3EBD6,MASCOT_DARK=0x5D2A2B;
     var edgeMat=new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:0.28});
     function withEdges(obj,geo){
       obj.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat));
       return obj;
     }
-
-    var rockMat=new THREE.MeshStandardMaterial({color:0x9C9894,roughness:0.85,metalness:0.05,flatShading:true});
-    var rockGeo=new THREE.IcosahedronGeometry(R,1);
-    var rockPos=rockGeo.attributes.position;
-    for(var vi=0;vi<rockPos.count;vi++){
-      var vx=rockPos.getX(vi),vy=rockPos.getY(vi),vz=rockPos.getZ(vi);
-      var jitter=1+(Math.random()*0.24-0.09);
-      rockPos.setXYZ(vi,vx*jitter,vy*jitter,vz*jitter);
+    var orangeMat=new THREE.MeshStandardMaterial({color:MASCOT_ORANGE,roughness:0.45,metalness:0.1,flatShading:true});
+    var creamMat=new THREE.MeshStandardMaterial({color:MASCOT_CREAM,roughness:0.5,metalness:0.05,flatShading:true});
+    var rivetMat=new THREE.MeshStandardMaterial({color:MASCOT_DARK,roughness:0.4,metalness:0.2,flatShading:true});
+    function rivetAt(x,y,z){
+      var m=new THREE.Mesh(new THREE.SphereGeometry(R*0.13,10,8),rivetMat);
+      m.position.set(x,y,z);
+      return m;
     }
-    rockGeo.computeVertexNormals();
-    var rockMesh=withEdges(new THREE.Mesh(rockGeo,rockMat),rockGeo);
 
-    var paperMat=new THREE.MeshStandardMaterial({color:0xF2F0EC,roughness:0.55,metalness:0.05,flatShading:true});
-    var paperGeo=new THREE.BoxGeometry(R*1.85,R*1.85,R*0.22);
-    var paperMesh=withEdges(new THREE.Mesh(paperGeo,paperMat),paperGeo);
-    var lineMat=new THREE.MeshBasicMaterial({color:0xC9C5BE});
-    for(var li=0;li<3;li++){
-      var lineGeo=new THREE.BoxGeometry(R*1.2,R*0.09,R*0.02);
-      var lineMesh=new THREE.Mesh(lineGeo,lineMat);
-      lineMesh.position.set(0,R*0.45-li*R*0.4,R*0.12);
-      paperMesh.add(lineMesh);
+    var rockGroup=new THREE.Group();
+    var fistGeo=new THREE.IcosahedronGeometry(R*0.95,1);
+    var fistPos=fistGeo.attributes.position;
+    for(var vi=0;vi<fistPos.count;vi++){
+      var vx=fistPos.getX(vi),vy=fistPos.getY(vi),vz=fistPos.getZ(vi);
+      var jitter=1+(Math.random()*0.16-0.05);
+      fistPos.setXYZ(vi,vx*jitter,vy*jitter,vz*jitter);
     }
+    fistGeo.computeVertexNormals();
+    var fistMesh=withEdges(new THREE.Mesh(fistGeo,orangeMat),fistGeo);
+    fistMesh.position.set(0,R*0.1,0);
+    var cuffGeo=new THREE.TorusGeometry(R*0.66,R*0.16,8,16);
+    var cuff=withEdges(new THREE.Mesh(cuffGeo,creamMat),cuffGeo);
+    cuff.position.set(0,-R*0.62,0);
+    cuff.rotation.x=Math.PI/2;
+    rockGroup.add(fistMesh,cuff,rivetAt(-R*0.3,R*0.25,R*0.75),rivetAt(R*0.32,R*0.15,R*0.7));
+
+    var paperGroup=new THREE.Group();
+    var wristGeo1=new THREE.SphereGeometry(R*0.4,12,10);
+    var wrist1=new THREE.Mesh(wristGeo1,creamMat);
+    wrist1.position.set(0,-R*0.68,0);
+    paperGroup.add(wrist1);
+    var digitGeo=new THREE.BoxGeometry(R*0.36,R*1.5,R*0.24);
+    var digitAngles=[-0.62,-0.2,0.2,0.62];
+    for(var di=0;di<digitAngles.length;di++){
+      var digit=withEdges(new THREE.Mesh(digitGeo,orangeMat),digitGeo);
+      var ang=digitAngles[di];
+      digit.position.set(Math.sin(ang)*R*0.5,R*0.05+Math.cos(ang)*R*0.15,0);
+      digit.rotation.z=ang*0.9;
+      paperGroup.add(digit);
+    }
+    paperGroup.add(rivetAt(0,-R*0.4,R*0.3));
 
     var scissorsGroup=new THREE.Group();
-    var bladeMat=new THREE.MeshStandardMaterial({color:0xD9D6D0,roughness:0.3,metalness:0.55,flatShading:true});
-    var bladeGeo=new THREE.ConeGeometry(R*0.24,R*1.75,4);
-    var bladeL=withEdges(new THREE.Mesh(bladeGeo,bladeMat),bladeGeo);
-    bladeL.position.set(-R*0.28,R*0.5,0);
-    bladeL.rotation.z=0.5;
-    var bladeR=withEdges(new THREE.Mesh(bladeGeo,bladeMat),bladeGeo);
-    bladeR.position.set(R*0.28,R*0.5,0);
-    bladeR.rotation.z=-0.5;
-    var handleGeo=new THREE.TorusGeometry(R*0.26,R*0.09,8,14);
-    var handleMat=new THREE.MeshStandardMaterial({color:0xD9D6D0,roughness:0.3,metalness:0.55,flatShading:true});
-    var handleL=new THREE.Mesh(handleGeo,handleMat);
-    handleL.position.set(-R*0.24,-R*0.55,0);
-    var handleR=new THREE.Mesh(handleGeo,handleMat);
-    handleR.position.set(R*0.24,-R*0.55,0);
-    var rivetGeo=new THREE.SphereGeometry(R*0.15,10,8);
-    var rivetMat=new THREE.MeshStandardMaterial({color:0xE31E24,roughness:0.4,metalness:0.2,flatShading:true});
-    var rivet=new THREE.Mesh(rivetGeo,rivetMat);
-    rivet.position.set(0,-R*0.05,0);
-    scissorsGroup.add(bladeL,bladeR,handleL,handleR,rivet);
+    var wristGeo2=new THREE.SphereGeometry(R*0.38,12,10);
+    var wrist2=new THREE.Mesh(wristGeo2,creamMat);
+    wrist2.position.set(0,-R*0.6,0);
+    var clawGeo=new THREE.ConeGeometry(R*0.24,R*1.7,4);
+    var clawL=withEdges(new THREE.Mesh(clawGeo,orangeMat),clawGeo);
+    clawL.position.set(-R*0.3,R*0.45,0);
+    clawL.rotation.z=0.48;
+    var clawR=withEdges(new THREE.Mesh(clawGeo,orangeMat),clawGeo);
+    clawR.position.set(R*0.3,R*0.45,0);
+    clawR.rotation.z=-0.48;
+    scissorsGroup.add(wrist2,clawL,clawR,rivetAt(0,-R*0.15,R*0.3));
+
+    var rockMesh=rockGroup,paperMesh=paperGroup;
 
     var shapes={g:rockMesh,c:scissorsGroup,p:paperMesh};
     rockMesh.visible=false;paperMesh.visible=false;scissorsGroup.visible=false;
