@@ -80,8 +80,9 @@ a{color:inherit;}
 .omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
 #omikujiDieAnchor{width:140px;height:140px;}
 #omikujiFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
-.jankenHandWrap{display:flex;justify-content:center;align-items:center;margin:4px 0 10px;height:150px;perspective:600px;}
-#jankenHandImg{max-width:150px;max-height:150px;width:auto;height:auto;object-fit:contain;display:none;transition:transform .09s linear;backface-visibility:hidden;}
+.jankenHandWrap{display:flex;justify-content:center;align-items:center;margin:4px 0 10px;}
+#jankenHandAnchor{width:150px;height:150px;}
+#jankenFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
 .ghostBtn{display:inline-block;background:transparent;border:1px solid var(--red);color:#fff;border-radius:6px;padding:10px 20px;font-size:.85em;font-weight:700;margin-top:10px;margin-right:8px;margin-bottom:0;cursor:pointer;text-decoration:none;}
 .ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
 .ghostBtnSolid:hover{background:var(--red-dark);}
@@ -178,7 +179,7 @@ a{color:inherit;}
 <p id="sh"></p>
 <hr class="hr">
 <p id="jankenText"></p>
-<div class="jankenHandWrap"><img id="jankenHandImg" src="" alt="janken hand"></div>
+<div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
 <button id="jg" class="jhand"></button><button id="jc" class="jhand"></button><button id="jp" class="jhand"></button>
 <p id="jresult"></p>
 <p id="jstats"></p>
@@ -199,6 +200,7 @@ a{color:inherit;}
 </div>
 
 <canvas id="omikujiFxCanvas"></canvas>
+<canvas id="jankenFxCanvas"></canvas>
 
 <script>
 var LANG={
@@ -700,44 +702,146 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
 
 (function(){
   var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var JANKEN_IMG={g:"janken_g.jpg",c:"janken_c.jpg",p:"janken_p.jpg"};
-  var order=["g","c","p"];
-  var rolling=false;
+  function initJankenCard(){
+    if(typeof THREE==="undefined")return;
+    var canvas=document.getElementById("jankenFxCanvas");
+    var anchor=document.getElementById("jankenHandAnchor");
+    if(!canvas||!anchor)return;
 
-  window.__jankenReveal=function(finalHand,onDone){
-    var img=document.getElementById("jankenHandImg");
-    if(!img){if(onDone)onDone();return;}
-    if(rolling){return;}
-    rolling=true;
-    img.style.display="block";
-    if(reduceMotion){
-      img.src=JANKEN_IMG[finalHand];
-      img.style.transform="rotateY(0deg)";
-      rolling=false;if(onDone)onDone();return;
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+    if("outputEncoding" in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
+
+    var scene=new THREE.Scene();
+    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
+    camera.position.z=1000;
+
+    var order=["g","c","p"];
+    var IMG_URLS={g:"janken_g_sq.jpg",c:"janken_c_sq.jpg",p:"janken_p_sq.jpg"};
+    var loader=new THREE.TextureLoader();
+    var textures={};
+    order.forEach(function(k){
+      var t=loader.load(IMG_URLS[k]);
+      if("encoding" in t)t.encoding=THREE.sRGBEncoding;
+      t.flipY=false;
+      textures[k]=t;
+    });
+
+    var CARD=150;
+    var geo=new THREE.BoxGeometry(CARD,CARD,CARD*0.12);
+    var sideMat=new THREE.MeshBasicMaterial({color:0xF3EBD6});
+    var frontMat=new THREE.MeshBasicMaterial({map:textures.g});
+    var backMat=new THREE.MeshBasicMaterial({color:0xFD9729});
+    var card=new THREE.Mesh(geo,[sideMat,sideMat,sideMat,sideMat,backMat,frontMat]);
+    card.visible=false;
+    scene.add(card);
+
+    var anchorX=0,anchorY=0,rolling=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:r.top+r.height/2};
     }
-    var flips=7,count=0;
-    function flipOut(){
-      img.style.transform="rotateY(90deg)";
-      setTimeout(flipIn,90);
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.bottom=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
     }
-    function flipIn(){
-      count++;
-      if(count<flips){
-        img.src=JANKEN_IMG[order[count%3]];
-      }else{
-        img.src=JANKEN_IMG[finalHand];
+    window.addEventListener("resize",onResize);
+
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
+    }
+
+    function playReveal(finalHand,onDone){
+      var dropHeight=260+Math.random()*60;
+      var startX=anchorX+(Math.random()*2-1)*16;
+      var startY=anchorY-dropHeight;
+      var startScale=0.5;
+      var totalSpin=Math.PI*(6+Math.random()*3)*(Math.random()<0.5?-1:1);
+      var duration=1500;
+      var t0=null,lastHalf=0,stopped=false;
+      frontMat.map=textures[order[0]];
+      frontMat.needsUpdate=true;
+      card.visible=true;
+      function forceSettle(){
+        frontMat.map=textures[finalHand];
+        frontMat.needsUpdate=true;
+        card.position.set(anchorX,anchorY,0);
+        card.scale.setScalar(1);
+        card.rotation.set(0,0,0);
+        renderer.render(scene,camera);
       }
-      img.style.transform="rotateY(0deg)";
-      if(count<flips){
-        setTimeout(flipOut,90);
-      }else{
+      function frame(t){
+        if(stopped)return;
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(Math.min(p*1.4,1));
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
+        var curRotY=totalSpin*eSettle;
+        card.position.set(curX,curY,0);
+        card.scale.setScalar(curScale);
+        card.rotation.y=curRotY;
+        card.rotation.x=0.06*(1-eSettle);
+        var halfIdx=Math.floor(Math.abs(curRotY)/Math.PI);
+        if(halfIdx!==lastHalf){
+          lastHalf=halfIdx;
+          if(p<0.97){
+            frontMat.map=textures[order[halfIdx%3]];
+            frontMat.needsUpdate=true;
+          }
+        }
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else{
+          stopped=true;
+          forceSettle();
+          if(onDone)onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+      return{stop:function(){stopped=true;forceSettle();}};
+    }
+
+    window.__jankenReveal=function(finalHand,onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion){
+        frontMat.map=textures[finalHand];
+        frontMat.needsUpdate=true;
+        card.visible=true;
+        card.position.set(anchorX,anchorY,0);
+        card.scale.setScalar(1);
+        card.rotation.set(0,0,0);
+        renderer.render(scene,camera);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false,handle=null;
+      function finish(){
+        if(done)return;
+        done=true;
         rolling=false;
-        setTimeout(function(){if(onDone)onDone();},150);
+        if(handle)handle.stop();
+        if(onDone)onDone();
       }
-    }
-    img.src=JANKEN_IMG[order[0]];
-    setTimeout(flipOut,80);
-  };
+      handle=playReveal(finalHand,finish);
+      setTimeout(finish,2300);
+    };
+  }
+  if(document.readyState==="complete"){initJankenCard();}else{window.addEventListener("load",initJankenCard);}
 })();
 </script>
 
