@@ -80,6 +80,9 @@ a{color:inherit;}
 .omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
 #omikujiDieAnchor{width:140px;height:140px;}
 #omikujiFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.jankenHandWrap{display:flex;justify-content:center;margin:4px 0 10px;}
+#jankenHandAnchor{width:120px;height:120px;}
+#jankenFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
 .ghostBtn{display:inline-block;background:transparent;border:1px solid var(--red);color:#fff;border-radius:6px;padding:10px 20px;font-size:.85em;font-weight:700;margin-top:10px;margin-right:8px;margin-bottom:0;cursor:pointer;text-decoration:none;}
 .ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
 .ghostBtnSolid:hover{background:var(--red-dark);}
@@ -176,6 +179,7 @@ a{color:inherit;}
 <p id="sh"></p>
 <hr class="hr">
 <p id="jankenText"></p>
+<div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
 <button id="jg" class="jhand"></button><button id="jc" class="jhand"></button><button id="jp" class="jhand"></button>
 <p id="jresult"></p>
 <p id="jstats"></p>
@@ -196,6 +200,7 @@ a{color:inherit;}
 </div>
 
 <canvas id="omikujiFxCanvas"></canvas>
+<canvas id="jankenFxCanvas"></canvas>
 
 <script>
 var LANG={
@@ -410,10 +415,8 @@ var ideaUrl="https://x.com/intent/post?text="+encodeURIComponent(L.ideaShareText
 window.open(ideaUrl,"_blank");
 if(window.gtag){gtag("event","idea_click");}
 };
-function jankenPlay(userHand){
+function jankenPlay(userHand,aiHand){
 var L=LANG[currentLang];
-var hands=["g","c","p"];
-var aiHand=hands[Math.floor(Math.random()*3)];
 var result;
 if(userHand===aiHand){result="draw";}
 else if((userHand==="g"&&aiHand==="c")||(userHand==="c"&&aiHand==="p")||(userHand==="p"&&aiHand==="g")){result="win";}
@@ -432,9 +435,18 @@ var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&u
 document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
 if(window.gtag){gtag("event","janken_play",{"result":result});}
 }
-document.getElementById("jg").onclick=function(){jankenPlay("g");};
-document.getElementById("jc").onclick=function(){jankenPlay("c");};
-document.getElementById("jp").onclick=function(){jankenPlay("p");};
+function startJanken(userHand){
+var hands=["g","c","p"];
+var aiHand=hands[Math.floor(Math.random()*3)];
+if(window.__jankenReveal){
+  window.__jankenReveal(aiHand,function(){jankenPlay(userHand,aiHand);});
+}else{
+  jankenPlay(userHand,aiHand);
+}
+}
+document.getElementById("jg").onclick=function(){startJanken("g");};
+document.getElementById("jc").onclick=function(){startJanken("c");};
+document.getElementById("jp").onclick=function(){startJanken("p");};
 document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");};
 document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
 document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
@@ -686,6 +698,155 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
     };
   }
   if(document.readyState==="complete"){initOmikujiDie();}else{window.addEventListener("load",initOmikujiDie);}
+})();
+
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initJankenHand(){
+    if(typeof THREE==="undefined")return;
+    var canvas=document.getElementById("jankenFxCanvas");
+    var anchor=document.getElementById("jankenHandAnchor");
+    if(!canvas||!anchor)return;
+
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+
+    var scene=new THREE.Scene();
+    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
+    camera.position.z=1000;
+    scene.add(new THREE.AmbientLight(0xffffff,0.6));
+    var key=new THREE.DirectionalLight(0xffffff,0.9);
+    key.position.set(200,-400,500);
+    scene.add(key);
+    var rim=new THREE.DirectionalLight(0xff8a80,0.5);
+    rim.position.set(-250,300,-200);
+    scene.add(rim);
+
+    var R=38;
+    var mat=new THREE.MeshStandardMaterial({color:0xE31E24,roughness:0.35,metalness:0.15,flatShading:true});
+    var edgeMat=new THREE.LineBasicMaterial({color:0xF2F0EC,transparent:true,opacity:0.55});
+    function withEdges(obj,geo){
+      obj.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat));
+      return obj;
+    }
+
+    var rockGeo=new THREE.IcosahedronGeometry(R,0);
+    var rockMesh=withEdges(new THREE.Mesh(rockGeo,mat),rockGeo);
+
+    var paperGeo=new THREE.BoxGeometry(R*1.9,R*1.9,R*0.28);
+    var paperMesh=withEdges(new THREE.Mesh(paperGeo,mat),paperGeo);
+
+    var scissorsGroup=new THREE.Group();
+    var bladeGeo=new THREE.BoxGeometry(R*0.34,R*1.7,R*0.28);
+    var bladeL=withEdges(new THREE.Mesh(bladeGeo,mat),bladeGeo);
+    bladeL.position.set(-R*0.32,R*0.55,0);
+    bladeL.rotation.z=0.32;
+    var bladeR=withEdges(new THREE.Mesh(bladeGeo,mat),bladeGeo);
+    bladeR.position.set(R*0.32,R*0.55,0);
+    bladeR.rotation.z=-0.32;
+    var hubGeo=new THREE.SphereGeometry(R*0.34,12,10);
+    var hub=withEdges(new THREE.Mesh(hubGeo,mat),hubGeo);
+    hub.position.set(0,-R*0.22,0);
+    scissorsGroup.add(bladeL,bladeR,hub);
+
+    var shapes={g:rockMesh,c:scissorsGroup,p:paperMesh};
+    rockMesh.visible=false;paperMesh.visible=false;scissorsGroup.visible=false;
+    scene.add(rockMesh,paperMesh,scissorsGroup);
+
+    var anchorX=0,anchorY=0,rolling=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:r.top+r.height/2};
+    }
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.bottom=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("resize",onResize);
+
+    function showOnly(k){
+      rockMesh.visible=(k==="g");
+      paperMesh.visible=(k==="p");
+      scissorsGroup.visible=(k==="c");
+    }
+
+    function playReveal(finalHand,onDone){
+      var order=["g","c","p"];
+      var cycleDuration=760;
+      var cycleStep=110;
+      var t0=null,lastIdx=-1;
+      function cycleFrame(t){
+        if(t0===null)t0=t;
+        var elapsed=t-t0;
+        if(elapsed<cycleDuration){
+          var idx=Math.floor(elapsed/cycleStep)%3;
+          if(idx!==lastIdx){lastIdx=idx;showOnly(order[idx]);}
+          var wob=Math.sin(elapsed*0.02)*0.15;
+          var m=shapes[order[idx]];
+          m.position.set(anchorX,anchorY,0);
+          m.scale.setScalar(1);
+          m.rotation.set(0,0,wob);
+          renderer.render(scene,camera);
+          requestAnimationFrame(cycleFrame);
+        }else{
+          settle(t);
+        }
+      }
+      var s0=null;
+      function settle(){
+        showOnly(finalHand);
+        var mesh=shapes[finalHand];
+        var dur=420;
+        function frame(t){
+          if(s0===null)s0=t;
+          var p=Math.min((t-s0)/dur,1);
+          mesh.position.set(anchorX,anchorY,0);
+          mesh.scale.setScalar(0.82+0.33*Math.min(p*2,1));
+          mesh.rotation.set(0,0,(1-p)*0.55);
+          renderer.render(scene,camera);
+          if(p<1){requestAnimationFrame(frame);}
+          else{
+            mesh.scale.setScalar(1);
+            mesh.rotation.set(0,0,0);
+            renderer.render(scene,camera);
+            if(onDone)onDone();
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(cycleFrame);
+    }
+
+    window.__jankenReveal=function(finalHand,onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion){
+        showOnly(finalHand);
+        var mesh=shapes[finalHand];
+        mesh.position.set(anchorX,anchorY,0);
+        mesh.scale.setScalar(1);
+        renderer.render(scene,camera);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(onDone)onDone();
+      }
+      playReveal(finalHand,finish);
+      setTimeout(finish,2200);
+    };
+  }
+  if(document.readyState==="complete"){initJankenHand();}else{window.addEventListener("load",initJankenHand);}
 })();
 </script>
 
