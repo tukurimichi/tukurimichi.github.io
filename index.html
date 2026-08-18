@@ -635,6 +635,14 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       renderer.render(scene,camera);
     }
     window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!die.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      die.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
 
     function easeOutCubic(x){return 1-Math.pow(1-x,3);}
     function easeOutBounce(x){
@@ -779,6 +787,14 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       renderer.render(scene,camera);
     }
     window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!rig.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rig.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
 
     function easeOutCubic(x){return 1-Math.pow(1-x,3);}
     function easeOutBounce(x){
