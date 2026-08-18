@@ -3,49 +3,186 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Cute Robot Viewer</title>
+  <title>3D Cute Robot Controller & Multi-Motion</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: radial-gradient(circle at center, #2b394a 0%, #0d131a 100%);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
     }
-    #ui {
+    #motion-ui {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.6);
+      top: 15px;
+      left: 15px;
+      display: grid;
+      grid-template-columns: repeat(2, 110px);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(8px);
-      padding: 14px 20px;
-      border-radius: 10px;
-      font-size: 11px;
-      line-height: 1.6;
+      padding: 12px;
+      border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      z-index: 10;
     }
-    #ui b {
-      color: #ff8c32;
+    .motion-btn {
+      background: #2c3545;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 0;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .motion-btn:hover { background: #3e4a5e; }
+    .motion-btn.active {
+      background: #ff6b22;
+      border-color: #ff8c32;
+      box-shadow: 0 0 10px rgba(255, 107, 34, 0.5);
+    }
+
+    #info-text {
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      color: #ccc;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+      line-height: 1.5;
+    }
+
+    #pad-container {
+      position: absolute;
+      bottom: 25px;
+      right: 25px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      z-index: 10;
+    }
+    .pad-box {
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .turn-pad {
+      display: flex;
+      gap: 8px;
+    }
+    .d-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 44px);
+      grid-template-rows: repeat(3, 44px);
+      gap: 6px;
+    }
+    .ctrl-btn {
+      background: #2c3545;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.1s, transform 0.1s;
+      outline: none;
+    }
+    .ctrl-btn:active, .ctrl-btn.pressed {
+      background: #ff6b22;
+      transform: scale(0.92);
+    }
+    #btn-fwd { grid-column: 2; grid-row: 1; }
+    #btn-left { grid-column: 1; grid-row: 2; }
+    #btn-back { grid-column: 2; grid-row: 3; }
+    #btn-right { grid-column: 3; grid-row: 2; }
+
+    @media (max-width: 480px) {
+      #motion-ui {
+        top: 10px;
+        left: 10px;
+        grid-template-columns: repeat(2, 82px);
+        gap: 6px;
+        padding: 8px;
+      }
+      .motion-btn {
+        font-size: 10px;
+        padding: 6px 0;
+      }
+      #info-text {
+        display: none;
+      }
+      #pad-container {
+        bottom: 12px;
+        right: 12px;
+        gap: 10px;
+      }
+      .pad-box {
+        padding: 8px;
+        border-radius: 12px;
+      }
+      .d-pad {
+        grid-template-columns: repeat(3, 38px);
+        grid-template-rows: repeat(3, 38px);
+        gap: 5px;
+      }
+      .ctrl-btn {
+        font-size: 13px;
+      }
+      .turn-pad .ctrl-btn {
+        width: 38px !important;
+        height: 38px !important;
+      }
     }
   </style>
-  <!-- Three.js & OrbitControls CDN -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-  <div id="ui">
-    🖱️ <b>左ドラッグ</b>: 360度回転<br>
-    🔍 <b>ホイール</b>: ズームイン / アウト<br>
-    🖐️ <b>右ドラッグ</b>: 平行移動 (パン)
+  <div id="motion-ui">
+    <button id="btn-idle" class="motion-btn active">🟢 待機</button>
+    <button id="btn-walk" class="motion-btn">🚶 歩く</button>
+    <button id="btn-run" class="motion-btn">🏃 走る</button>
+    <button id="btn-jump" class="motion-btn">🚀 ジャンプ</button>
+    <button id="btn-dance" class="motion-btn">🕺 ダンス</button>
+    <button id="btn-wave" class="motion-btn">👋 挨拶</button>
+    <button id="btn-sad" class="motion-btn">😞 落ち込む</button>
+    <button id="btn-fall" class="motion-btn">💥 倒れる</button>
+  </div>
+
+  <div id="info-text">
+    🏃 <b>走る選択時</b>: 移動速度が倍速になり、スピーディな走行フォームで移動します<br>
+    ⌨️ <b>操作</b>: 矢印キー または W/A/S/D（Q / E で水平旋回）
+  </div>
+
+  <div id="pad-container">
+    <div class="pad-box turn-pad">
+      <button id="btn-rot-left" class="ctrl-btn" style="width: 44px; height: 44px;" title="左旋回">↺</button>
+      <button id="btn-rot-right" class="ctrl-btn" style="width: 44px; height: 44px;" title="右旋回">↻</button>
+    </div>
+    <div class="pad-box d-pad">
+      <button id="btn-fwd" class="ctrl-btn">▲</button>
+      <button id="btn-left" class="ctrl-btn">◀</button>
+      <button id="btn-back" class="ctrl-btn">▼</button>
+      <button id="btn-right" class="ctrl-btn">▶</button>
+    </div>
   </div>
 
   <script>
     // --- シーン・カメラ・レンダラー ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 2.5, 6.5);
+    camera.position.set(0, 4, 8);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -55,93 +192,81 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild(renderer.domElement);
 
-    // --- OrbitControls (3D回転・操作) ---
+    // iframe埋め込み時にキー操作が効くよう、キャンバス操作でフォーカスを取得する
+    renderer.domElement.tabIndex = 0;
+    renderer.domElement.addEventListener('pointerdown', () => { window.focus(); });
+    renderer.domElement.addEventListener('touchstart', () => { window.focus(); }, { passive: true });
+
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.target.set(0, 1.2, 0);
 
     // --- ライティング ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-
-    const mainLight = new THREE.DirectionalLight(0xfff5ea, 1.5);
-    mainLight.position.set(5, 8, 5);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const mainLight = new THREE.DirectionalLight(0xfff5ea, 1.6);
+    mainLight.position.set(10, 15, 10);
     mainLight.castShadow = true;
     mainLight.shadow.mapSize.width = 2048;
     mainLight.shadow.mapSize.height = 2048;
-    mainLight.shadow.bias = -0.0001;
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0x70a1ff, 0.8);
-    fillLight.position.set(-5, 4, -4);
+    const fillLight = new THREE.DirectionalLight(0x70a1ff, 0.7);
+    fillLight.position.set(-10, 8, -10);
     scene.add(fillLight);
 
+    // --- 床・広域グリッド ---
+    const floorGeo = new THREE.PlaneGeometry(80, 80);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x151b24, roughness: 0.8, metalness: 0.2 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(80, 80, 0xff8c32, 0x2c3545);
+    grid.position.y = 0.005;
+    scene.add(grid);
+
     // --- マテリアル定義 ---
-    const orangeMat = new THREE.MeshStandardMaterial({
-      color: 0xff6b22,
-      roughness: 0.25,
-      metalness: 0.15
-    });
+    const orangeMat = new THREE.MeshStandardMaterial({ color: 0xff6b22, roughness: 0.25, metalness: 0.15 });
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf0f2f5, roughness: 0.2, metalness: 0.05 });
+    const jointMat = new THREE.MeshStandardMaterial({ color: 0x4a4f57, roughness: 0.4, metalness: 0.8 });
+    const screenMat = new THREE.MeshStandardMaterial({ color: 0x15181e, roughness: 0.1, metalness: 0.3 });
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffb703 });
 
-    const whiteMat = new THREE.MeshStandardMaterial({
-      color: 0xf0f2f5,
-      roughness: 0.2,
-      metalness: 0.05
-    });
+    // --- ロボット構造 ---
+    const robotRoot = new THREE.Group();
+    scene.add(robotRoot);
 
-    const jointMat = new THREE.MeshStandardMaterial({
-      color: 0x4a4f57,
-      roughness: 0.4,
-      metalness: 0.8
-    });
+    const robotBodyGroup = new THREE.Group();
+    robotRoot.add(robotBodyGroup);
 
-    const screenMat = new THREE.MeshStandardMaterial({
-      color: 0x15181e,
-      roughness: 0.1,
-      metalness: 0.3
-    });
+    // 胴体
+    const chest = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.85, 0.8), whiteMat);
+    chest.position.set(0, 1.35, 0);
+    robotBodyGroup.add(chest);
 
-    const eyeMat = new THREE.MeshBasicMaterial({
-      color: 0xffb703
-    });
+    const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.15), orangeMat);
+    chestPlate.position.set(0, 1.45, 0.4);
+    robotBodyGroup.add(chestPlate);
 
-    // --- ロボット全体のグループ ---
-    const robot = new THREE.Group();
-    scene.add(robot);
+    const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.35, 0.3, 32), jointMat);
+    pelvis.position.set(0, 0.82, 0);
+    robotBodyGroup.add(pelvis);
 
-    // 1. 台座（Display Stand）
-    const baseGeo = new THREE.CylinderGeometry(2.2, 2.4, 0.2, 64);
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e272e, roughness: 0.5, metalness: 0.3 });
-    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-    baseMesh.position.y = -0.1;
-    baseMesh.receiveShadow = true;
-    scene.add(baseMesh);
-
-    // 2. 頭部（Head）
+    // 頭部
     const headGroup = new THREE.Group();
-    headGroup.position.set(0, 2.3, 0);
-    robot.add(headGroup);
+    headGroup.position.set(0, 2.4, 0);
+    robotBodyGroup.add(headGroup);
 
-    // オレンジの外装シェル
-    const headShellGeo = new THREE.BoxGeometry(1.6, 1.3, 1.2);
-    const headShell = new THREE.Mesh(headShellGeo, orangeMat);
-    headShell.castShadow = true;
-    headGroup.add(headShell);
-
-    // 白い前面ベゼル
-    const bezelGeo = new THREE.BoxGeometry(1.4, 1.1, 0.2);
-    const bezel = new THREE.Mesh(bezelGeo, whiteMat);
+    headGroup.add(new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.3, 1.2), orangeMat));
+    const bezel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.1, 0.2), whiteMat);
     bezel.position.set(0, 0, 0.55);
     headGroup.add(bezel);
 
-    // モニタースクリーン
-    const screenGeo = new THREE.PlaneGeometry(1.2, 0.9);
-    const screen = new THREE.Mesh(screenGeo, screenMat);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.9), screenMat);
     screen.position.set(0, 0, 0.66);
     headGroup.add(screen);
 
-    // 発光する両目
     const eyeGeo = new THREE.CircleGeometry(0.12, 32);
     const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
     leftEye.position.set(-0.32, 0.05, 0.67);
@@ -149,17 +274,13 @@
     rightEye.position.set(0.32, 0.05, 0.67);
     headGroup.add(leftEye, rightEye);
 
-    // アンテナ
-    const antPoleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.35, 16);
-    const antPole = new THREE.Mesh(antPoleGeo, jointMat);
+    const antPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.35, 16), jointMat);
     antPole.position.set(0.45, 0.8, 0);
     antPole.rotation.z = -0.2;
-    const antTipGeo = new THREE.SphereGeometry(0.07, 16, 16);
-    const antTip = new THREE.Mesh(antTipGeo, orangeMat);
+    const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16), orangeMat);
     antTip.position.set(0.52, 0.98, 0);
     headGroup.add(antPole, antTip);
 
-    // 耳パーツ（イヤーキャップ）
     const earGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.15, 32);
     const leftEar = new THREE.Mesh(earGeo, jointMat);
     leftEar.rotation.z = Math.PI / 2;
@@ -168,127 +289,391 @@
     rightEar.position.x = 0.85;
     headGroup.add(leftEar, rightEar);
 
-    // 首関節
-    const neckGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.25, 32);
-    const neck = new THREE.Mesh(neckGeo, jointMat);
-    neck.position.set(0, 1.6, 0);
-    robot.add(neck);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.25, 32), jointMat);
+    neck.position.set(0, 1.7, 0);
+    robotBodyGroup.add(neck);
 
-    // 3. 胴体（Body / Chest）
-    const chestGeo = new THREE.BoxGeometry(1.1, 0.85, 0.8);
-    const chest = new THREE.Mesh(chestGeo, whiteMat);
-    chest.position.set(0, 1.25, 0);
-    chest.castShadow = true;
-    robot.add(chest);
-
-    // 胸のオレンジ装飾プレート
-    const chestPlateGeo = new THREE.BoxGeometry(0.7, 0.5, 0.15);
-    const chestPlate = new THREE.Mesh(chestPlateGeo, orangeMat);
-    chestPlate.position.set(0, 1.35, 0.4);
-    robot.add(chestPlate);
-
-    // 腰（Pelvis）
-    const pelvisGeo = new THREE.CylinderGeometry(0.4, 0.35, 0.3, 32);
-    const pelvis = new THREE.Mesh(pelvisGeo, jointMat);
-    pelvis.position.set(0, 0.72, 0);
-    robot.add(pelvis);
-
-    // 4. 腕部（Arms）
-    function createArm(isLeft) {
+    // 腕部
+    function buildArm(isLeft) {
       const side = isLeft ? -1 : 1;
-      const arm = new THREE.Group();
+      const shPivot = new THREE.Group();
+      shPivot.position.set(side * 0.75, 1.55, 0);
+      shPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 32), whiteMat));
 
-      // 肩
-      const shoulderGeo = new THREE.SphereGeometry(0.22, 32, 32);
-      const shoulder = new THREE.Mesh(shoulderGeo, whiteMat);
-      shoulder.position.set(side * 0.75, 1.45, 0);
-      arm.add(shoulder);
+      const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.35, 16), jointMat);
+      upperArm.position.set(side * 0.05, -0.25, 0);
+      upperArm.rotation.z = side * -0.15;
+      shPivot.add(upperArm);
 
-      // 上腕
-      const upperArmGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.35, 16);
-      const upperArm = new THREE.Mesh(upperArmGeo, jointMat);
-      upperArm.position.set(side * 0.82, 1.2, 0);
-      upperArm.rotation.z = side * -0.2;
-      arm.add(upperArm);
+      const elPivot = new THREE.Group();
+      elPivot.position.set(side * 0.08, -0.45, 0);
+      shPivot.add(elPivot);
 
-      // 前腕ガントレット（オレンジ）
-      const foreArmGeo = new THREE.BoxGeometry(0.35, 0.45, 0.4);
-      const foreArm = new THREE.Mesh(foreArmGeo, orangeMat);
-      foreArm.position.set(side * 0.92, 0.85, 0.1);
-      foreArm.castShadow = true;
-      arm.add(foreArm);
+      const foreArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.45, 0.4), orangeMat);
+      foreArm.position.set(0, -0.2, 0.05);
+      elPivot.add(foreArm);
 
-      // 手（Hand）
-      const handGeo = new THREE.BoxGeometry(0.2, 0.25, 0.25);
-      const hand = new THREE.Mesh(handGeo, jointMat);
-      hand.position.set(side * 0.92, 0.55, 0.1);
-      arm.add(hand);
+      const hand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.25, 0.25), jointMat);
+      hand.position.set(0, -0.48, 0.05);
+      elPivot.add(hand);
 
-      return arm;
+      robotBodyGroup.add(shPivot);
+      return { shoulder: shPivot, elbow: elPivot };
     }
-    robot.add(createArm(true), createArm(false));
+    const leftArm = buildArm(true);
+    const rightArm = buildArm(false);
 
-    // 5. 脚部・足（Legs & Feet）
-    function createLeg(isLeft) {
+    // 脚部
+    function buildLeg(isLeft) {
       const side = isLeft ? -1 : 1;
-      const leg = new THREE.Group();
+      const hipPivot = new THREE.Group();
+      hipPivot.position.set(side * 0.4, 0.75, 0);
+      hipPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), jointMat));
 
-      // 股関節
-      const hipGeo = new THREE.SphereGeometry(0.15, 16, 16);
-      const hip = new THREE.Mesh(hipGeo, jointMat);
-      hip.position.set(side * 0.35, 0.6, 0);
-      leg.add(hip);
+      const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.4, 0.45), orangeMat);
+      thigh.position.set(0, -0.22, 0);
+      hipPivot.add(thigh);
 
-      // 大腿部アーマー（オレンジ）
-      const thighGeo = new THREE.BoxGeometry(0.42, 0.5, 0.45);
-      const thigh = new THREE.Mesh(thighGeo, orangeMat);
-      thigh.position.set(side * 0.4, 0.35, 0);
-      thigh.castShadow = true;
-      leg.add(thigh);
+      const knPivot = new THREE.Group();
+      knPivot.position.set(0, -0.42, 0);
+      hipPivot.add(knPivot);
 
-      // 足・ブーツ（Boots）
-      const footGeo = new THREE.BoxGeometry(0.55, 0.25, 0.8);
-      const foot = new THREE.Mesh(footGeo, orangeMat);
-      foot.position.set(side * 0.42, 0.12, 0.1);
-      foot.castShadow = true;
-      leg.add(foot);
+      const shin = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.42), whiteMat);
+      shin.position.set(0, -0.15, 0);
+      knPivot.add(shin);
 
-      // 靴底（ソール）
-      const soleGeo = new THREE.BoxGeometry(0.57, 0.08, 0.82);
-      const sole = new THREE.Mesh(soleGeo, jointMat);
-      sole.position.set(side * 0.42, 0.04, 0.1);
-      leg.add(sole);
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.2, 0.75), orangeMat);
+      foot.position.set(0, -0.32, 0.1);
+      knPivot.add(foot);
 
-      return leg;
+      const sole = new THREE.Mesh(new THREE.BoxGeometry(0.57, 0.06, 0.77), jointMat);
+      sole.position.set(0, -0.42, 0.1);
+      knPivot.add(sole);
+
+      robotBodyGroup.add(hipPivot);
+      return { hip: hipPivot, knee: knPivot };
     }
-    robot.add(createLeg(true), createLeg(false));
+    const leftLeg = buildLeg(true);
+    const rightLeg = buildLeg(false);
 
-    // 全オブジェクトに影の設定を一括適用
-    robot.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+    robotRoot.traverse((c) => {
+      if (c.isMesh) {
+        c.castShadow = true;
+        c.receiveShadow = true;
       }
     });
 
+    // --- コントローラー入力管理 ---
+    const inputState = {
+      forward: false,
+      backward: false,
+      left: false,
+      right: false,
+      rotLeft: false,
+      rotRight: false
+    };
+
+    function bindButton(id, key) {
+      const btn = document.getElementById(id);
+      const start = (e) => { e.preventDefault(); inputState[key] = true; btn.classList.add('pressed'); };
+      const end = (e) => { e.preventDefault(); inputState[key] = false; btn.classList.remove('pressed'); };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', end);
+      btn.addEventListener('pointerleave', end);
+    }
+    bindButton('btn-fwd', 'forward');
+    bindButton('btn-back', 'backward');
+    bindButton('btn-left', 'left');
+    bindButton('btn-right', 'right');
+    bindButton('btn-rot-left', 'rotLeft');
+    bindButton('btn-rot-right', 'rotRight');
+
+    const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar'];
+
+    window.addEventListener('keydown', (e) => {
+      // iframe埋め込み時に矢印キー・スペースで親ページがスクロールしないようにする
+      if (navKeys.includes(e.key)) e.preventDefault();
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') inputState.forward = true;
+      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') inputState.backward = true;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') inputState.left = true;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') inputState.right = true;
+      if (e.key === 'q' || e.key === 'Q') inputState.rotLeft = true;
+      if (e.key === 'e' || e.key === 'E') inputState.rotRight = true;
+    });
+    window.addEventListener('keyup', (e) => {
+      if (navKeys.includes(e.key)) e.preventDefault();
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') inputState.forward = false;
+      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') inputState.backward = false;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') inputState.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') inputState.right = false;
+      if (e.key === 'q' || e.key === 'Q') inputState.rotLeft = false;
+      if (e.key === 'e' || e.key === 'E') inputState.rotRight = false;
+    });
+
+    // --- モーション管理 ---
+    let currentMotion = 'idle';
+    let motionTime = 0;
+    let moveAnimTime = 0;
+
+    const motionButtons = document.querySelectorAll('.motion-btn');
+    motionButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        motionButtons.forEach((b) => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentMotion = e.target.id.replace('btn-', '');
+        motionTime = 0;
+        resetPose();
+      });
+    });
+
+    function resetPose() {
+      robotBodyGroup.position.set(0, 0, 0);
+      robotBodyGroup.rotation.set(0, 0, 0);
+      headGroup.rotation.set(0, 0, 0);
+
+      leftArm.shoulder.rotation.set(0, 0, 0);
+      rightArm.shoulder.rotation.set(0, 0, 0);
+      leftArm.elbow.rotation.set(0, 0, 0);
+      rightArm.elbow.rotation.set(0, 0, 0);
+
+      leftLeg.hip.rotation.set(0, 0, 0);
+      rightLeg.hip.rotation.set(0, 0, 0);
+      leftLeg.knee.rotation.set(0, 0, 0);
+      rightLeg.knee.rotation.set(0, 0, 0);
+    }
+
     // --- アニメーションループ ---
     const clock = new THREE.Clock();
+    const rotSpeed = 2.4;
 
     function animate() {
       requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      const dt = clock.getDelta();
+      motionTime += dt;
 
-      // 自然な呼吸のような待機モーション（Idle Animation）
-      robot.position.y = Math.sin(t * 2.0) * 0.04;
-      headGroup.rotation.y = Math.sin(t * 1.0) * 0.1;
-      headGroup.rotation.x = Math.sin(t * 1.5) * 0.05;
+      const isMoving = inputState.forward || inputState.backward || inputState.left || inputState.right;
+      const isRunningMode = currentMotion === 'run';
+
+      // 走るモード選択時は移動スピードを倍増 (通常: 3.5 / 走る: 7.2)
+      const currentMoveSpeed = isRunningMode ? 7.2 : 3.5;
+
+      // 1. 水平回転（旋回）
+      if (inputState.rotLeft) robotRoot.rotation.y += rotSpeed * dt;
+      if (inputState.rotRight) robotRoot.rotation.y -= rotSpeed * dt;
+
+      // 2. ロボット正面基準の移動
+      if (isMoving) {
+        const forwardVector = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), robotRoot.rotation.y);
+        const rightVector = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robotRoot.rotation.y);
+
+        const moveDirection = new THREE.Vector3(0, 0, 0);
+
+        if (inputState.forward) moveDirection.add(forwardVector);
+        if (inputState.backward) moveDirection.sub(forwardVector);
+        if (inputState.left) moveDirection.add(rightVector);
+        if (inputState.right) moveDirection.sub(rightVector);
+
+        if (moveDirection.lengthSq() > 0) {
+          moveDirection.normalize();
+          robotRoot.position.addScaledVector(moveDirection, currentMoveSpeed * dt);
+        }
+
+        controls.target.lerp(new THREE.Vector3(robotRoot.position.x, 1.2, robotRoot.position.z), 0.1);
+      }
+
+      // 3. モーションの適用
+      if (isMoving) {
+        if (isRunningMode) {
+          // --- 走行時の高速ピッチ・前傾姿勢モーション ---
+          moveAnimTime += dt * 11.0;
+          const rt = moveAnimTime;
+
+          leftLeg.hip.rotation.x = Math.sin(rt) * 0.95;
+          rightLeg.hip.rotation.x = Math.sin(rt + Math.PI) * 0.95;
+          leftLeg.knee.rotation.x = Math.max(0, -Math.sin(rt)) * 1.3;
+          rightLeg.knee.rotation.x = Math.max(0, -Math.sin(rt + Math.PI)) * 1.3;
+
+          leftArm.shoulder.rotation.x = -Math.sin(rt) * 1.15;
+          rightArm.shoulder.rotation.x = -Math.sin(rt + Math.PI) * 1.15;
+          leftArm.elbow.rotation.x = -0.85;
+          rightArm.elbow.rotation.x = -0.85;
+
+          robotBodyGroup.position.y = 0.1 + Math.abs(Math.sin(rt)) * 0.18;
+          robotBodyGroup.rotation.x = 0.24; // 前傾姿勢
+          robotBodyGroup.rotation.y = Math.sin(rt) * 0.12;
+          robotBodyGroup.rotation.z = Math.sin(rt) * 0.05;
+          headGroup.rotation.x = -0.22; // 顔は前を向く
+          headGroup.rotation.y = -Math.sin(rt) * 0.08;
+        } else {
+          // --- 通常歩行モーション ---
+          moveAnimTime += dt * 6.5;
+          const wt = moveAnimTime;
+
+          leftLeg.hip.rotation.x = Math.sin(wt) * 0.65;
+          rightLeg.hip.rotation.x = Math.sin(wt + Math.PI) * 0.65;
+          leftLeg.knee.rotation.x = Math.max(0, -Math.sin(wt)) * 0.85;
+          rightLeg.knee.rotation.x = Math.max(0, -Math.sin(wt + Math.PI)) * 0.85;
+
+          leftArm.shoulder.rotation.x = -Math.sin(wt) * 0.75;
+          rightArm.shoulder.rotation.x = -Math.sin(wt + Math.PI) * 0.75;
+          leftArm.elbow.rotation.x = -0.25 - Math.max(0, -Math.sin(wt)) * 0.4;
+          rightArm.elbow.rotation.x = -0.25 - Math.max(0, -Math.sin(wt + Math.PI)) * 0.4;
+
+          robotBodyGroup.position.y = 0.08 + Math.abs(Math.cos(wt)) * 0.08;
+          robotBodyGroup.rotation.x = 0.0;
+          robotBodyGroup.rotation.y = Math.sin(wt) * 0.1;
+          robotBodyGroup.rotation.z = Math.sin(wt) * 0.04;
+          headGroup.rotation.x = 0.0;
+          headGroup.rotation.y = -Math.sin(wt) * 0.06;
+        }
+      } else {
+        // --- 停止時の各アクションモーション ---
+        const t = motionTime;
+        switch (currentMotion) {
+          case 'idle':
+            robotBodyGroup.position.y = Math.sin(t * 2.0) * 0.03;
+            headGroup.rotation.y = Math.sin(t * 1.0) * 0.08;
+            headGroup.rotation.x = Math.sin(t * 1.5) * 0.04;
+            leftArm.shoulder.rotation.z = 0.1 + Math.sin(t * 2.0) * 0.04;
+            rightArm.shoulder.rotation.z = -0.1 - Math.sin(t * 2.0) * 0.04;
+            leftArm.elbow.rotation.x = -0.15;
+            rightArm.elbow.rotation.x = -0.15;
+            break;
+
+          case 'walk':
+            const wt = t * 5.0;
+            leftLeg.hip.rotation.x = Math.sin(wt) * 0.6;
+            rightLeg.hip.rotation.x = Math.sin(wt + Math.PI) * 0.6;
+            leftLeg.knee.rotation.x = Math.max(0, -Math.sin(wt)) * 0.8;
+            rightLeg.knee.rotation.x = Math.max(0, -Math.sin(wt + Math.PI)) * 0.8;
+
+            leftArm.shoulder.rotation.x = -Math.sin(wt) * 0.7;
+            rightArm.shoulder.rotation.x = -Math.sin(wt + Math.PI) * 0.7;
+            leftArm.elbow.rotation.x = -0.2 - Math.max(0, -Math.sin(wt)) * 0.4;
+            rightArm.elbow.rotation.x = -0.2 - Math.max(0, -Math.sin(wt + Math.PI)) * 0.4;
+
+            robotBodyGroup.position.y = 0.08 + Math.abs(Math.cos(wt)) * 0.08;
+            robotBodyGroup.rotation.y = Math.sin(wt) * 0.1;
+            robotBodyGroup.rotation.z = Math.sin(wt) * 0.04;
+            headGroup.rotation.y = -Math.sin(wt) * 0.06;
+            break;
+
+          case 'run':
+            // その場駆け足
+            const rt = t * 10.0;
+            leftLeg.hip.rotation.x = Math.sin(rt) * 0.9;
+            rightLeg.hip.rotation.x = Math.sin(rt + Math.PI) * 0.9;
+            leftLeg.knee.rotation.x = Math.max(0, -Math.sin(rt)) * 1.2;
+            rightLeg.knee.rotation.x = Math.max(0, -Math.sin(rt + Math.PI)) * 1.2;
+
+            leftArm.shoulder.rotation.x = -Math.sin(rt) * 1.1;
+            rightArm.shoulder.rotation.x = -Math.sin(rt + Math.PI) * 1.1;
+            leftArm.elbow.rotation.x = -0.8;
+            rightArm.elbow.rotation.x = -0.8;
+
+            robotBodyGroup.position.y = 0.1 + Math.abs(Math.sin(rt)) * 0.18;
+            robotBodyGroup.rotation.x = 0.22;
+            headGroup.rotation.x = -0.2;
+            break;
+
+          case 'jump':
+            const jt = t * 4.0;
+            const phase = jt % (Math.PI * 2);
+            if (phase < Math.PI) {
+              robotBodyGroup.position.y = Math.sin(phase) * 1.5;
+              leftLeg.hip.rotation.x = -0.2;
+              rightLeg.hip.rotation.x = -0.3;
+              leftLeg.knee.rotation.x = 0.7;
+              rightLeg.knee.rotation.x = 0.7;
+              leftArm.shoulder.rotation.z = 1.2;
+              rightArm.shoulder.rotation.z = -1.2;
+            } else {
+              robotBodyGroup.position.y = -0.25 + Math.sin(phase) * 0.25;
+              leftLeg.hip.rotation.x = -0.7;
+              rightLeg.hip.rotation.x = -0.7;
+              leftLeg.knee.rotation.x = 1.4;
+              rightLeg.knee.rotation.x = 1.4;
+              leftArm.shoulder.rotation.x = -0.4;
+              rightArm.shoulder.rotation.x = -0.4;
+            }
+            break;
+
+          case 'dance':
+            const dt_ = t * 6.0;
+            robotBodyGroup.position.y = Math.abs(Math.sin(dt_)) * 0.15;
+            robotBodyGroup.rotation.z = Math.sin(dt_ * 0.5) * 0.2;
+            leftArm.shoulder.rotation.z = Math.abs(Math.sin(dt_)) * 2.0;
+            rightArm.shoulder.rotation.x = Math.cos(dt_) * 1.5;
+            headGroup.rotation.y = Math.sin(dt_) * 0.4;
+            headGroup.rotation.z = Math.cos(dt_) * 0.2;
+            break;
+
+          case 'wave':
+            rightArm.shoulder.rotation.z = -2.2;
+            rightArm.shoulder.rotation.x = 0.2;
+            rightArm.shoulder.rotation.y = 0.4;
+            rightArm.elbow.rotation.x = -1.2;
+            rightArm.elbow.rotation.y = -0.5;
+            rightArm.elbow.rotation.z = -0.3 + Math.sin(t * 7.0) * 0.4;
+
+            leftArm.shoulder.rotation.z = 0.15;
+            leftArm.elbow.rotation.x = -0.15;
+
+            headGroup.rotation.y = 0.2;
+            headGroup.rotation.z = -0.12;
+            robotBodyGroup.position.y = 0.02 + Math.sin(t * 3.5) * 0.02;
+            break;
+
+          case 'sad':
+            const sadProgress = Math.min(t * 1.5, 1.0);
+            const easeSad = sadProgress * sadProgress * (3 - 2 * sadProgress);
+
+            headGroup.rotation.x = easeSad * 0.55;
+            if (sadProgress >= 1.0) headGroup.rotation.x += Math.sin(t * 1.5) * 0.03;
+
+            robotBodyGroup.rotation.x = easeSad * 0.15;
+            leftArm.shoulder.rotation.z = -0.05 + easeSad * -0.1;
+            rightArm.shoulder.rotation.z = 0.05 + easeSad * 0.1;
+            leftArm.shoulder.rotation.x = easeSad * 0.25;
+            rightArm.shoulder.rotation.x = easeSad * 0.25;
+            leftArm.elbow.rotation.x = -0.1;
+            rightArm.elbow.rotation.x = -0.1;
+
+            robotBodyGroup.position.y = 0.0;
+            robotBodyGroup.position.z = 0.0;
+            leftLeg.hip.rotation.x = 0.0;
+            rightLeg.hip.rotation.x = 0.0;
+            leftLeg.knee.rotation.x = 0.0;
+            rightLeg.knee.rotation.x = 0.0;
+            break;
+
+          case 'fall':
+            const fallProgress = Math.min(t * 3.5, 1.0);
+            const easeFall = fallProgress * fallProgress;
+            const fallAngle = easeFall * (Math.PI / 2);
+
+            robotBodyGroup.rotation.x = fallAngle;
+            robotBodyGroup.position.y = easeFall * 0.45;
+            robotBodyGroup.position.z = easeFall * 1.35;
+
+            leftArm.shoulder.rotation.x = -fallAngle * 0.9;
+            rightArm.shoulder.rotation.x = -fallAngle * 0.9;
+            leftArm.shoulder.rotation.z = 0.4;
+            rightArm.shoulder.rotation.z = -0.4;
+
+            leftLeg.knee.rotation.x = easeFall * 0.15;
+            rightLeg.knee.rotation.x = easeFall * 0.15;
+
+            if (fallProgress >= 1.0) headGroup.rotation.x = -0.15;
+            break;
+        }
+      }
 
       controls.update();
       renderer.render(scene, camera);
     }
     animate();
 
-    // --- リサイズ ---
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
