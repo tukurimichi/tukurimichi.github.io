@@ -25,11 +25,11 @@ function buildHand(THREE, M, open) {
   hand.add(fist);
   M.addOutline(fist, 0.03);
 
-  // 指の分割線(甲の前面に薄い溝を横に2本、指がまとまった塊であることを示す程度)
-  const grooveGeo = new THREE.BoxGeometry(0.13, 0.012, 0.02);
-  for (const gy of [-0.02, -0.055]) {
+  // 指の分割線(甲の前面に溝を横に3本。太めにして指の塊感を強調する)
+  const grooveGeo = new THREE.BoxGeometry(0.13, 0.02, 0.026);
+  for (const gy of [0.01, -0.025, -0.06]) {
     const groove = new THREE.Mesh(grooveGeo, M.darkBrown);
-    groove.position.set(0, gy, 0.085);
+    groove.position.set(0, gy, 0.086);
     hand.add(groove);
   }
 
