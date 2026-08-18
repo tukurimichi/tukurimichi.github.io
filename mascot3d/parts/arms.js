@@ -48,8 +48,8 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   arm.name = side < 0 ? 'arm_L' : 'arm_R';
   arm.position.set(side * SHOULDER.x, SHOULDER.y, SHOULDER.z);
 
-  // --- 肩ボール(クリーム白の正球、直径0.20) ---
-  const shoulderGeo = new THREE.SphereGeometry(0.1, 20, 16);
+  // --- 肩ボール(クリーム白の正球、大きめに出して肩球をはっきり見せる) ---
+  const shoulderGeo = new THREE.SphereGeometry(0.115, 20, 16);
   const shoulder = new THREE.Mesh(shoulderGeo, M.cream);
   arm.add(shoulder);
   M.addOutline(shoulder, 0.03);
@@ -61,15 +61,15 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   ring.position.set(-side * 0.06, -0.01, 0);
   arm.add(ring);
 
-  // --- 上腕ジョイント〜先を1グループにまとめ、肩を軸に外側20°・やや前に傾ける ---
+  // --- 上腕ジョイント〜先を1グループにまとめ、肩を軸に外側26°・やや前に傾ける ---
   const upperGroup = new THREE.Group();
-  upperGroup.rotation.z = side * THREE.MathUtils.degToRad(22);
+  upperGroup.rotation.z = side * THREE.MathUtils.degToRad(26);
   upperGroup.rotation.x = THREE.MathUtils.degToRad(-6);
   arm.add(upperGroup);
 
-  // 上腕ジョイント(焦げ茶、細い段付き円柱。長さは前腕の1/3程度)
+  // 上腕ジョイント(焦げ茶、細い段付き円柱。前腕が太くなった分、対比でより細く見せる)
   const upperLen = 0.09;
-  const upperGeo = new THREE.CylinderGeometry(0.045, 0.05, upperLen, 12);
+  const upperGeo = new THREE.CylinderGeometry(0.038, 0.043, upperLen, 12);
   const upper = new THREE.Mesh(upperGeo, M.darkBrown);
   upper.position.set(0, -upperLen / 2, 0);
   upperGroup.add(upper);
@@ -87,37 +87,41 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   upperGroup.add(elbowGroup);
 
   // 前腕ガントレット: 上(肘側)はクリーム白の短いカフ、下(手側)は大きいオレンジの塊
-  // (頭幅0.92の1/3強=約0.31を狙い、直径0.28〜0.30程度の太いボリュームにする)
-  const foreUpperLen = 0.09;
-  const foreLowerLen = 0.19;
+  // (参考画像は前腕幅≒胴体幅の40%相当の非常に太いボリューム。既存比+約30%太く)
+  const foreUpperLen = 0.1;
+  const foreLowerLen = 0.22;
+  const foreUpperTopR = 0.175;
+  const foreUpperBotR = 0.195;
+  const foreLowerTopR = 0.195;
+  const foreLowerBotR = 0.16;
 
-  const foreUpperGeo = new THREE.CylinderGeometry(0.135, 0.15, foreUpperLen, 14);
+  const foreUpperGeo = new THREE.CylinderGeometry(foreUpperTopR, foreUpperBotR, foreUpperLen, 14);
   const foreUpper = new THREE.Mesh(foreUpperGeo, M.cream);
   foreUpper.position.set(0, -foreUpperLen / 2, 0);
   elbowGroup.add(foreUpper);
   M.addOutline(foreUpper, 0.03);
 
   // 肘側の丸み(クリームの半球キャップ。ドームが+Y=上向きに膨らみ、上腕ジョイントとの継ぎ目を隠す)
-  const elbowCapGeo = new THREE.SphereGeometry(0.135, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+  const elbowCapGeo = new THREE.SphereGeometry(foreUpperTopR, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2);
   const elbowCap = new THREE.Mesh(elbowCapGeo, M.cream);
   elbowCap.position.set(0, 0.0, 0);
   elbowGroup.add(elbowCap);
 
-  const foreLowerGeo = new THREE.CylinderGeometry(0.15, 0.125, foreLowerLen, 14);
+  const foreLowerGeo = new THREE.CylinderGeometry(foreLowerTopR, foreLowerBotR, foreLowerLen, 14);
   const foreLower = new THREE.Mesh(foreLowerGeo, M.orange);
   foreLower.position.set(0, -foreUpperLen - foreLowerLen / 2, 0);
   elbowGroup.add(foreLower);
   M.addOutline(foreLower, 0.03);
 
   // ツートンの境目の段差(オレンジ側がわずかに張り出すリム)
-  const seamGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.014, 14);
+  const seamGeo = new THREE.CylinderGeometry(foreLowerTopR + 0.01, foreLowerTopR + 0.01, 0.014, 14);
   const seam = new THREE.Mesh(seamGeo, M.orange);
   seam.position.set(0, -foreUpperLen, 0);
   elbowGroup.add(seam);
   M.addOutline(seam, 0.02);
 
   // 手首側の丸み(オレンジの半球キャップ。ドームを-Y=下向きに反転し、手との継ぎ目を丸くする)
-  const wristCapGeo = new THREE.SphereGeometry(0.125, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+  const wristCapGeo = new THREE.SphereGeometry(foreLowerBotR, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2);
   const wristCap = new THREE.Mesh(wristCapGeo, M.orange);
   wristCap.rotation.x = Math.PI;
   wristCap.position.set(0, -foreUpperLen - foreLowerLen, 0);
@@ -128,7 +132,7 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   const boltGeo = new THREE.CylinderGeometry(0.028, 0.028, 0.024, 14);
   const bolt = new THREE.Mesh(boltGeo, M.darkBrown);
   bolt.rotation.z = Math.PI / 2;
-  bolt.position.set(side * 0.135, -0.17, 0.03);
+  bolt.position.set(side * (foreLowerTopR + 0.01), -0.17, 0.03);
   elbowGroup.add(bolt);
 
   // 小さいビス(前面寄り)
@@ -138,9 +142,9 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   screw.position.set(side * 0.03, -foreUpperLen - 0.03, 0.135);
   elbowGroup.add(screw);
 
-  // --- 手(前腕が太くなった分に合わせてやや大きめに) ---
+  // --- 手(前腕が大幅に太くなった分に合わせて、より大きな焦げ茶のこぶしに) ---
   const hand = buildHand(THREE, M, side > 0);
-  hand.scale.setScalar(1.3);
+  hand.scale.setScalar(1.5);
   hand.position.set(0, -foreUpperLen - foreLowerLen - 0.02, 0.01);
   elbowGroup.add(hand);
 
