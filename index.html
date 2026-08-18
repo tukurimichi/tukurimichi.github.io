@@ -797,7 +797,13 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
       var startX=anchorX+(Math.random()*2-1)*16;
       var startY=anchorY+dropHeight;
       var startScale=0.5;
-      var totalSpin=Math.PI*2*(3+Math.floor(Math.random()*3))*(Math.random()<0.5?-1:1);
+      // Pick a half-turn count that (a) is even, so the model always ends up
+      // facing forward, and (b) lands the cycling reveal exactly on finalHand
+      // at the last swap, so settling never has to visibly "correct" the pose.
+      var HALF_TURNS_BASE={g:4,c:2,p:6};
+      var extraCycles=Math.floor(Math.random()*3);
+      var totalHalfTurns=HALF_TURNS_BASE[finalHand]+6*extraCycles;
+      var totalSpin=Math.PI*totalHalfTurns*(Math.random()<0.5?-1:1);
       var duration=1500;
       var t0=null,lastHalf=0,stopped=false;
       showOnly(order[0]);
