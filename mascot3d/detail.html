@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>マスコット3D scaffold</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #141416; overflow: hidden; }
+  #info {
+    display: none;
+    position: fixed; left: 8px; top: 8px; font: 12px/1.5 monospace; color: #333;
+    background: rgba(255,255,255,0.85); padding: 6px 10px; border-radius: 6px;
+    pointer-events: none; white-space: pre;
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="info"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './lib/examples/jsm/controls/OrbitControls.js';
+import { makeMaterials } from './materials.js';
+import { buildMascot, ATTACH } from './mascot.js';
+
+// ---- URLクエリの解釈 ----
+// ?part=head|torso|arms|legs  : 指定部位だけ表示(未指定なら全身)
+// ?view=front|side|back|iso   : カメラ角度を固定(未指定ならデフォルト=正面やや斜め)
+// ?nogrid                     : 床グリッド/床面を非表示にする(スクリーンショット用に背景を真っ白にしたい時)
+const params = new URLSearchParams(location.search);
+const partParam = params.get('part'); // null | 'head' | 'torso' | 'arms' | 'legs'
+const viewParam = params.get('view') || 'iso';
+const showGrid = params.has('grid'); // デフォルトは床グリッド非表示。?grid で表示する
+const noShadow = params.has('noshadow'); // デバッグ用: シャドウマップを丸ごと無効化して切り分ける
+const noMotion = params.has('nomotion'); // 検証用: 待機モーション(浮き沈み/瞬き/アンテナ揺れ)を止める
+
+// ---- 基本セットアップ ----
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x141416);
+
+const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.05, 50);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = !noShadow;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// ---- ライティング(Toon向けに最低限: 方向光1灯+アンビエント弱め) ----
+const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+scene.add(ambient);
+
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+keyLight.position.set(2.2, 3.2, 2.6);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024, 1024);
+keyLight.shadow.bias = -0.0015; // 薄い重ね合わせパーツ(目のプレースホルダー等)でのシャドウアクネ対策
+keyLight.shadow.camera.left = -1.5;
+keyLight.shadow.camera.right = 1.5;
+keyLight.shadow.camera.top = 2.2;
+keyLight.shadow.camera.bottom = -1.5;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+fillLight.position.set(-2, 1.5, -1.5);
+scene.add(fillLight);
+
+// ---- 床(影受け。常時表示。背景は白のまま) ----
+const floorGeo = new THREE.PlaneGeometry(6, 6);
+const floorMat = new THREE.ShadowMaterial({ opacity: 0.18 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// ---- 床グリッド(目安線。デフォルト非表示、?grid で表示) ----
+if (showGrid) {
+  const grid = new THREE.GridHelper(4, 20, 0xdddddd, 0xeeeeee);
+  scene.add(grid);
+}
+
+// ---- マスコット組み立て ----
+const M = makeMaterials(THREE);
+const mascot = buildMascot(THREE, M, partParam ? { only: partParam } : {});
+mascot.traverse((o) => {
+  if (o.isMesh) {
+    o.castShadow = true;
+    o.receiveShadow = true;
+  }
+});
+scene.add(mascot);
+
+// ---- 待機モーション用の参照取得 ----
+const eyeL = mascot.getObjectByName('eyeL');
+const eyeR = mascot.getObjectByName('eyeR');
+const antennaGroup = mascot.getObjectByName('antennaGroup');
+let nextBlinkAt = performance.now() + 5000 + Math.random() * 2000;
+let blinkStartedAt = -1;
+const BLINK_DURATION = 160; // ms
+
+// ---- カメラ位置 ----
+// 全身の中心あたり(全高2.0の半分よりやや上、頭が大きいので少し高め)を注視点にする
+const target = new THREE.Vector3(0, partParam ? estimatePartCenterY(partParam) : 1.05, 0);
+
+function estimatePartCenterY(part) {
+  switch (part) {
+    case 'head': return (ATTACH.headBottomY + ATTACH.headTopY) / 2;
+    case 'torso': return (ATTACH.waistCenterY + ATTACH.shoulderJointY) / 2;
+    case 'arms': return ATTACH.shoulderJointY - 0.2;
+    case 'legs': return ATTACH.hipJointY / 2;
+    default: return 1.05;
+  }
+}
+
+const dist = partParam ? 1.8 : 4.4;
+const viewAngles = {
+  // [方位角(度, +Zが0=正面), 仰角(度)]
+  front: [0, 8],
+  side: [90, 8],
+  back: [180, 8],
+  iso: [-30, 12], // デフォルト: 正面やや斜め(参考画像に近い角度)
+};
+const [azDeg, elDeg] = viewAngles[viewParam] || viewAngles.iso;
+const az = THREE.MathUtils.degToRad(azDeg);
+const el = THREE.MathUtils.degToRad(elDeg);
+camera.position.set(
+  target.x + dist * Math.sin(az) * Math.cos(el),
+  target.y + dist * Math.sin(el) + 0.15,
+  target.z + dist * Math.cos(az) * Math.cos(el)
+);
+camera.lookAt(target);
+
+// ---- OrbitControls(手動確認用。スクリーンショット取得自体には影響しない) ----
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(target);
+controls.update();
+
+// ---- info表示(デバッグ用) ----
+document.getElementById('info').textContent =
+  `part=${partParam || 'ALL'} view=${viewParam}`;
+
+// ---- リサイズ対応 ----
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ---- 描画ループ(待機モーション込み) ----
+let rafId = null;
+function animate(now) {
+  rafId = requestAnimationFrame(animate);
+  controls.update();
+
+  if (!noMotion) {
+    const nowMs = now || performance.now();
+    const t = nowMs / 1000;
+
+    // 体全体のゆっくりした浮き沈み(振幅0.02程度)
+    mascot.position.y = Math.sin(t * 1.1) * 0.02;
+
+    // アンテナ先端の小さな揺れ
+    if (antennaGroup) {
+      antennaGroup.rotation.z = Math.sin(t * 1.7) * 0.06;
+      antennaGroup.rotation.x = Math.sin(t * 1.3 + 1.0) * 0.03;
+    }
+
+    // 5〜7秒おきの瞬き(目のscale.yを一瞬0.1近くまで下げてから戻す)
+    if (blinkStartedAt < 0 && nowMs >= nextBlinkAt) {
+      blinkStartedAt = nowMs;
+    }
+    if (blinkStartedAt >= 0) {
+      const elapsed = nowMs - blinkStartedAt;
+      if (elapsed < BLINK_DURATION) {
+        const phase = elapsed / BLINK_DURATION; // 0->1
+        const closeAmount = phase < 0.5 ? phase * 2 : (1 - phase) * 2; // 0->1->0の三角波
+        const scaleY = 1 - closeAmount * 0.9; // 1(開)〜0.1(閉)
+        if (eyeL) eyeL.scale.y = scaleY;
+        if (eyeR) eyeR.scale.y = scaleY;
+      } else {
+        if (eyeL) eyeL.scale.y = 1;
+        if (eyeR) eyeR.scale.y = 1;
+        blinkStartedAt = -1;
+        nextBlinkAt = nowMs + 5000 + Math.random() * 2000;
+      }
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+rafId = requestAnimationFrame(animate);
+
+// document.hidden(タブが裏に回った)時はrAFループ自体を止め、復帰時に再開する。
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  } else if (rafId === null) {
+    rafId = requestAnimationFrame(animate);
+  }
+});
+
+// render.mjs (Playwright)がスクリーンショット前に描画完了を検知できるよう、
+// 初回描画後にdocumentへ目印を立てる。
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.documentElement.dataset.rendered = 'true';
+  });
+});
+</script>
+</body>
+</html>
