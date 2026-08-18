@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <title>マスコット3D scaffold</title>
 <style>
-  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #ffffff; overflow: hidden; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #141416; overflow: hidden; }
   #info {
     display: none;
     position: fixed; left: 8px; top: 8px; font: 12px/1.5 monospace; color: #333;
@@ -41,7 +41,7 @@ const noMotion = params.has('nomotion'); // 検証用: 待機モーション(浮
 
 // ---- 基本セットアップ ----
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff);
+scene.background = new THREE.Color(0x141416);
 
 const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.05, 50);
 
