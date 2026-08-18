@@ -12,8 +12,8 @@ import { build as buildLegs } from './parts/legs.js';
 // SPEC.md §2 のアタッチポイント表と一致させること。
 export const ATTACH = {
   footSoleY: 0.0,
-  hipJointY: 0.56,
-  waistCenterY: 0.56,
+  hipJointY: 0.6,
+  waistCenterY: 0.6,
   shoulderJointY: 1.08,
   neckBaseY: 1.14,
   headBottomY: 1.22,
