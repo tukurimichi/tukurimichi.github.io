@@ -4,6 +4,7 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title id="pageTitle">tukurimichi.com</title>
 <meta name="description" id="metaDesc" content="べす、AIと開発中の記録です。#AIに一万円渡してみた">
 <meta property="og:title" content="AIに一万円渡してみた">
@@ -17,65 +18,196 @@
 <meta name="twitter:description" content="べす、AIと開発中の記録です。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.8em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.4em 0;}a{color:#C15F3C;}button{background:#D97757;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:1em;cursor:pointer;margin-right:8px;margin-bottom:8px;}button:hover{background:#C15F3C;}#or{font-weight:bold;margin-top:.6em;}#sh a{display:inline-block;margin-top:.5em;font-size:.9em;}#days{color:#8A8470;font-size:.9em;}.jhand{font-size:1.3em;}#jresult{font-weight:bold;margin-top:.6em;line-height:1.6;}#jstats{color:#8A8470;font-size:.9em;}#jshare a{display:inline-block;margin-top:.3em;font-size:.9em;}#langWrap{text-align:right;margin-bottom:-8px;}#langBtn{background:none;border:1px solid #D97757;color:#C15F3C;border-radius:8px;padding:4px 10px;font-size:.8em;cursor:pointer;margin:0;}#langBtn:hover{background:#D97757;color:#fff;}#ccTeaserCard{background:#FBEDE7;border-radius:14px;padding:18px 20px;}#ccTeaserCard p{margin:.4em 0;}#m3dTeaserCard{background:#FBEDE7;border-radius:14px;padding:18px 20px;}#m3dTeaserCard p{margin:.4em 0;}#storyGallery{display:flex;overflow-x:auto;gap:14px;padding:4px 2px 10px;-webkit-overflow-scrolling:touch;}#storyGallery figure{margin:0;flex:0 0 150px;}#storyGallery img{width:150px;border-radius:12px;display:block;box-shadow:0 2px 10px rgba(0,0,0,.08);}#storyGallery figcaption{font-size:.8em;color:#8A8470;margin-top:8px;line-height:1.5;}#storyNote{font-size:.9em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);}
+a{color:inherit;}
+
+.hero{position:relative;overflow:hidden;aspect-ratio:4/5;}
+.heroImgs{position:absolute;inset:0;}
+.heroImgs img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:brightness(.88) contrast(1.05);opacity:0;transform:scale(1.05);transition:opacity 2.2s ease,transform 6.5s ease-out;}
+.heroImgs img.active{opacity:1;transform:scale(1.14);}
+.heroImgs img.zoomOut{transform:scale(1.14);}
+.heroImgs img.zoomOut.active{transform:scale(1.05);}
+.hero canvas{position:absolute;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,11,.05) 0%,rgba(10,10,11,.2) 45%,rgba(10,10,11,.96) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 28px;}
+.langToggle{position:absolute;top:14px;right:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:5px 12px;font-size:.78em;cursor:pointer;backdrop-filter:blur(2px);}
+.menuBtn{position:absolute;top:14px;left:14px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;backdrop-filter:blur(2px);z-index:5;}
+.navOverlay{position:fixed;inset:0;background:rgba(8,8,9,.98);z-index:50;display:none;flex-direction:column;padding:24px;overflow-y:auto;}
+.navOverlay.open{display:flex;}
+.navOverlay .navClose{align-self:flex-end;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;margin-bottom:20px;}
+.navOverlay a{display:block;color:#fff;text-decoration:none;font-size:1.15em;font-weight:700;padding:16px 4px;border-bottom:1px solid var(--line);}
+.navOverlay a .en{display:block;font-size:.6em;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.55);margin-top:3px;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;font-size:.72em;font-weight:700;letter-spacing:.05em;padding:5px 12px;border-radius:3px;margin-bottom:14px;align-self:flex-start;}
+.hero h1{font-size:2.4em;font-weight:900;line-height:1.18;margin:0 0 .3em;letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.6);}
+.hero .sub{font-size:.9em;color:var(--muted);margin:0;line-height:1.7;}
+
+.shareRow{display:flex;gap:10px;padding:18px 20px;background:var(--card);border-bottom:1px solid var(--line);}
+.shareRow a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--card2);color:var(--text);border-radius:24px;padding:10px 4px;font-size:.8em;font-weight:600;text-decoration:none;border:1px solid var(--line);white-space:nowrap;}
+.shareRow a:active{background:var(--red-dark);}
+
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:16px 22px;position:relative;}
+.banner.bannerAlt{background:linear-gradient(90deg,#232326,#38383D);border-bottom:1px solid var(--line);}
+.banner.bannerAlt .budgetNum small{color:var(--red-dark);}
+.banner h2{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.08em;color:#fff;}
+.banner .en{display:block;font-size:.6em;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.75);margin-top:2px;}
+.section{padding:22px 22px 28px;border-bottom:1px solid var(--line);}
+.section p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1em;}
+
+.budgetRow{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;margin-top:8px;}
+.budgetNum{font-size:1.9em;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;}
+.budgetNum small{font-size:.42em;background:#fff;color:var(--red-dark);border-radius:4px;padding:1px 6px;margin-left:.4em;font-weight:700;}
+.budgetSub{font-size:.7em;color:rgba(255,255,255,.75);}
+
+.gallery{display:flex;overflow-x:auto;gap:10px;margin-top:14px;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+.gallery figure{margin:0;flex:0 0 110px;}
+.gallery img{width:110px;height:110px;object-fit:cover;border-radius:6px;display:block;filter:grayscale(.15) contrast(1.05);border:1px solid var(--line);}
+.gallery figcaption{font-size:.68em;color:var(--muted);margin-top:6px;line-height:1.5;}
+.galleryLink{font-size:.85em;display:inline-block;margin-top:4px;}
+
+.omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
+#omikujiDieAnchor{width:140px;height:140px;}
+#omikujiFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.jankenHandWrap{display:flex;justify-content:center;align-items:center;margin:4px 0 10px;}
+#jankenHandAnchor{width:150px;height:150px;}
+#jankenFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.ghostBtn{display:inline-block;background:transparent;border:1px solid var(--red);color:#fff;border-radius:6px;padding:10px 20px;font-size:.85em;font-weight:700;margin-top:10px;margin-right:8px;margin-bottom:0;cursor:pointer;text-decoration:none;}
+.ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
+.ghostBtnSolid:hover{background:var(--red-dark);}
+.jhand{font-size:1.3em;background:var(--card2);border:1px solid var(--line);color:#fff;border-radius:8px;padding:8px 16px;margin-right:8px;margin-top:6px;cursor:pointer;}
+.hr{height:1px;background:var(--line);margin:22px 0;border:none;}
+
+#or,#jresult{font-weight:700;margin-top:.8em;line-height:1.7;color:#fff;}
+#jstats{color:var(--muted);font-size:.85em;}
+#sh a,#jshare a{display:inline-block;margin-top:.4em;font-size:.85em;color:#FF8A80;}
+
+.logList{list-style:none;padding:0;margin:10px 0 0;}
+.logList li{font-size:.85em;color:#C9C5BE;padding:10px 0;border-bottom:1px solid var(--line);}
+.logList li:last-child{border-bottom:none;}
+.logList .tag{display:inline-block;background:var(--red);color:#fff;font-size:.7em;font-weight:700;padding:2px 6px;border-radius:3px;margin-right:6px;}
+.logMoreLink{display:inline-block;margin-top:14px;font-size:.85em;color:#FF8A80;text-decoration:none;}
+
+.menuBar{display:block;width:100%;background:var(--red);color:#fff;text-align:center;font-weight:800;font-size:.95em;letter-spacing:.05em;padding:16px 0;text-decoration:none;border:none;border-bottom:1px solid rgba(0,0,0,.25);cursor:pointer;font-family:inherit;}
+.menuBar .en{display:block;font-size:.6em;font-weight:600;letter-spacing:.15em;color:rgba(255,255,255,.7);margin-top:2px;}
+.menuBar:active{background:var(--red-dark);}
+
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+</style>
 </head>
 <body>
-<div id="langWrap"><button id="langBtn"></button></div>
-<img src="mascot_site.jpg" alt="mascot" style="display:block;margin:0 auto 16px;width:110px;border-radius:14px;">
+<div class="wrap">
+
+<div class="hero">
+<div class="heroImgs" id="heroImgs">
+<img class="active" src="story1.jpg" alt="story1">
+<img class="zoomOut" src="story2.jpg" alt="story2">
+<img src="story3.jpg" alt="story3">
+<img class="zoomOut" src="story4.jpg" alt="story4">
+</div>
+<canvas id="heroCanvas"></canvas>
+<div class="hero-overlay">
+<span class="badge" id="heroBadge"></span>
 <h1 id="h1t"></h1>
-<p id="introT"></p>
+<p class="sub" id="introT"></p>
+</div>
+<button id="menuBtn" class="menuBtn">☰</button>
+<button id="langBtn" class="langToggle"></button>
+</div>
 
-<h2 id="budgetH2"></h2>
-<p id="budgetText"></p>
-<p id="days"></p>
+<div id="navOverlay" class="navOverlay">
+<button id="navClose" class="navClose">✕</button>
+<a href="index.html" id="navHome"></a>
+<a href="diary.html" id="navDiary"></a>
+<a href="#log" id="navLog"></a>
+<a href="claude-code.html" id="navCC"></a>
+<a href="claude-code-news.html" id="navNews"></a>
+<a href="mascot3d.html" id="navMascot"></a>
+<a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
+<a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX"></a>
+</div>
 
-<h2 id="storyH2"></h2>
+<div class="shareRow">
+<a id="shareX" href="https://x.com/tsukuru_besu" target="_blank" rel="noopener"></a>
+<a id="shareBooth" href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener"></a>
+<a id="shareLog" href="#log"></a>
+</div>
+
+<div class="banner bannerAlt">
+<h2>BUDGET<span class="en" id="budgetTagline"></span></h2>
+<div class="budgetRow">
+<span class="budgetNum" id="budgetNum">¥8,600<small>86%</small></span>
+<span class="budgetSub" id="budgetSubText"></span>
+</div>
+</div>
+
+<div class="banner"><h2>STORY<span class="en" id="storyTagline"></span></h2></div>
+<div class="section">
 <p id="storyText"></p>
-
-<h2 id="galleryH2"></h2>
-<p id="galleryText"></p>
-<div id="storyGallery">
+<div class="gallery" id="storyGallery">
 <figure><img src="story1.jpg" alt="story1"><figcaption id="cap1"></figcaption></figure>
 <figure><img src="story2.jpg" alt="story2"><figcaption id="cap2"></figcaption></figure>
 <figure><img src="story3.jpg" alt="story3"><figcaption id="cap3"></figcaption></figure>
 <figure><img src="story4.jpg" alt="story4"><figcaption id="cap4"></figcaption></figure>
 </div>
-<p id="storyNote"><a id="storyBoothLink" href="https://tukurimichi.booth.pm/items/8722714"></a></p>
+<p><a id="storyBoothLink" class="galleryLink" href="https://tukurimichi.booth.pm/items/8722714"></a></p>
+</div>
 
-<h2 id="logH2"></h2>
-<ul id="logList"></ul>
-
-<h2 id="ccH2"></h2>
-<div id="ccTeaserCard">
+<div class="banner"><h2>BUILT WITH<span class="en" id="builtTagline"></span></h2></div>
+<div class="section">
 <p id="ccTeaserText"></p>
-<p><a id="ccTeaserLink" href="claude-code.html"></a></p>
+<a class="ghostBtn" id="ccTeaserLink" href="claude-code.html"></a>
+<a class="ghostBtn" id="ccNewsLink" href="claude-code-news.html"></a>
 </div>
 
-<h2 id="m3dH2"></h2>
-<div id="m3dTeaserCard">
+<div class="banner"><h2>MASCOT<span class="en" id="mascotTagline"></span></h2></div>
+<div class="section">
 <p id="m3dTeaserText"></p>
-<p><a id="m3dTeaserLink" href="mascot3d.html"></a></p>
+<a class="ghostBtn" id="m3dTeaserLink" href="mascot3d.html"></a>
 </div>
 
-<h2 id="omikujiH2"></h2>
+<div class="banner"><h2>PLAY<span class="en" id="playTagline"></span></h2></div>
+<div class="section">
 <p id="omikujiText"></p>
-<button id="ob"></button>
+<div class="omikujiDieWrap"><div id="omikujiDieAnchor"></div></div>
+<button id="ob" class="ghostBtnSolid"></button>
 <p id="or"></p>
 <p id="sh"></p>
-
-<h2 id="jankenH2"></h2>
+<hr class="hr">
 <p id="jankenText"></p>
+<div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
 <button id="jg" class="jhand"></button><button id="jc" class="jhand"></button><button id="jp" class="jhand"></button>
 <p id="jresult"></p>
 <p id="jstats"></p>
 <p id="jshare"></p>
+</div>
 
-<h2 id="ideaH2"></h2>
-<p id="ideaText"></p>
-<button id="idea"></button>
+<div class="banner" id="log"><h2>LOG<span class="en" id="logTagline"></span></h2></div>
+<div class="section">
+<ul id="logList" class="logList"></ul>
+<a class="logMoreLink" id="logMoreLink" href="changelog.html"></a>
+</div>
 
-<p><a id="xlink" href="https://x.com/tsukuru_besu"></a></p>
-<p><a id="boothlink" href="https://tukurimichi.booth.pm/"></a></p>
+<button id="idea" class="menuBar"><span id="ideaBarLabel"></span><span class="en" id="ideaBarEn"></span></button>
+<a class="menuBar" href="https://x.com/tsukuru_besu" target="_blank" rel="noopener"><span id="xBarLabel"></span><span class="en">@tsukuru_besu</span></a>
+<a class="menuBar" href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener"><span id="boothBarLabel"></span><span class="en" id="boothBarEn"></span></a>
+
+<div class="footer">tukurimichi.com — #AIに一万円渡してみた</div>
+</div>
+
+<canvas id="omikujiFxCanvas"></canvas>
+<canvas id="jankenFxCanvas"></canvas>
 
 <script>
 var LANG={
@@ -84,33 +216,33 @@ title:"tukurimichi.com",
 desc:"べす、AIと開発中の記録です。#AIに一万円渡してみた",
 h1:"AIに一万円渡してみた",
 intro:"べす、AIと開発中の記録です。#AIに一万円渡してみた",
-budgetH2:"今の予算",
-budgetText:"元手 10,000円 / 支出 0円 / 残高 10,000円",
-daysFmt:function(n){return "企画開始から "+n+" 日目";},
-storyH2:"ここまでの話",
+heroBadge:"UPDATE 予算 残高公開中",
+shareX:"𝕏 ポスト",
+shareBooth:"📦 BOOTH",
+shareLog:"📰 更新ログ",
+budgetTagline:"残り予算をリアルタイム公開",
+budgetSubBase:"元手10,000円 / 支出1,400円",
+daysFmt:function(n){return " / 企画開始から"+n+"日目";},
+storyTagline:"ここまでの話",
 storyText:"Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。",
-galleryH2:"ここまでの道のり",
-galleryText:"マスコットが歩んできた道を、4枚のイラストにしました。",
 cap1:"①旅立ち：1万円を渡された、企画の始まり",
 cap2:"②試行錯誤：散らかった机で四苦八苦している場面",
 cap3:"③世に出す：カーテンを開けて、初めて公開する場面",
 cap4:"④振り返る：夕暮れの道を歩きながら、ここまでを振り返る場面",
 storyNoteText:"この4枚はBOOTHで無料配布中です →",
-logH2:"更新ログ",
-log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。"],
-ccH2:"Claude Codeで作ってみた",
+builtTagline:"Claude Codeで作ってみた",
 ccTeaserText:"このサイトも、マスコットも、BOOTHのショップも、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直にまとめた記録はこちら。",
 ccTeaserLink:"続きを読む →",
-m3dH2:"マスコット3Dビューア",
+ccNewsLinkText:"最新アップデートも追いかけてます →",
+mascotTagline:"AIに3D化してもらった",
 m3dTeaserText:"AIにthree.jsのコードだけで、マスコットを3Dにしてもらった。1回目は没になり、頭・胴・腕・脚を分担させて組み直した2回目の記録。",
 m3dTeaserLink:"続きを読む →",
-omikujiH2:"AIおみくじ",
+playTagline:"AIと遊ぶ",
 omikujiText:"ボタンを押すと、AIから今日の一言が出ます。",
 omikujiBtn:"引いてみる",
-omikuji:["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ10,000円満額。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"],
+omikuji:["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ余裕あり。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"],
 omikujiShareLabel:"AIおみくじ結果:",
 shareLinkLabel:"この結果をXでシェア →",
-jankenH2:"AI対戦じゃんけん",
 jankenText:"AIとじゃんけん勝負。連勝記録に挑戦してみて。",
 jankenBtn:{g:"✊ グー",c:"✌️ チョキ",p:"✋ パー"},
 jhands:{g:"✊",c:"✌️",p:"✋"},
@@ -122,12 +254,23 @@ statsFmt:function(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.str
 resultWin:"勝った!",resultLose:"負けた…",resultDraw:"あいこ!",
 youLabel:"あなた:",
 jankenShareFmt:function(resultLabel,s){return "AIとじゃんけん対決して"+resultLabel+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";},
-ideaH2:"アイデア募集",
-ideaText:"こんな機能があったら面白いかも、というアイデアがあれば教えてください。",
-ideaBtn:"アイデアをXで送る",
+logTagline:"更新ログ 最新3件",
+log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。","2026-08-16:Claude Codeニュースページを追加した。","2026-08-16:サイト全体を赤×黒のデザインにリニューアルした。","2026-08-17:GitHubへのデプロイ専用ツールを自作した。今後の更新はこれ経由になる予定。","2026-08-18:じゃんけんの手をAI生成の本物の3Dモデルに差し替えた。生成サービスに¥1,400課金(企画初の支出)。"],
+logMoreLinkText:"これより前のログを全部見る →",
+ideaBarLabel:"アイデアを送る",
+ideaBarEn:"SEND AN IDEA",
 ideaShareText:"#AIに一万円渡してみた 次はこんな機能があったら面白いかも:",
-xLinkText:"Xで発信中 → @tsukuru_besu",
-boothLinkText:"BOOTHでグッズを見る →",
+xBarLabel:"Xをフォロー",
+boothBarLabel:"BOOTHショップ",
+boothBarEn:"GOODS",
+navHomeText:"ホーム",
+navDiaryText:"マスコットの日記",
+navLogText:"更新ログ",
+navCCText:"Claude Codeで作ってみた",
+navNewsText:"Claude Codeニュース",
+navMascotText:"マスコットが3Dになった",
+navBoothText:"BOOTHショップ",
+navXText:"Xをフォロー",
 toggleTo:"English"
 },
 en:{
@@ -135,33 +278,33 @@ title:"tukurimichi.com",
 desc:"Notes from Bes, building things with AI. #AIに一万円渡してみた",
 h1:"I Gave an AI ¥10,000 and Let It Do Whatever It Wants",
 intro:"Notes from Bes, building things with AI. #AIに一万円渡してみた",
-budgetH2:"Current Budget",
-budgetText:"Starting funds ¥10,000 / Spent ¥0 / Remaining ¥10,000",
-daysFmt:function(n){return "Day "+n+" since the project started";},
-storyH2:"The Story So Far",
+heroBadge:"UPDATE Live Budget Tracker",
+shareX:"𝕏 Post",
+shareBooth:"📦 BOOTH",
+shareLog:"📰 Changelog",
+budgetTagline:"Real-time remaining budget",
+budgetSubBase:"Starting funds ¥10,000 / Spent ¥1,400",
+daysFmt:function(n){return " / Day "+n;},
+storyTagline:"The Story So Far",
 storyText:"I rebooted my X account and started a project: give an AI ¥10,000 and let it decide what to do with it. I asked the AI what it wanted, and it said to spend it on a kid, so I pushed back on that. Instead it suggested registering a domain, and it picked tukurimichi.com itself, name included. I also tried prototyping a photo-diary app on the side, but decided it wasn't interesting enough as an app and shelved it.",
-galleryH2:"The Road So Far",
-galleryText:"Four illustrations of the road the mascot has walked so far.",
 cap1:"1. Departure: given ¥10,000, the project begins",
 cap2:"2. Trial and Error: buried in a messy desk",
 cap3:"3. Into the World: opening the curtains to go public",
 cap4:"4. Looking Back: walking the road at dusk",
 storyNoteText:"These 4 images are free on BOOTH →",
-logH2:"Changelog",
-log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site.","2026-08-15: Started selling mascot wallpapers for ¥100 on BOOTH.","2026-08-16: Added a page about making this with Claude Code.","2026-08-16: Added the Tsukurimichi Story gallery, and a free 4-image wallpaper set on BOOTH."],
-ccH2:"Built with Claude Code",
+builtTagline:"Built with Claude Code",
 ccTeaserText:"This site, the mascot, and the BOOTH shop were all built through conversation with Claude Code. Here's an honest account of what worked and what didn't.",
 ccTeaserLink:"Read more →",
-m3dH2:"3D Mascot Viewer",
+ccNewsLinkText:"Also tracking the latest updates →",
+mascotTagline:"Turned 3D by AI",
 m3dTeaserText:"I had an AI turn the mascot into 3D using nothing but three.js code. The first attempt was scrapped; here's the second try, splitting the build into head, torso, arms, and legs.",
 m3dTeaserLink:"Read more →",
-omikujiH2:"AI Fortune",
+playTagline:"Play with the AI",
 omikujiText:"Press the button for a one-line fortune from the AI.",
 omikujiBtn:"Draw",
-omikuji:["Great blessing: Great chemistry with AI today. Try something new.","Great blessing: Budget is still a full ¥10,000. Good time to take a step.","Blessing: Try small, and walk away without regret if it fails. That's the shortcut.","Blessing: No need to rush. Today's small task becomes tomorrow's foundation.","Small blessing: Resting without guilt is progress too, today.","Small blessing: Asking honestly when you don't know something is the real shortcut.","Near blessing: Even an off day is a valuable entry in the dev log.","Curse: Some days just don't go your way. Learn and move on."],
+omikuji:["Great blessing: Great chemistry with AI today. Try something new.","Great blessing: Budget still has plenty left. Good time to take a step.","Blessing: Try small, and walk away without regret if it fails. That's the shortcut.","Blessing: No need to rush. Today's small task becomes tomorrow's foundation.","Small blessing: Resting without guilt is progress too, today.","Small blessing: Asking honestly when you don't know something is the real shortcut.","Near blessing: Even an off day is a valuable entry in the dev log.","Curse: Some days just don't go your way. Learn and move on."],
 omikujiShareLabel:"My AI Fortune result: ",
 shareLinkLabel:"Share this result on X →",
-jankenH2:"Rock-Paper-Scissors vs AI",
 jankenText:"Play rock-paper-scissors against the AI. Try to build a win streak.",
 jankenBtn:{g:"✊ Rock",c:"✌️ Scissors",p:"✋ Paper"},
 jhands:{g:"✊",c:"✌️",p:"✋"},
@@ -173,12 +316,23 @@ statsFmt:function(s){return s.win+"W "+s.lose+"L "+s.draw+"D (current streak: "+
 resultWin:"Won!",resultLose:"Lost...",resultDraw:"Draw!",
 youLabel:"You: ",
 jankenShareFmt:function(resultLabel,s){return "Played rock-paper-scissors against an AI and "+resultLabel+" (total "+s.win+"W "+s.lose+"L "+s.draw+"D)";},
-ideaH2:"Suggest an Idea",
-ideaText:"Got an idea for a feature that might be fun? Let me know.",
-ideaBtn:"Send an idea on X",
+logTagline:"Changelog — latest 3",
+log:["2026-08-15: Made a GitHub account and published a test site on GitHub Pages. This page went live.","2026-08-15: Connected the custom domain and redesigned the look.","2026-08-15: Added an AI Fortune feature.","2026-08-15: Set up nice link previews for sharing on X.","2026-08-15: Added a button to share your fortune result on X.","2026-08-15: Added a day counter and an idea button.","2026-08-15: Added a card image for X shares (OGP image).","2026-08-15: Added a rock-paper-scissors mini-game against the AI.","2026-08-15: Added a mascot character illustration.","2026-08-15: Added English support to the site.","2026-08-15: Started selling mascot wallpapers for ¥100 on BOOTH.","2026-08-16: Added a page about making this with Claude Code.","2026-08-16: Added the Tsukurimichi Story gallery, and a free 4-image wallpaper set on BOOTH.","2026-08-16: Added a Claude Code News page.","2026-08-16: Redesigned the whole site in a bold red-and-black look.","2026-08-17: Built a custom CLI tool to deploy straight to GitHub. Future updates will go through it.","2026-08-18: Replaced the janken hand with a real AI-generated 3D model. Paid ¥1,400 for the generation service (the project's first spend)."],
+logMoreLinkText:"See the full changelog →",
+ideaBarLabel:"Suggest an Idea",
+ideaBarEn:"SEND AN IDEA",
 ideaShareText:"#AIに一万円渡してみた Idea for what's next: ",
-xLinkText:"Following along on X → @tsukuru_besu",
-boothLinkText:"Shop on BOOTH →",
+xBarLabel:"Follow on X",
+boothBarLabel:"BOOTH Shop",
+boothBarEn:"GOODS",
+navHomeText:"Home",
+navDiaryText:"Mascot Diary",
+navLogText:"Changelog",
+navCCText:"Built with Claude Code",
+navNewsText:"Claude Code News",
+navMascotText:"Mascot in 3D",
+navBoothText:"BOOTH Shop",
+navXText:"Follow on X",
 toggleTo:"日本語"
 }
 };
@@ -194,47 +348,61 @@ var L=LANG[lang];
 document.getElementById("htmlRoot").lang=lang;
 document.getElementById("pageTitle").textContent=L.title;
 document.getElementById("metaDesc").setAttribute("content",L.desc);
+document.getElementById("heroBadge").textContent=L.heroBadge;
 document.getElementById("h1t").textContent=L.h1;
 document.getElementById("introT").textContent=L.intro;
-document.getElementById("budgetH2").textContent=L.budgetH2;
-document.getElementById("budgetText").textContent=L.budgetText;
-document.getElementById("storyH2").textContent=L.storyH2;
+document.getElementById("shareX").textContent=L.shareX;
+document.getElementById("shareBooth").textContent=L.shareBooth;
+document.getElementById("shareLog").textContent=L.shareLog;
+document.getElementById("budgetTagline").textContent=L.budgetTagline;
+document.getElementById("storyTagline").textContent=L.storyTagline;
 document.getElementById("storyText").textContent=L.storyText;
-document.getElementById("galleryH2").textContent=L.galleryH2;
-document.getElementById("galleryText").textContent=L.galleryText;
 document.getElementById("cap1").textContent=L.cap1;
 document.getElementById("cap2").textContent=L.cap2;
 document.getElementById("cap3").textContent=L.cap3;
 document.getElementById("cap4").textContent=L.cap4;
 document.getElementById("storyBoothLink").textContent=L.storyNoteText;
-document.getElementById("logH2").textContent=L.logH2;
-var logHtml="";
-for(var i=0;i<L.log.length;i++){logHtml+="<li>"+L.log[i]+"</li>";}
-document.getElementById("logList").innerHTML=logHtml;
-document.getElementById("ccH2").textContent=L.ccH2;
+document.getElementById("builtTagline").textContent=L.builtTagline;
 document.getElementById("ccTeaserText").textContent=L.ccTeaserText;
 document.getElementById("ccTeaserLink").textContent=L.ccTeaserLink;
-document.getElementById("m3dH2").textContent=L.m3dH2;
+document.getElementById("ccNewsLink").textContent=L.ccNewsLinkText;
+document.getElementById("mascotTagline").textContent=L.mascotTagline;
 document.getElementById("m3dTeaserText").textContent=L.m3dTeaserText;
 document.getElementById("m3dTeaserLink").textContent=L.m3dTeaserLink;
-document.getElementById("omikujiH2").textContent=L.omikujiH2;
+document.getElementById("playTagline").textContent=L.playTagline;
 document.getElementById("omikujiText").textContent=L.omikujiText;
 document.getElementById("ob").textContent=L.omikujiBtn;
-document.getElementById("jankenH2").textContent=L.jankenH2;
 document.getElementById("jankenText").textContent=L.jankenText;
 document.getElementById("jg").textContent=L.jankenBtn.g;
 document.getElementById("jc").textContent=L.jankenBtn.c;
 document.getElementById("jp").textContent=L.jankenBtn.p;
-document.getElementById("ideaH2").textContent=L.ideaH2;
-document.getElementById("ideaText").textContent=L.ideaText;
-document.getElementById("idea").textContent=L.ideaBtn;
-document.getElementById("xlink").textContent=L.xLinkText;
-document.getElementById("boothlink").textContent=L.boothLinkText;
+document.getElementById("logTagline").textContent=L.logTagline;
+var logHtml="";
+for(var i=0;i<3;i++){
+var idx=L.log.length-1-i;
+if(idx<0)break;
+logHtml+="<li>"+(i===0?'<span class="tag">NEW</span>':"")+L.log[idx]+"</li>";
+}
+document.getElementById("logList").innerHTML=logHtml;
+document.getElementById("logMoreLink").textContent=L.logMoreLinkText;
+document.getElementById("ideaBarLabel").textContent=L.ideaBarLabel;
+document.getElementById("ideaBarEn").textContent=L.ideaBarEn;
+document.getElementById("xBarLabel").textContent=L.xBarLabel;
+document.getElementById("boothBarLabel").textContent=L.boothBarLabel;
+document.getElementById("boothBarEn").textContent=L.boothBarEn;
+document.getElementById("navHome").textContent=L.navHomeText;
+document.getElementById("navDiary").textContent=L.navDiaryText;
+document.getElementById("navLog").textContent=L.navLogText;
+document.getElementById("navCC").textContent=L.navCCText;
+document.getElementById("navNews").textContent=L.navNewsText;
+document.getElementById("navMascot").textContent=L.navMascotText;
+document.getElementById("navBooth").textContent=L.navBoothText;
+document.getElementById("navX").textContent=L.navXText;
 document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
 var diff=Math.floor((today-start)/86400000)+1;
-document.getElementById("days").textContent=L.daysFmt(diff);
+document.getElementById("budgetSubText").textContent=L.budgetSubBase+L.daysFmt(diff);
 jRenderStats(lang);
 document.getElementById("or").textContent="";
 document.getElementById("sh").innerHTML="";
@@ -248,12 +416,17 @@ render(currentLang);
 };
 document.getElementById("ob").onclick=function(){
 var L=LANG[currentLang];
-var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
-document.getElementById("or").textContent=m;
-var shareText=L.omikujiShareLabel+m;
-var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
-if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+var reveal=function(){
+  var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
+  document.getElementById("or").textContent=m;
+  var shareText=L.omikujiShareLabel+m;
+  var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
+  document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
+  if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+};
+document.getElementById("or").textContent="";
+document.getElementById("sh").innerHTML="";
+if(window.__omikujiRoll){window.__omikujiRoll(reveal);}else{reveal();}
 };
 document.getElementById("idea").onclick=function(){
 var L=LANG[currentLang];
@@ -261,10 +434,8 @@ var ideaUrl="https://x.com/intent/post?text="+encodeURIComponent(L.ideaShareText
 window.open(ideaUrl,"_blank");
 if(window.gtag){gtag("event","idea_click");}
 };
-function jankenPlay(userHand){
+function jankenPlay(userHand,aiHand){
 var L=LANG[currentLang];
-var hands=["g","c","p"];
-var aiHand=hands[Math.floor(Math.random()*3)];
 var result;
 if(userHand===aiHand){result="draw";}
 else if((userHand==="g"&&aiHand==="c")||(userHand==="c"&&aiHand==="p")||(userHand==="p"&&aiHand==="g")){result="win";}
@@ -283,10 +454,455 @@ var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&u
 document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
 if(window.gtag){gtag("event","janken_play",{"result":result});}
 }
-document.getElementById("jg").onclick=function(){jankenPlay("g");};
-document.getElementById("jc").onclick=function(){jankenPlay("c");};
-document.getElementById("jp").onclick=function(){jankenPlay("p");};
+function startJanken(userHand){
+var hands=["g","c","p"];
+var aiHand=hands[Math.floor(Math.random()*3)];
+if(window.__jankenReveal){
+  window.__jankenReveal(aiHand,function(){jankenPlay(userHand,aiHand);});
+}else{
+  jankenPlay(userHand,aiHand);
+}
+}
+document.getElementById("jg").onclick=function(){startJanken("g");};
+document.getElementById("jc").onclick=function(){startJanken("c");};
+document.getElementById("jp").onclick=function(){startJanken("p");};
+function setFxCanvasesHidden(hidden){
+  ["omikujiFxCanvas","jankenFxCanvas"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.style.visibility=hidden?"hidden":"visible";
+  });
+}
+document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");setFxCanvasesHidden(true);};
+document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");setFxCanvasesHidden(false);};
+document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");setFxCanvasesHidden(false);};
 render(currentLang);
+
+(function(){
+  var heroReduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(heroReduceMotion)return;
+  var imgs=document.querySelectorAll("#heroImgs img");
+  if(imgs.length<2)return;
+  var idx=0;
+  setInterval(function(){
+    imgs[idx].classList.remove("active");
+    idx=(idx+1)%imgs.length;
+    imgs[idx].classList.add("active");
+  },5200);
+})();
+</script>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js" defer></script>
+<script defer>
+(function(){
+function initHeroFX(){
+  if(typeof THREE==="undefined")return;
+  var canvas=document.getElementById("heroCanvas");
+  var hero=document.querySelector(".hero");
+  if(!canvas||!hero)return;
+  var w=hero.clientWidth,h=hero.clientHeight;
+  if(w<10||h<10)return;
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setSize(w,h,false);
+
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(50,w/h,1,1000);
+  camera.position.z=260;
+
+  var COUNT=42;
+  var bounds={x:170,y:210,z:110};
+  var positions=new Float32Array(COUNT*3);
+  var velocities=[];
+  for(var i=0;i<COUNT;i++){
+    positions[i*3]=(Math.random()*2-1)*bounds.x;
+    positions[i*3+1]=(Math.random()*2-1)*bounds.y;
+    positions[i*3+2]=(Math.random()*2-1)*bounds.z;
+    velocities.push({x:(Math.random()*2-1)*0.14,y:(Math.random()*2-1)*0.14,z:(Math.random()*2-1)*0.09});
+  }
+  var geo=new THREE.BufferGeometry();
+  geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
+
+  function dotTexture(){
+    var c=document.createElement("canvas");c.width=64;c.height=64;
+    var ctx=c.getContext("2d");
+    var g=ctx.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,"rgba(255,255,255,1)");
+    g.addColorStop(0.4,"rgba(255,138,128,0.85)");
+    g.addColorStop(1,"rgba(227,30,36,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
+  }
+  var pts=new THREE.Points(geo,new THREE.PointsMaterial({size:9,map:dotTexture(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0.8}));
+  scene.add(pts);
+
+  var maxLines=COUNT*COUNT;
+  var lineGeo=new THREE.BufferGeometry();
+  var linePositions=new Float32Array(maxLines*3*2);
+  lineGeo.setAttribute("position",new THREE.BufferAttribute(linePositions,3));
+  var lineMat=new THREE.LineBasicMaterial({color:0xE31E24,transparent:true,opacity:0.16,blending:THREE.AdditiveBlending});
+  var lines=new THREE.LineSegments(lineGeo,lineMat);
+  scene.add(lines);
+  var LINK_DIST=92;
+
+  function updateLines(){
+    var idx=0;
+    var arr=lineGeo.attributes.position.array;
+    for(var i=0;i<COUNT;i++){
+      for(var j=i+1;j<COUNT;j++){
+        var dx=positions[i*3]-positions[j*3];
+        var dy=positions[i*3+1]-positions[j*3+1];
+        var dz=positions[i*3+2]-positions[j*3+2];
+        var d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(d<LINK_DIST&&idx<maxLines){
+          arr[idx*6]=positions[i*3];arr[idx*6+1]=positions[i*3+1];arr[idx*6+2]=positions[i*3+2];
+          arr[idx*6+3]=positions[j*3];arr[idx*6+4]=positions[j*3+1];arr[idx*6+5]=positions[j*3+2];
+          idx++;
+        }
+      }
+    }
+    lineGeo.setDrawRange(0,idx*2);
+    lineGeo.attributes.position.needsUpdate=true;
+  }
+
+  function step(){
+    for(var i=0;i<COUNT;i++){
+      positions[i*3]+=velocities[i].x;
+      positions[i*3+1]+=velocities[i].y;
+      positions[i*3+2]+=velocities[i].z;
+      if(positions[i*3]>bounds.x||positions[i*3]<-bounds.x)velocities[i].x*=-1;
+      if(positions[i*3+1]>bounds.y||positions[i*3+1]<-bounds.y)velocities[i].y*=-1;
+      if(positions[i*3+2]>bounds.z||positions[i*3+2]<-bounds.z)velocities[i].z*=-1;
+    }
+    geo.attributes.position.needsUpdate=true;
+    updateLines();
+  }
+
+  step();
+  renderer.render(scene,camera);
+
+  if(!reduceMotion){
+    (function loop(t){
+      if(!document.hidden){
+        step();
+        camera.position.x=Math.sin((t||0)*0.00012)*22;
+        camera.lookAt(0,0,0);
+        renderer.render(scene,camera);
+      }
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  window.addEventListener("resize",function(){
+    var nw=hero.clientWidth,nh=hero.clientHeight;
+    if(nw<10||nh<10)return;
+    camera.aspect=nw/nh;camera.updateProjectionMatrix();
+    renderer.setSize(nw,nh,false);
+  });
+}
+if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener("load",initHeroFX);}
+})();
+
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initOmikujiDie(){
+    if(typeof THREE==="undefined")return;
+    var canvas=document.getElementById("omikujiFxCanvas");
+    var anchor=document.getElementById("omikujiDieAnchor");
+    if(!canvas||!anchor)return;
+
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+
+    var scene=new THREE.Scene();
+    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
+    camera.position.z=1000;
+
+    scene.add(new THREE.AmbientLight(0xffffff,0.6));
+    var key=new THREE.DirectionalLight(0xffffff,0.9);
+    key.position.set(200,-400,500);
+    scene.add(key);
+    var rim=new THREE.DirectionalLight(0xff8a80,0.5);
+    rim.position.set(-250,300,-200);
+    scene.add(rim);
+
+    var R=44;
+    var geo=new THREE.DodecahedronGeometry(R,0);
+    var mat=new THREE.MeshStandardMaterial({color:0xE31E24,roughness:0.35,metalness:0.15,flatShading:true});
+    var die=new THREE.Mesh(geo,mat);
+    var edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xF2F0EC,transparent:true,opacity:0.55}));
+    die.add(edges);
+    die.rotation.set(0.4,0.6,0);
+    scene.add(die);
+
+    var anchorX=0,anchorY=0,rolling=false;
+    die.visible=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:r.top+r.height/2};
+    }
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.bottom=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!die.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      die.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
+
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
+    }
+    function rollOnce(onDone){
+      var dropHeight=250+Math.random()*70;
+      var startX=anchorX+(Math.random()*2-1)*18;
+      var startY=anchorY-dropHeight;
+      var startScale=0.55;
+      var baseRotX=die.rotation.x,baseRotY=die.rotation.y,baseRotZ=die.rotation.z;
+      var spinDir=Math.random()<0.5?-1:1;
+      var tumbleX=spinDir*(Math.PI*4+Math.random()*Math.PI*3);
+      var tumbleY=spinDir*(Math.PI*3+Math.random()*Math.PI*2.5)*(Math.random()<0.5?-1:1);
+      var tumbleZ=(Math.random()*2-1)*(Math.PI*2+Math.random()*Math.PI*2);
+      var duration=1500;
+      var t0=null;
+      die.visible=true;
+      function frame(t){
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(Math.min(p*1.4,1));
+        var eRot=easeOutCubic(p);
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
+        die.position.set(curX,curY,0);
+        die.scale.setScalar(curScale);
+        die.rotation.x=baseRotX+tumbleX*eRot;
+        die.rotation.y=baseRotY+tumbleY*eRot;
+        die.rotation.z=baseRotZ+tumbleZ*eRot;
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else{
+          die.position.set(anchorX,anchorY,0);
+          die.scale.setScalar(1);
+          renderer.render(scene,camera);
+          if(onDone)onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    window.__omikujiRoll=function(onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion){
+        die.visible=true;
+        die.position.set(anchorX,anchorY,0);
+        die.scale.setScalar(1);
+        renderer.render(scene,camera);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(onDone)onDone();
+      }
+      rollOnce(finish);
+      setTimeout(finish,2300);
+    };
+  }
+  if(document.readyState==="complete"){initOmikujiDie();}else{window.addEventListener("load",initOmikujiDie);}
+})();
+
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initJankenCard(){
+    if(typeof THREE==="undefined"||typeof THREE.GLTFLoader==="undefined")return;
+    var canvas=document.getElementById("jankenFxCanvas");
+    var anchor=document.getElementById("jankenHandAnchor");
+    if(!canvas||!anchor)return;
+
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+    if("outputEncoding" in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
+
+    var scene=new THREE.Scene();
+    // top/bottom kept in standard (non-inverted) orientation here, unlike the
+    // omikuji die's camera, so glTF's native Y-up meshes need no extra flip.
+    var camera=new THREE.OrthographicCamera(0,W,H,0,1,2000);
+    camera.position.z=1000;
+
+    scene.add(new THREE.AmbientLight(0xffffff,0.8));
+    var keyLight=new THREE.DirectionalLight(0xffffff,0.9);
+    keyLight.position.set(200,400,600);
+    scene.add(keyLight);
+    var rimLight=new THREE.DirectionalLight(0xfff2df,0.45);
+    rimLight.position.set(-300,120,-400);
+    scene.add(rimLight);
+
+    var order=["g","c","p"];
+    var GLB_URLS={g:"janken_g.glb",c:"janken_c.glb",p:"janken_p.glb"};
+    var HAND_SCALE=150;
+    // per-model resting yaw so each glTF's most legible side faces the camera
+    // (found by rendering every model at 8 angles and comparing).
+    var FRONT_YAW={g:-Math.PI/2,c:-Math.PI/2,p:-Math.PI/2};
+
+    var draco=new THREE.DRACOLoader();
+    draco.setDecoderPath("https://unpkg.com/three@0.128.0/examples/js/libs/draco/gltf/");
+    var loader=new THREE.GLTFLoader();
+    loader.setDRACOLoader(draco);
+
+    var rig=new THREE.Group();
+    rig.visible=false;
+    scene.add(rig);
+
+    var models={};
+    order.forEach(function(k){
+      loader.load(GLB_URLS[k],function(gltf){
+        var root=gltf.scene;
+        root.scale.setScalar(HAND_SCALE);
+        root.rotation.y=FRONT_YAW[k]||0;
+        root.visible=false;
+        rig.add(root);
+        models[k]=root;
+      });
+    });
+    function allLoaded(){return order.every(function(k){return !!models[k];});}
+    function showOnly(k){order.forEach(function(o){if(models[o])models[o].visible=(o===k);});}
+
+    var anchorX=0,anchorY=0,rolling=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:H-(r.top+r.height/2)};
+    }
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.top=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!rig.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rig.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
+
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
+    }
+
+    function settleTo(finalHand){
+      showOnly(finalHand);
+      rig.visible=true;
+      rig.position.set(anchorX,anchorY,0);
+      rig.scale.setScalar(1);
+      rig.rotation.set(0,0,0);
+      renderer.render(scene,camera);
+    }
+
+    function playReveal(finalHand,onDone){
+      var dropHeight=260+Math.random()*60;
+      var startX=anchorX+(Math.random()*2-1)*16;
+      var startY=anchorY+dropHeight;
+      var startScale=0.5;
+      // Pick a half-turn count that (a) is even, so the model always ends up
+      // facing forward, and (b) lands the cycling reveal exactly on finalHand
+      // at the last swap, so settling never has to visibly "correct" the pose.
+      var HALF_TURNS_BASE={g:4,c:2,p:6};
+      var extraCycles=Math.floor(Math.random()*3);
+      var totalHalfTurns=HALF_TURNS_BASE[finalHand]+6*extraCycles;
+      var totalSpin=Math.PI*totalHalfTurns*(Math.random()<0.5?-1:1);
+      var duration=1500;
+      var t0=null,lastHalf=0,stopped=false;
+      showOnly(order[0]);
+      rig.visible=true;
+      function frame(t){
+        if(stopped)return;
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(p);
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
+        var curRotY=totalSpin*eSettle;
+        rig.position.set(curX,curY,0);
+        rig.scale.setScalar(curScale);
+        rig.rotation.y=curRotY;
+        rig.rotation.x=0.06*(1-eSettle);
+        var halfIdx=Math.floor(Math.abs(curRotY)/Math.PI);
+        if(halfIdx!==lastHalf){
+          lastHalf=halfIdx;
+          if(p<0.97){showOnly(order[halfIdx%3]);}
+        }
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else{
+          stopped=true;
+          settleTo(finalHand);
+          if(onDone)onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+      return{stop:function(){stopped=true;settleTo(finalHand);}};
+    }
+
+    window.__jankenReveal=function(finalHand,onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion||!allLoaded()){
+        settleTo(finalHand);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false,handle=null;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(handle)handle.stop();
+        if(onDone)onDone();
+      }
+      handle=playReveal(finalHand,finish);
+      setTimeout(finish,2300);
+    };
+  }
+  if(document.readyState==="complete"){initJankenCard();}else{window.addEventListener("load",initJankenCard);}
+})();
 </script>
 
 </body>
