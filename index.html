@@ -447,9 +447,15 @@ if(window.__jankenReveal){
 document.getElementById("jg").onclick=function(){startJanken("g");};
 document.getElementById("jc").onclick=function(){startJanken("c");};
 document.getElementById("jp").onclick=function(){startJanken("p");};
-document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");};
-document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
-document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
+function setFxCanvasesHidden(hidden){
+  ["omikujiFxCanvas","jankenFxCanvas"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.style.visibility=hidden?"hidden":"visible";
+  });
+}
+document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");setFxCanvasesHidden(true);};
+document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");setFxCanvasesHidden(false);};
+document.getElementById("navLog").onclick=function(){document.getElementById("navOverlay").classList.remove("open");setFxCanvasesHidden(false);};
 render(currentLang);
 
 (function(){
