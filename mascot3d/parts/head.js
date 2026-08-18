@@ -15,7 +15,7 @@ export function build(THREE, M) {
   g.name = 'head';
 
   const HEIGHT = 0.78;
-  const HALF_W = 0.46;
+  const HALF_W = 0.49; // 参考画像は幅:高さ≒1.25:1の横長。0.98/0.78≈1.26
   const DEPTH = 0.68;
 
   // ---------------------------------------------------------------
@@ -77,7 +77,7 @@ export function build(THREE, M) {
   // ===================================================================
   // 外殻（オレンジ）: 頭部全体シルエット。角丸の横長ヘルメット状。
   // ===================================================================
-  const shellGeo = roundedBoxGeo(HALF_W * 2, HEIGHT, DEPTH, 0.18, 5);
+  const shellGeo = roundedBoxGeo(HALF_W * 2, HEIGHT, DEPTH, 0.22, 5);
   addMesh(shellGeo, M.orange, 0, HEIGHT / 2, 0, 0.03);
 
   const SHELL_FRONT_Z = DEPTH / 2; // 0.35
@@ -86,7 +86,7 @@ export function build(THREE, M) {
   // フェイスプレート（クリーム白）: 正面中央〜上寄りを覆う角丸パネル。
   // 外殻より一段前に張り出して段差を作る。
   // ===================================================================
-  const FACE_W = 0.78;
+  const FACE_W = 0.9; // 側面のオレンジ縁を薄くするため拡大(元0.78)
   const FACE_H = 0.62;
   const FACE_Y = 0.42;
   const FACE_DEPTH = 0.1;
@@ -97,6 +97,11 @@ export function build(THREE, M) {
   // フェイスプレート最上部の小さな長方形パネルの筋
   const browPanelGeo = new THREE.BoxGeometry(0.4, 0.05, 0.02);
   addMesh(browPanelGeo, M.cream, 0, FACE_Y + FACE_H / 2 - 0.06, FACE_FRONT_Z + 0.01);
+
+  // 下端の「あご」段差: フェイスプレート下端のすぐ下に、シェル前面よりわずかに
+  // 前へ出るオレンジの薄い帯を挟み、顎ラインの段差を表現する。
+  const chinGeo = new THREE.BoxGeometry(FACE_W * 0.92, 0.05, 0.03);
+  addMesh(chinGeo, M.orange, 0, FACE_Y - FACE_H / 2 - 0.015, SHELL_FRONT_Z + 0.025, 0.015);
 
   // ===================================================================
   // スクリーン（焦げ茶）: フェイスプレートに一段凹んではめ込まれた目の窓。
@@ -117,11 +122,12 @@ export function build(THREE, M) {
   // 目（オレンジの丸2つ）
   // ===================================================================
   const EYE_Z = SCREEN_FRONT_Z + 0.025;
-  const eyeGeo = new THREE.CircleGeometry(0.075, 20);
+  const EYE_Y = SCREEN_Y - 0.03; // やや下寄り
+  const eyeGeo = new THREE.CircleGeometry(0.085, 20);
   for (const side of [-1, 1]) {
     const eye = new THREE.Mesh(eyeGeo, M.orangeLight);
     eye.name = side < 0 ? 'eyeL' : 'eyeR'; // 待機モーションの瞬き用にindex.html側から参照
-    eye.position.set(side * 0.14, SCREEN_Y, EYE_Z);
+    eye.position.set(side * 0.14, EYE_Y, EYE_Z);
     eye.castShadow = false;
     eye.receiveShadow = false;
     g.add(eye);
@@ -131,12 +137,15 @@ export function build(THREE, M) {
   // 反射ハイライト（水色、右上に斜め帯）
   // ===================================================================
   {
-    // スクリーン右上、目より上に来るよう絶対座標で直接定義(目やスクリーン縁と重ならない範囲)
+    // スクリーン右上の角を覆う幅広の三角形(幅≒スクリーン幅の35%、高さ≒60%)。
+    // 右上コーナーを起点に、上辺沿いに左へ・右辺沿いに下へ伸ばした直角三角形。
+    const corner = { x: SCREEN_W / 2 - 0.02, y: SCREEN_Y + SCREEN_H / 2 - 0.02 };
+    const hlW = SCREEN_W * 0.35;
+    const hlH = SCREEN_H * 0.6;
     const hlShape = new THREE.Shape();
-    hlShape.moveTo(0.05, 0.43);
-    hlShape.lineTo(0.26, 0.56);
-    hlShape.lineTo(0.2, 0.56);
-    hlShape.lineTo(-0.01, 0.43);
+    hlShape.moveTo(corner.x, corner.y);
+    hlShape.lineTo(corner.x - hlW, corner.y);
+    hlShape.lineTo(corner.x, corner.y - hlH);
     hlShape.closePath();
     const hlGeo = new THREE.ShapeGeometry(hlShape, 8);
     const hl = new THREE.Mesh(hlGeo, M.skyBlue);
