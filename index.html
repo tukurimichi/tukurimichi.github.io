@@ -735,7 +735,7 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
     var HAND_SCALE=150;
     // per-model resting yaw so each glTF's most legible side faces the camera
     // (found by rendering every model at 8 angles and comparing).
-    var FRONT_YAW={g:-Math.PI/2,c:0,p:-Math.PI/2};
+    var FRONT_YAW={g:-Math.PI/2,c:-Math.PI/2,p:-Math.PI/2};
 
     var draco=new THREE.DRACOLoader();
     draco.setDecoderPath("https://unpkg.com/three@0.128.0/examples/js/libs/draco/gltf/");
