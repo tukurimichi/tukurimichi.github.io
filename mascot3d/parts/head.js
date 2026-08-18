@@ -86,8 +86,8 @@ export function build(THREE, M) {
   // フェイスプレート（クリーム白）: 正面中央〜上寄りを覆う角丸パネル。
   // 外殻より一段前に張り出して段差を作る。
   // ===================================================================
-  const FACE_W = 0.74;
-  const FACE_H = 0.58;
+  const FACE_W = 0.78;
+  const FACE_H = 0.62;
   const FACE_Y = 0.42;
   const FACE_DEPTH = 0.1;
   const FACE_FRONT_Z = SHELL_FRONT_Z + 0.05; // 段差で少し前に出る
@@ -156,20 +156,24 @@ export function build(THREE, M) {
   const EAR_Z = 0.05; // 頭の中心よりやや前寄り(顔まわりに揃える)
   const EAR_FRONT_Z = EAR_Z + EAR_D / 2; // 耳の前面(+Z側の面。前面〜斜めから見た時に主に見える面)
   const earGeo = roundedBoxGeo(EAR_W, EAR_H, EAR_D, 0.06, 4);
+  // 耳前面に重ねるクリーム白パネル(オレンジ外殻に埋没しないよう、別パーツとして
+  // 読めるようにする。参考画像: 白い枠にオレンジ、内側に焦げ茶の縦スロット)
+  const earPanelGeo = roundedBoxGeo(EAR_W * 0.72, EAR_H * 0.82, 0.05, 0.04, 4);
   for (const side of [-1, 1]) {
     const earX = side * (HALF_W - 0.02 + EAR_W / 2);
     addMesh(earGeo, M.orange, earX, EAR_Y, EAR_Z, 0.02);
+    addMesh(earPanelGeo, M.cream, earX, EAR_Y, EAR_FRONT_Z + 0.01, 0.015);
 
     // 内側(頭中心寄り)の縦長スロット(濃茶)。耳の前面、中に埋もれないよう表面よりわずかに前へ出す。
     const slotGeo = new THREE.BoxGeometry(0.03, EAR_H * 0.55, 0.014);
     const slot = new THREE.Mesh(slotGeo, M.darkBrown);
-    slot.position.set(earX - side * (EAR_W / 2 - 0.035), EAR_Y, EAR_FRONT_Z + 0.008);
+    slot.position.set(earX - side * (EAR_W / 2 - 0.035), EAR_Y, EAR_FRONT_Z + 0.035);
     g.add(slot);
 
     // 下側のビス(耳前面、下寄り)
     const boltGeo = new THREE.SphereGeometry(0.022, 10, 10);
     const bolt = new THREE.Mesh(boltGeo, M.bolt);
-    bolt.position.set(earX, EAR_Y - EAR_H / 2 + 0.03, EAR_FRONT_Z + 0.01);
+    bolt.position.set(earX, EAR_Y - EAR_H / 2 + 0.03, EAR_FRONT_Z + 0.038);
     g.add(bolt);
   }
 
