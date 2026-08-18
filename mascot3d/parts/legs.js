@@ -15,6 +15,11 @@
 //   開き(Y軸回転)させ、そこから得られる足首位置から真下にfootSoleY=0まで
 //   靴+ソールを積む(=脚の傾きに関わらず足裏だけは水平に接地する、という
 //   一般的なロボット表現)。
+//
+// 配色方針（参考画像 mascot_v1.jpg 観察）:
+//   脚装甲(太もも・すね)はクリーム白が地。その前面〜内側寄りに、少し浮かせた
+//   段差付きのオレンジ角丸パネルが重なる(白が地、オレンジが板)。パネルは
+//   装甲幅の6割程度、上部が広く下がやや狭い台形気味。
 
 const HIP = { x: 0.2, y: 0.56, z: 0 };
 
@@ -24,11 +29,12 @@ const HIP = { x: 0.2, y: 0.56, z: 0 };
 // ブーツ(靴+ソール)の高さ予算に回している。
 const HIP_JOINT_LEN = 0.025;
 const THIGH_LEN = 0.15;
-const THIGH_ORANGE_RATIO = 0.55; // 太もも: 上55%がオレンジ、下45%がクリーム
 const KNEE_LEN = 0.02;
 const SHIN_LEN = 0.14;
-const SHIN_ORANGE_RATIO = 0.62; // すね: 上62%がオレンジ(膝まわりの大きいオレンジパネルを再現)
-const SHOE_H_NOMINAL = 0.17;
+
+// 装甲を幅広・薄い「板」状に見せるための共通スケール(参考画像の大きなレッグアーマー)
+const ARMOR_XZ = { x: 1.2, z: 0.62 };
+const PANEL_WIDTH_RATIO = 0.6; // オレンジパネルの幅 = 装甲幅の6割
 
 // 画面左(-1)=前にやや踏み出す・画面右(1)=後ろで開く、の非対称ポーズ。
 // 角度は控えめ:単純な剛体傾斜(膝の実際の曲げは無い)なので、大きすぎると
@@ -37,6 +43,41 @@ const POSE = {
   '-1': { tiltDeg: 14, yawDeg: 9 },
   1: { tiltDeg: -9, yawDeg: -13 },
 };
+
+// 太もも/すね共通: クリーム白の装甲塊(全長)の前面に、浮かせた段差付きの
+// オレンジ台形パネルを重ねる。armorAvgR はパネルの前方オフセット計算用。
+function addArmorWithPanel(THREE, M, chain, side, topY, len, armorAvgR, radiusTop, radiusBottom) {
+  const armorGeo = new THREE.CylinderGeometry(radiusTop, radiusBottom, len, 16);
+  const armor = new THREE.Mesh(armorGeo, M.cream);
+  armor.position.set(0, topY - len / 2, 0);
+  armor.scale.set(ARMOR_XZ.x, 1, ARMOR_XZ.z);
+  chain.add(armor);
+  M.addOutline(armor, 0.026);
+
+  const panelLen = len * 0.9;
+  const panelTopR = armorAvgR * 0.98;
+  const panelBotR = armorAvgR * 0.78; // 下がやや狭い台形
+  const panelGeo = new THREE.CylinderGeometry(panelTopR, panelBotR, panelLen, 16);
+  const panel = new THREE.Mesh(panelGeo, M.orange);
+  const frontZ = armorAvgR * ARMOR_XZ.z + 0.022; // クリーム前面から少し浮かせる(段差)
+  const panelCenterY = topY - len * 0.06 - panelLen / 2;
+  panel.position.set(0, panelCenterY, frontZ);
+  panel.scale.set(PANEL_WIDTH_RATIO * ARMOR_XZ.x, 1, 0.3);
+  chain.add(panel);
+  M.addOutline(panel, 0.02);
+
+  // ビス(パネル上部左右)
+  const boltGeo = new THREE.CylinderGeometry(0.014, 0.014, 0.01, 10);
+  const boltDx = panelTopR * PANEL_WIDTH_RATIO * ARMOR_XZ.x * 0.55;
+  for (const dx of [-boltDx, boltDx]) {
+    const bolt = new THREE.Mesh(boltGeo, M.bolt);
+    bolt.rotation.x = Math.PI / 2;
+    bolt.position.set(dx, topY - len * 0.2, frontZ + panelTopR * 0.26 + 0.008);
+    chain.add(bolt);
+  }
+
+  return { panelCenterY, panelTopR, panelBotR, frontZ };
+}
 
 function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 */) {
   const leg = new THREE.Group();
@@ -52,9 +93,6 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   chain.rotation.set(tilt, yaw, 0);
   leg.add(chain);
 
-  // 装甲を幅広・薄い「板」状に見せるための共通スケール(参考画像の大きなレッグアーマー)
-  const ARMOR_XZ = { x: 1.2, z: 0.62 };
-
   let y = 0; // chainローカルの下向き積み上げ(マイナス方向)
 
   // 股関節ジョイント(焦げ茶、細い円柱。下の装甲との太さの差を大きく取り、
@@ -65,42 +103,17 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   chain.add(hip);
   y -= HIP_JOINT_LEN;
 
-  // 太もも装甲(オレンジ上部+クリーム下部、丸みのある大きい塊。
-  // 上下でわずかに広がる程度に抑え、コーン状に見えすぎないようにする)
-  const thighOrangeLen = THIGH_LEN * THIGH_ORANGE_RATIO;
-  const thighCreamLen = THIGH_LEN - thighOrangeLen;
-
-  const thighOrangeGeo = new THREE.CylinderGeometry(0.125, 0.135, thighOrangeLen, 16);
-  const thighOrange = new THREE.Mesh(thighOrangeGeo, M.orange);
-  thighOrange.position.set(0, y - thighOrangeLen / 2, 0);
-  thighOrange.scale.set(ARMOR_XZ.x, 1, ARMOR_XZ.z);
-  chain.add(thighOrange);
-  M.addOutline(thighOrange, 0.026);
-  y -= thighOrangeLen;
-
-  const thighCreamGeo = new THREE.CylinderGeometry(0.135, 0.14, thighCreamLen, 16);
-  const thighCream = new THREE.Mesh(thighCreamGeo, M.cream);
-  thighCream.position.set(0, y - thighCreamLen / 2, 0);
-  thighCream.scale.set(ARMOR_XZ.x, 1, ARMOR_XZ.z);
-  chain.add(thighCream);
-  M.addOutline(thighCream, 0.026);
-  y -= thighCreamLen;
-
-  // ビス(太もも、クリーム部分の前面に1個)
-  {
-    const boltGeo = new THREE.CylinderGeometry(0.016, 0.016, 0.012, 10);
-    const bolt = new THREE.Mesh(boltGeo, M.bolt);
-    bolt.rotation.x = Math.PI / 2;
-    bolt.position.set(side * 0.04, y + thighCreamLen * 0.6, 0.14 * ARMOR_XZ.z);
-    chain.add(bolt);
-  }
+  // 太もも装甲(クリーム白ベース+前面オレンジパネル、大きく丸い塊)
+  const thighTopY = y;
+  addArmorWithPanel(THREE, M, chain, side, thighTopY, THIGH_LEN, 0.135, 0.125, 0.15);
+  y -= THIGH_LEN;
 
   // 左脚のみ: 外側寄りに丸い小さなマーク(楕円、参考画像の左脚外側マーク)
   if (side < 0) {
     const markGeo = new THREE.CircleGeometry(0.03, 20);
     const mark = new THREE.Mesh(markGeo, M.bolt);
     mark.scale.set(1, 1.3, 1);
-    mark.position.set(side * 0.11 * ARMOR_XZ.x, y + thighCreamLen * 0.8, 0.06);
+    mark.position.set(side * 0.11 * ARMOR_XZ.x, thighTopY - THIGH_LEN * 0.8, 0.06);
     mark.rotation.y = side * Math.PI * 0.42; // 前面よりも外側面(側面)寄りに向ける
     mark.castShadow = false;
     mark.receiveShadow = false;
@@ -114,36 +127,10 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   chain.add(knee);
   y -= KNEE_LEN;
 
-  // すね装甲(オレンジ上部+クリーム下部、太もも同様の大きい塊。ビスあり)
-  const shinOrangeLen = SHIN_LEN * SHIN_ORANGE_RATIO;
-  const shinCreamLen = SHIN_LEN - shinOrangeLen;
-
-  const shinOrangeGeo = new THREE.CylinderGeometry(0.13, 0.14, shinOrangeLen, 16);
-  const shinOrange = new THREE.Mesh(shinOrangeGeo, M.orange);
-  shinOrange.position.set(0, y - shinOrangeLen / 2, 0);
-  shinOrange.scale.set(ARMOR_XZ.x, 1, ARMOR_XZ.z);
-  chain.add(shinOrange);
-  M.addOutline(shinOrange, 0.026);
-  y -= shinOrangeLen;
-
-  const shinCreamGeo = new THREE.CylinderGeometry(0.14, 0.115, shinCreamLen, 16);
-  const shinCream = new THREE.Mesh(shinCreamGeo, M.cream);
-  shinCream.position.set(0, y - shinCreamLen / 2, 0);
-  shinCream.scale.set(ARMOR_XZ.x, 1, ARMOR_XZ.z);
-  chain.add(shinCream);
-  M.addOutline(shinCream, 0.026);
-  y -= shinCreamLen;
-
-  // ビス(すね、オレンジ部分の前面に2個)
-  {
-    const boltGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.011, 10);
-    for (const dx of [-0.045, 0.045]) {
-      const bolt = new THREE.Mesh(boltGeo, M.bolt);
-      bolt.rotation.x = Math.PI / 2;
-      bolt.position.set(dx, y + shinOrangeLen * 0.55, 0.135 * ARMOR_XZ.z);
-      chain.add(bolt);
-    }
-  }
+  // すね装甲(クリーム白ベース+前面オレンジパネル、太もも同様の大きい塊)
+  const shinTopY = y;
+  addArmorWithPanel(THREE, M, chain, side, shinTopY, SHIN_LEN, 0.13, 0.13, 0.125);
+  y -= SHIN_LEN;
 
   // --- 足首位置をleg空間へ変換し、そこから真下(floor)まで靴+ソールを積む ---
   const ankleInChain = new THREE.Vector3(0, y, 0);
@@ -153,8 +140,9 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   const floorLocalY = -HIP.y; // leg group内でのfootSoleY(=0)
   const footDrop = Math.max(0.16, ankleInLeg.y - floorLocalY); // 靴+ソールの高さ予算
 
-  const shoeH = Math.min(SHOE_H_NOMINAL, footDrop * 0.75);
-  const soleThickness = Math.max(0.04, footDrop - shoeH);
+  // ブーツ本体(オレンジ)を大きく・ソール(焦げ茶)は薄く、の比率に変更
+  const shoeH = Math.min(0.255, footDrop * 0.85);
+  const soleThickness = Math.max(0.025, footDrop - shoeH);
 
   const foot = new THREE.Group();
   foot.name = 'foot';
@@ -164,10 +152,10 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   leg.add(foot);
 
   // 靴本体(オレンジ、大きく丸いブーツ。装甲より幅広い塊+前方やや上向きに
-  // 傾けることで「前が丸く高い」印象を出す)
-  const bootR = 0.13;
-  const bootDepth = 0.4;
-  const bootWidth = 0.3;
+  // 傾けることで「前が丸く高い」印象を出す。ソールに対して本体を大きくする)
+  const bootR = 0.15;
+  const bootDepth = 0.56;
+  const bootWidth = 0.32;
   const bootGeo = new THREE.SphereGeometry(bootR, 16, 12);
   const boot = new THREE.Mesh(bootGeo, M.orange);
   const bootScaleY = shoeH / (bootR * 2);
@@ -177,8 +165,8 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   foot.add(boot);
   M.addOutline(boot, 0.022);
 
-  // ソール(焦げ茶、厚い板。前後に大きくはみ出す)
-  const soleGeo = new THREE.BoxGeometry(bootWidth + 0.04, soleThickness, bootDepth + 0.09);
+  // ソール(焦げ茶、薄い板。前後に少しだけはみ出す程度)
+  const soleGeo = new THREE.BoxGeometry(bootWidth + 0.02, soleThickness, bootDepth + 0.05);
   const sole = new THREE.Mesh(soleGeo, M.sole);
   sole.position.set(0, -shoeH - soleThickness / 2, 0.05);
   foot.add(sole);
@@ -186,10 +174,10 @@ function buildOneLeg(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
 
   // ソール側面(左右)の縦の溝(薄い箱を数本並べる)
   {
-    const grooveGeo = new THREE.BoxGeometry(0.012, soleThickness * 0.7, 0.022);
-    const halfW = (bootWidth + 0.04) / 2;
+    const grooveGeo = new THREE.BoxGeometry(0.012, soleThickness * 0.7, 0.02);
+    const halfW = (bootWidth + 0.02) / 2;
     for (const gx of [-halfW, halfW]) {
-      for (const gz of [-0.09, 0.02, 0.12]) {
+      for (const gz of [-0.11, 0.02, 0.15]) {
         const groove = new THREE.Mesh(grooveGeo, M.darkBrown);
         groove.position.set(gx + (gx > 0 ? 0.006 : -0.006), -shoeH - soleThickness / 2, 0.05 + gz);
         groove.castShadow = false;
