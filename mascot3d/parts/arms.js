@@ -143,9 +143,11 @@ function buildOneArm(THREE, M, side /* -1 = 左(画面向かって左), 1 = 右 
   elbowGroup.add(screw);
 
   // --- 手(前腕が大幅に太くなった分に合わせて、より大きな焦げ茶のこぶしに) ---
+  // 前腕(手首側)の直径の約0.9倍を狙い、手首キャップの奥に埋もれないよう
+  // 前腕先端よりはっきり外側(下)へ突き出す位置に配置する。
   const hand = buildHand(THREE, M, side > 0);
-  hand.scale.setScalar(1.5);
-  hand.position.set(0, -foreUpperLen - foreLowerLen - 0.02, 0.01);
+  hand.scale.setScalar(1.6);
+  hand.position.set(0, -foreUpperLen - foreLowerLen - 0.11, 0.02);
   elbowGroup.add(hand);
 
   return arm;
