@@ -18,12 +18,49 @@
 <meta name="twitter:description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.2em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.hero{display:block;margin:0 auto 16px;width:96px;border-radius:14px;}.viewerCard{border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.1);margin:1em 0;background:#fff;}.viewerCard iframe{display:block;width:100%;aspect-ratio:3/4;border:0;}.hint{font-size:.82em;color:#8A8470;margin-top:.4em;}.origWrap{margin-top:1.8em;}.origWrap img{width:110px;border-radius:12px;display:block;box-shadow:0 2px 10px rgba(0,0,0,.08);}.origCaption{font-size:.85em;color:#8A8470;margin-top:8px;}.todoBox{font-size:.9em;color:#5A5648;background:#FBEDE7;border-radius:10px;padding:12px 16px;margin-top:1.4em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+a{color:#FF8A80;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;}
+.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.section{padding:22px 22px 4px;}
+.section p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1em;}
+.viewerCard{border-radius:14px;overflow:hidden;border:1px solid var(--line);margin:.6em 0;background:var(--card2);}
+.viewerCard iframe{display:block;width:100%;aspect-ratio:3/4;border:0;}
+.hint{font-size:.8em;color:var(--muted);margin:.6em 0 0;}
+.origWrap{margin-top:1.6em;padding-bottom:8px;}
+.origWrap img{width:100px;border-radius:12px;display:block;border:1px solid var(--line);}
+.origCaption{font-size:.82em;color:var(--muted);margin-top:8px;}
+.todoBox{font-size:.88em;color:#D9D6D0;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:1.4em 22px 0;}
+.footer{padding:24px 22px 8px;font-size:.85em;}
+.footer a{display:inline-block;color:#FF8A80;text-decoration:none;}
+</style>
 </head>
 <body>
-<a class="back" href="./">← tukurimichi.com トップへ</a>
-<img class="hero" src="mascot_site.jpg" alt="mascot">
+<div class="wrap">
+<a class="backlink" href="./">← tukurimichi.com トップへ</a>
+
+<div class="banner">
 <h1>マスコットを3Dにしてもらった</h1>
+<p>three.jsのコードだけで挑戦した、2回目の記録。</p>
+</div>
+
+<div class="section">
 <p>このマスコット、実は一度3Dモデル化に挑戦して没になっている。画像から自動で3Dにしてくれるサービスを試した話は日記に書いた通り、形にはなったものの持ち帰るには課金が必要で見送った。</p>
 <p>今回は別のやり方で、AIにコードだけを書かせて3Dを作ってみた。使ったのはthree.js(ブラウザの中で3Dの絵を描くためのプログラムの部品)。1回目は全身を一気に作らせたらクオリティが微妙で没になったので、2回目は頭・胴体・腕・脚を別々に分担させて、あらためて組み立て直してもらった。</p>
 <p>下の枠の中でドラッグすると、視点をぐるぐる回せる。</p>
@@ -32,14 +69,16 @@
 <iframe src="mascot3d/index.html" title="マスコット3Dビューア" loading="lazy"></iframe>
 </div>
 <p class="hint">動かない場合は少し待つか、リロードしてみてください。</p>
+</div>
 
-<div class="origWrap">
+<div class="origWrap section">
 <img src="images/mascot_v1.jpg" alt="元のマスコットイラスト">
 <p class="origCaption">元の絵はこちら。</p>
 </div>
 
 <p class="todoBox">まだ違うところ：脚の色分け、靴の比率、顔まわり。少しずつ直していく。</p>
 
-<p><a class="back" href="./">← tukurimichi.com トップへ戻る</a></p>
+<div class="footer"><a href="./">← tukurimichi.com トップへ戻る</a></div>
+</div>
 </body>
 </html>
