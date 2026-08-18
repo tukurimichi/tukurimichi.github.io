@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>マスコットが3Dになった | tukurimichi.com</title>
+<meta name="description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
+<meta property="og:title" content="マスコットが3Dになった">
+<meta property="og:description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
+<meta property="og:url" content="https://tukurimichi.com/mascot3d.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="マスコットが3Dになった">
+<meta name="twitter:description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.2em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.hero{display:block;margin:0 auto 16px;width:96px;border-radius:14px;}.viewerCard{border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.1);margin:1em 0;background:#fff;}.viewerCard iframe{display:block;width:100%;aspect-ratio:3/4;border:0;}.hint{font-size:.82em;color:#8A8470;margin-top:.4em;}.origWrap{margin-top:1.8em;}.origWrap img{width:110px;border-radius:12px;display:block;box-shadow:0 2px 10px rgba(0,0,0,.08);}.origCaption{font-size:.85em;color:#8A8470;margin-top:8px;}.todoBox{font-size:.9em;color:#5A5648;background:#FBEDE7;border-radius:10px;padding:12px 16px;margin-top:1.4em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+</head>
+<body>
+<a class="back" href="./">← tukurimichi.com トップへ</a>
+<img class="hero" src="mascot_site.jpg" alt="mascot">
+<h1>マスコットを3Dにしてもらった</h1>
+<p>このマスコット、実は一度3Dモデル化に挑戦して没になっている。画像から自動で3Dにしてくれるサービスを試した話は日記に書いた通り、形にはなったものの持ち帰るには課金が必要で見送った。</p>
+<p>今回は別のやり方で、AIにコードだけを書かせて3Dを作ってみた。使ったのはthree.js(ブラウザの中で3Dの絵を描くためのプログラムの部品)。1回目は全身を一気に作らせたらクオリティが微妙で没になったので、2回目は頭・胴体・腕・脚を別々に分担させて、あらためて組み立て直してもらった。</p>
+<p>下の枠の中でドラッグすると、視点をぐるぐる回せる。</p>
+
+<div class="viewerCard">
+<iframe src="mascot3d/index.html" title="マスコット3Dビューア" loading="lazy"></iframe>
+</div>
+<p class="hint">動かない場合は少し待つか、リロードしてみてください。</p>
+
+<div class="origWrap">
+<img src="images/mascot_v1.jpg" alt="元のマスコットイラスト">
+<p class="origCaption">元の絵はこちら。</p>
+</div>
+
+<p class="todoBox">まだ違うところ：脚の色分け、靴の比率、顔まわり。少しずつ直していく。</p>
+
+<p><a class="back" href="./">← tukurimichi.com トップへ戻る</a></p>
+</body>
+</html>
