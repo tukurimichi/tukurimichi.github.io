@@ -565,6 +565,7 @@ function initDeskScene(){
   var camera=new THREE.PerspectiveCamera(36,W/H,10,2000);
   camera.position.set(0,430,225);
   camera.lookAt(0,4,0);
+  camera.updateMatrixWorld(true); // so .project() gives correct results even before the first render() (roam system needs this at init time)
 
   scene.add(new THREE.AmbientLight(0xffffff,0.75));
   var key=new THREE.DirectionalLight(0xffffff,0.6);
@@ -649,28 +650,188 @@ function initDeskScene(){
   });
 
   var mascot=buildMascotBody(0.8);
-  // wander waypoints: hand-picked spots on the floor beside the desk (left pocket),
-  // clear of every menu item's hitbox/label and always fully on-screen at 375px width
-  // machine-verified (grid search: unclipped at 375x812 & 1280x800, zero overlap with any
-  // item hitbox/label across 4 facing angles) — a patrol strip along the desk's left edge
-  var WAYPOINTS=[{x:-124,z:-76},{x:-124,z:-60},{x:-124,z:-44},{x:-124,z:-28}];
+
+  // --- roam system: whole tabletop + surrounding floor, item avoidance, simple steering ---
+  var ROBOT_RADIUS=28,AVOID_MARGIN=14;
+  var DESK_TOP_MARGIN=20;
+  var DESK_TOP_X=DESK_W/2-DESK_TOP_MARGIN,DESK_TOP_Z=DESK_D/2-DESK_TOP_MARGIN;
+  var GROUND_TOP_Y=0,GROUND_FLOOR_Y=-14;
   var mascotBaseY=24;
-  mascot.group.position.set(WAYPOINTS[0].x,mascotBaseY,WAYPOINTS[0].z);
+
+  // one avoidance circle per menu item, radius = item footprint + robot footprint + margin,
+  // computed from each item's actual (already-padded) hitbox so it tracks the real tap target
+  var avoidCircles=items.map(function(it){
+    var box=new THREE.Box3().setFromObject(it.group);
+    var size=box.getSize(new THREE.Vector3());
+    var center=box.getCenter(new THREE.Vector3());
+    return {cx:center.x,cz:center.z,r:Math.max(size.x,size.z)/2+ROBOT_RADIUS+AVOID_MARGIN};
+  });
+  function clearOfItems(x,z){
+    for(var i=0;i<avoidCircles.length;i++){
+      var c=avoidCircles[i],dx=x-c.cx,dz=z-c.cz;
+      if(dx*dx+dz*dz<c.r*c.r)return false;
+    }
+    return true;
+  }
+  function onDeskFootprint(x,z){return Math.abs(x)<=DESK_W/2&&Math.abs(z)<=DESK_D/2;}
+  function groundLevelAt(x,z){return onDeskFootprint(x,z)?GROUND_TOP_Y:GROUND_FLOOR_Y;}
+  function isOnScreen(x,z){
+    var gy=groundLevelAt(x,z),margin=16;
+    var samples=[[x-ROBOT_RADIUS,gy+42,z],[x+ROBOT_RADIUS,gy+42,z],[x,gy+42,z-ROBOT_RADIUS],[x,gy+42,z+ROBOT_RADIUS],[x,gy+6,z]];
+    for(var i=0;i<samples.length;i++){
+      var p=samples[i],v=new THREE.Vector3(p[0],p[1],p[2]);
+      v.project(camera);
+      if(v.z>=1)return false;
+      var sx=(v.x*0.5+0.5)*W,sy=(-v.y*0.5+0.5)*H;
+      if(sx<margin||sx>W-margin||sy<margin||sy>H-margin)return false;
+    }
+    return true;
+  }
+  // authoritative screen-space check: projects the mascot's own on-screen circle at (x,z)
+  // and each item's actual screen hitbox, and rejects any overlap. This catches cases plain
+  // world-space XZ distance misses (extreme camera angles can make far-apart world points
+  // project close together near the frame's horizon).
+  function projectLocal(v){
+    var p=v.clone().project(camera);
+    return {x:(p.x*0.5+0.5)*W,y:(-p.y*0.5+0.5)*H};
+  }
+  function mascotScreenCircle(x,z){
+    var gy=groundLevelAt(x,z);
+    var base=new THREE.Vector3(x,gy+mascotBaseY,z);
+    var c=projectLocal(base);
+    var e=projectLocal(base.clone().add(new THREE.Vector3(ROBOT_RADIUS,0,0)));
+    return {cx:c.x,cy:c.y,r:Math.max(6,Math.hypot(e.x-c.x,e.y-c.y))};
+  }
+  function circleRectOverlap(cx,cy,r,rect){
+    var nx=Math.max(rect.left,Math.min(cx,rect.right));
+    var ny=Math.max(rect.top,Math.min(cy,rect.bottom));
+    var dx=cx-nx,dy=cy-ny;
+    return (dx*dx+dy*dy)<(r*r);
+  }
+  function itemScreenRects(){
+    return items.map(function(it){
+      var box=new THREE.Box3().setFromObject(it.group);
+      var corners=[];
+      for(var xi=0;xi<2;xi++)for(var yi=0;yi<2;yi++)for(var zi=0;zi<2;zi++){
+        corners.push(new THREE.Vector3(xi?box.max.x:box.min.x,yi?box.max.y:box.min.y,zi?box.max.z:box.min.z));
+      }
+      var pts=corners.map(projectLocal);
+      var xs=pts.map(function(p){return p.x;}),ys=pts.map(function(p){return p.y;});
+      return {left:Math.min.apply(null,xs),right:Math.max.apply(null,xs),top:Math.min.apply(null,ys),bottom:Math.max.apply(null,ys)};
+    });
+  }
+  function clearOnScreen(x,z,rects){
+    var circ=mascotScreenCircle(x,z);
+    for(var i=0;i<rects.length;i++){if(circleRectOverlap(circ.cx,circ.cy,circ.r,rects[i]))return false;}
+    return true;
+  }
+  function pickDestination(curX,curZ){
+    var rects=itemScreenRects();
+    for(var attempt=0;attempt<50;attempt++){
+      var x,z;
+      if(Math.random()<0.72){
+        x=(Math.random()*2-1)*DESK_TOP_X;
+        z=(Math.random()*2-1)*DESK_TOP_Z;
+      }else{
+        var side=Math.floor(Math.random()*4),ext=10+Math.random()*16;
+        if(side===0){x=-(DESK_W/2+ext);z=(Math.random()*2-1)*(DESK_D/2+12);}
+        else if(side===1){x=(DESK_W/2+ext);z=(Math.random()*2-1)*(DESK_D/2+12);}
+        else if(side===2){z=(DESK_D/2+ext);x=(Math.random()*2-1)*(DESK_W/2+12);}
+        else{z=-(DESK_D/2+ext);x=(Math.random()*2-1)*(DESK_W/2+12);}
+      }
+      if(clearOfItems(x,z)&&isOnScreen(x,z)&&clearOnScreen(x,z,rects))return {x:x,z:z};
+    }
+    return null;
+  }
+  function segClosestT(ax,az,bx,bz,cx,cz){
+    var dx=bx-ax,dz=bz-az,len2=dx*dx+dz*dz;
+    if(len2<1e-6)return 0;
+    return Math.max(0,Math.min(1,((cx-ax)*dx+(cz-az)*dz)/len2));
+  }
+  function findBlockingItem(ax,az,bx,bz,exclude){
+    var best=null,bestT=2;
+    for(var i=0;i<avoidCircles.length;i++){
+      var c=avoidCircles[i];
+      if(exclude&&exclude.indexOf(c)>=0)continue;
+      var t=segClosestT(ax,az,bx,bz,c.cx,c.cz);
+      var px=ax+(bx-ax)*t,pz=az+(bz-az)*t,ddx=px-c.cx,ddz=pz-c.cz;
+      if(ddx*ddx+ddz*ddz<c.r*c.r&&t<bestT){bestT=t;best=c;}
+    }
+    return best;
+  }
+  function buildPath(ax,az,bx,bz){
+    // validates EVERY consecutive segment of the path (not just the shrinking
+    // "current -> final" segment), re-scanning from scratch after each inserted
+    // detour so a fix for one obstacle can't silently leave a new segment blocked
+    var pts=[{x:ax,z:az},{x:bx,z:bz}];
+    var screenRects=null;
+    for(var iter=0;iter<7;iter++){
+      var blockedIdx=-1,blockedItem=null;
+      for(var i=0;i<pts.length-1;i++){
+        var b=findBlockingItem(pts[i].x,pts[i].z,pts[i+1].x,pts[i+1].z,null);
+        if(b){blockedIdx=i;blockedItem=b;break;}
+      }
+      if(blockedIdx===-1)break;
+      var p0=pts[blockedIdx],p1=pts[blockedIdx+1];
+      var dx=p1.x-p0.x,dz=p1.z-p0.z,dlen=Math.sqrt(dx*dx+dz*dz)||1;
+      dx/=dlen;dz/=dlen;
+      var perpX=-dz,perpZ=dx;
+      var toX=blockedItem.cx-p0.x,toZ=blockedItem.cz-p0.z;
+      var sign=(toX*perpX+toZ*perpZ)>0?-1:1;
+      var detourX,detourZ;
+      for(var mul=1;mul<=2.6;mul+=0.4){
+        var off=(blockedItem.r+6)*mul;
+        var dxCand=Math.max(-(DESK_W/2+40),Math.min(DESK_W/2+40,blockedItem.cx+perpX*off*sign));
+        var dzCand=Math.max(-(DESK_D/2+40),Math.min(DESK_D/2+40,blockedItem.cz+perpZ*off*sign));
+        if(clearOfItems(dxCand,dzCand)&&isOnScreen(dxCand,dzCand)){
+          if(!screenRects)screenRects=itemScreenRects();
+          if(clearOnScreen(dxCand,dzCand,screenRects)){detourX=dxCand;detourZ=dzCand;break;}
+        }
+        if(mul===1){detourX=dxCand;detourZ=dzCand;}
+      }
+      pts.splice(blockedIdx+1,0,{x:detourX,z:detourZ});
+    }
+    pts.shift();
+    return pts;
+  }
+  function verifyPathClear(startX,startZ,pathPts,rects){
+    var cx=startX,cz=startZ;
+    var steps=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1];
+    for(var i=0;i<pathPts.length;i++){
+      var p=pathPts[i];
+      if(findBlockingItem(cx,cz,p.x,p.z,null))return false;
+      for(var s=0;s<steps.length;s++){
+        var t=steps[s];
+        var sx=cx+(p.x-cx)*t,sz=cz+(p.z-cz)*t;
+        if(!isOnScreen(sx,sz))return false;
+        if(!clearOnScreen(sx,sz,rects))return false;
+      }
+      cx=p.x;cz=p.z;
+    }
+    return true;
+  }
+
+  var startPos=null;
+  for(var initAttempt=0;initAttempt<30&&!startPos;initAttempt++){startPos=pickDestination(0,0);}
+  if(!startPos)startPos={x:0,z:0}; // astronomically unlikely fallback; next pause-cycle retry will fix it
+  mascot.group.position.set(startPos.x,groundLevelAt(startPos.x,startPos.z)+mascotBaseY,startPos.z);
   mascot.group.rotation.y=0.9;
   deskGroup.add(mascot.group);
-  var mascotShadow=addShadow(WAYPOINTS[0].x,WAYPOINTS[0].z+4,26);
+  var mascotShadow=addShadow(startPos.x,startPos.z+4,26);
   var waveState=null;
   var wander={
-    pos:{x:WAYPOINTS[0].x,z:WAYPOINTS[0].z},
-    wpIdx:0,
+    pos:{x:startPos.x,z:startPos.z},
+    path:[],
     mode:"pause",
     pauseUntil:Date.now()+900,
     lookCamera:false,
     facing:0.9,
     targetFacing:0.9,
-    walkPhase:0
+    walkPhase:0,
+    groundY:groundLevelAt(startPos.x,startPos.z),
+    jumping:false,jumpT0:0,jumpFrom:0,jumpTo:0
   };
-  var WALK_SPEED=11,TURN_SPEED=2.2,LEG_SWING=0.5,ARM_SWING=0.3,WALK_BOUNCE=1.6;
+  var WALK_SPEED=15,TURN_SPEED=2.6,LEG_SWING=0.5,ARM_SWING=0.3,WALK_BOUNCE=1.6,JUMP_DUR=380,JUMP_H=9;
   var lastFrameT=null;
   function angleTo(dx,dz){return Math.atan2(dx,dz);}
   function shortestDelta(target,current){
@@ -791,7 +952,7 @@ function initDeskScene(){
     });
   },600);
 
-  window.__deskDebug={camera:camera,items:items,mascot:mascot,waypoints:WAYPOINTS,getW:function(){return W;},getH:function(){return H;},isWaving:function(){return !!waveState;},getWander:function(){return {mode:wander.mode,pos:{x:wander.pos.x,z:wander.pos.z},wpIdx:wander.wpIdx};}};
+  window.__deskDebug={camera:camera,items:items,mascot:mascot,avoidCircles:avoidCircles,pickDestination:pickDestination,clearOfItems:clearOfItems,getW:function(){return W;},getH:function(){return H;},isWaving:function(){return !!waveState;},getWander:function(){return {mode:wander.mode,pos:{x:wander.pos.x,z:wander.pos.z},path:wander.path.slice(),groundY:wander.groundY,jumping:wander.jumping};}};
 
   (function frame(){
     var navOpen=document.getElementById("navOverlay").classList.contains("open");
@@ -821,31 +982,35 @@ function initDeskScene(){
         mascot.head.rotation.y=0.6+Math.sin(nowT*0.0006)*0.18;
 
         if(wander.mode==="walk"){
-          var wp=WAYPOINTS[wander.wpIdx];
-          var wdx=wp.x-wander.pos.x,wdz=wp.z-wander.pos.z;
-          var wdist=Math.sqrt(wdx*wdx+wdz*wdz);
-          if(wdist<2){
-            wander.mode="pause";
-            wander.lookCamera=Math.random()<0.5;
-            wander.pauseUntil=nowT+2200+Math.random()*1800;
-            if(wander.lookCamera){
-              wander.targetFacing=angleTo(-wander.pos.x*0.35,260-wander.pos.z);
-              (function(){
-                var pauseTokenAtCall=wander.mode;
-                setTimeout(function(){if(wander.mode==="pause"&&!waveState)waveState={t0:Date.now()};},500);
-              })();
-            }
+          if(wander.path.length===0){
+            wander.mode="pause";wander.pauseUntil=nowT+500;
           }else{
-            var wstep=Math.min(WALK_SPEED*fdt,wdist);
-            wander.pos.x+=wdx/wdist*wstep;
-            wander.pos.z+=wdz/wdist*wstep;
-            wander.targetFacing=angleTo(wdx,wdz);
-            wander.walkPhase+=fdt*6.5;
-            mascot.leftLeg.rotation.x=Math.sin(wander.walkPhase)*LEG_SWING;
-            mascot.rightLeg.rotation.x=-Math.sin(wander.walkPhase)*LEG_SWING;
-            if(!waveState){
-              mascot.leftArm.rotation.x=-Math.sin(wander.walkPhase)*ARM_SWING;
-              mascot.rightArm.rotation.x=Math.sin(wander.walkPhase)*ARM_SWING;
+            var wp=wander.path[0];
+            var wdx=wp.x-wander.pos.x,wdz=wp.z-wander.pos.z;
+            var wdist=Math.sqrt(wdx*wdx+wdz*wdz);
+            if(wdist<2.5){
+              wander.path.shift();
+              if(wander.path.length===0){
+                wander.mode="pause";
+                wander.lookCamera=Math.random()<0.5;
+                wander.pauseUntil=nowT+2000+Math.random()*2200;
+                if(wander.lookCamera){
+                  wander.targetFacing=angleTo(-wander.pos.x*0.35,260-wander.pos.z);
+                  (function(){setTimeout(function(){if(wander.mode==="pause"&&!waveState)waveState={t0:Date.now()};},450);})();
+                }
+              }
+            }else{
+              var wstep=Math.min(WALK_SPEED*fdt,wdist);
+              wander.pos.x+=wdx/wdist*wstep;
+              wander.pos.z+=wdz/wdist*wstep;
+              wander.targetFacing=angleTo(wdx,wdz);
+              wander.walkPhase+=fdt*7.2;
+              mascot.leftLeg.rotation.x=Math.sin(wander.walkPhase)*LEG_SWING;
+              mascot.rightLeg.rotation.x=-Math.sin(wander.walkPhase)*LEG_SWING;
+              if(!waveState){
+                mascot.leftArm.rotation.x=-Math.sin(wander.walkPhase)*ARM_SWING;
+                mascot.rightArm.rotation.x=Math.sin(wander.walkPhase)*ARM_SWING;
+              }
             }
           }
         }else{
@@ -856,10 +1021,34 @@ function initDeskScene(){
             mascot.rightArm.rotation.x+=(0-mascot.rightArm.rotation.x)*0.15;
           }
           if(nowT>wander.pauseUntil){
-            wander.wpIdx=(wander.wpIdx+1)%WAYPOINTS.length;
-            wander.mode="walk";
-            wander.walkPhase=0;
+            var gotPath=null,rects=itemScreenRects();
+            for(var attempt=0;attempt<8;attempt++){
+              var dest=pickDestination(wander.pos.x,wander.pos.z);
+              if(!dest)continue;
+              var cand=buildPath(wander.pos.x,wander.pos.z,dest.x,dest.z);
+              if(verifyPathClear(wander.pos.x,wander.pos.z,cand,rects)){gotPath=cand;break;}
+            }
+            if(gotPath){
+              wander.path=gotPath;
+              wander.mode="walk";
+              wander.walkPhase=0;
+            }else{
+              wander.pauseUntil=nowT+500; // couldn't find a clean route this cycle, try again shortly
+            }
           }
+        }
+
+        var targetGround=groundLevelAt(wander.pos.x,wander.pos.z);
+        if(targetGround!==wander.groundY&&!wander.jumping){
+          wander.jumping=true;wander.jumpT0=nowT;wander.jumpFrom=wander.groundY;wander.jumpTo=targetGround;
+        }
+        var groundNow,jumpArc=0;
+        if(wander.jumping){
+          var jp=(nowT-wander.jumpT0)/JUMP_DUR;
+          if(jp>=1){groundNow=wander.jumpTo;wander.groundY=wander.jumpTo;wander.jumping=false;}
+          else{groundNow=wander.jumpFrom+(wander.jumpTo-wander.jumpFrom)*jp;jumpArc=Math.sin(Math.min(jp,1)*Math.PI)*JUMP_H;}
+        }else{
+          groundNow=wander.groundY;
         }
 
         var wAngDelta=shortestDelta(wander.targetFacing,wander.facing);
@@ -870,9 +1059,10 @@ function initDeskScene(){
         mascot.group.position.z=wander.pos.z;
         mascotShadow.position.x=wander.pos.x;
         mascotShadow.position.z=wander.pos.z+4;
+        mascotShadow.position.y=groundNow+0.15;
 
         var walkBounce=wander.mode==="walk"?Math.abs(Math.sin(wander.walkPhase))*WALK_BOUNCE:0;
-        mascot.group.position.y=mascotBaseY+Math.sin(nowT*0.0015)*2+walkBounce;
+        mascot.group.position.y=groundNow+mascotBaseY+Math.sin(nowT*0.0015)*2+walkBounce+jumpArc;
 
         if(waveState){
           var wvdt=Date.now()-waveState.t0,dur=1400;
