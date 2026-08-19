@@ -4,7 +4,7 @@
   1. 下の <article class="tip"> ブロックをまるごとコピーして、footerの直前に貼り付ける
   2. 画像を images/tips/ フォルダに置く（例: 02_〇〇_result.jpg）。無ければ img の onerror で自動的に隠れる
   3. 元ネタツイートのURLを <blockquote class="twitter-tweet"><a href="..."></a></blockquote> のhrefに差し替える
-  4. 難易度(★の数)・使ったツールのバッジ・感想・プロンプトを埋める
+  4. 難易度(★の数)・使ったツールのバッジ・感想を埋める（プロンプト原文は載せない方針。「プロンプトについて」欄には元ツイートを見るよう案内するだけ）
   5. 一番下の widgets.js の読み込みは1ページに1回でOK（追加不要）
 -->
 <html lang="ja">
@@ -120,37 +120,32 @@ details.promptBox pre{white-space:pre-wrap;word-break:break-word;font-family:inh
   <div class="tipSection">
     <h3>元ネタ</h3>
     <div class="tweetWrap">
-      <!-- TODO: 元ネタツイートURL未確定。判明したらこのhrefを差し替える -->
-      <blockquote class="twitter-tweet" data-theme="dark" data-src-todo="1">
-        <a href="https://x.com/ken_tbdz/status/TODO"></a>
+      <blockquote class="twitter-tweet" data-theme="dark">
+        <a href="https://x.com/ken_tbdz/status/2089565918804561990"></a>
       </blockquote>
     </div>
   </div>
 
   <div class="tipSection">
     <h3>やってみた</h3>
-    <a class="resultImg" href="images/tips/01_poster_result.jpg" target="_blank" rel="noopener">
-      <img src="images/tips/01_poster_result.jpg" alt="アートポスター風にした結果" onerror="this.parentElement.style.display='none'">
+    <a class="resultImg" href="images/tips/01_source.jpg" target="_blank" rel="noopener">
+      <img src="images/tips/01_source.jpg" alt="元素材（Midjourneyで作ったロボの世界）" onerror="this.parentElement.style.display='none'">
     </a>
-    <p class="hint">▲タップで原寸表示</p>
-    <div class="thumbRow">
-      <figure>
-        <img src="diary4.jpg" alt="日記4日目の挿絵" onerror="this.closest('figure').style.display='none'">
-        <figcaption>参考：日記の挿絵もこの路線</figcaption>
-      </figure>
-    </div>
+    <p class="hint">▲元素材（Midjourneyで作ったロボの世界）</p>
+    <a class="resultImg" href="images/tips/01_poster.jpg" target="_blank" rel="noopener">
+      <img src="images/tips/01_poster.jpg" alt="ポスター化（ChatGPT）" onerror="this.parentElement.style.display='none'">
+    </a>
+    <p class="hint">▲ポスター化（ChatGPT）／タップで原寸表示</p>
   </div>
 
   <div class="tipSection">
     <h3>感想</h3>
-    <p>（準備中）</p>
+    <p>元ツイートのプロンプトをそのままChatGPTに貼って、画像を渡しただけ。建物の線がきれいに出るので、風景より街の方が映える。年号が勝手に2024になったのはご愛嬌。元素材もAIで作ったので、実写でも同じ手順でいける。</p>
   </div>
 
   <div class="tipSection">
-    <details class="promptBox">
-      <summary>自分が使ったプロンプト</summary>
-      <pre>（準備中）</pre>
-    </details>
+    <h3>プロンプトについて</h3>
+    <p>元ツイートのプロンプトをそのまま使いました。作者さんの投稿（リプ欄に日本語版あり）からどうぞ。</p>
   </div>
 </article>
 
