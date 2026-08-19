@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>マスコットが3Dになった | tukurimichi.com</title>
-<meta name="description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
+<title id="pageTitle">マスコットが3Dになった | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
 <meta property="og:title" content="マスコットが3Dになった">
 <meta property="og:description" content="マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。">
 <meta property="og:url" content="https://tukurimichi.com/mascot3d.html">
@@ -35,8 +35,9 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
 a{color:#FF8A80;}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;}
-.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;position:relative;}
+.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;padding-right:78px;}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
 .section{padding:22px 22px 4px;}
 .section p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1em;}
@@ -53,32 +54,51 @@ a{color:#FF8A80;}
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="./">← tukurimichi.com トップへ</a>
+<a class="backlink" href="./" id="backTop">← tukurimichi.com トップへ</a>
 
 <div class="banner">
-<h1>マスコットを3Dにしてもらった</h1>
-<p>three.jsのコードだけで挑戦した、2回目の記録。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">マスコットを3Dにしてもらった</h1>
+<p id="bannerP">three.jsのコードだけで挑戦した、2回目の記録。</p>
 </div>
 
 <div class="section">
-<p>このマスコット、実は一度3Dモデル化に挑戦して没になっている。画像から自動で3Dにしてくれるサービスを試した話は日記に書いた通り、形にはなったものの持ち帰るには課金が必要で見送った。</p>
-<p>今回はAIにthree.js(ブラウザの中で3Dの絵を描くためのプログラムの部品)のコードだけを書かせて3Dを作ってみた。最初は頭・胴体・腕・脚を分業させて細かく作り込んだけど、シンプルにデフォルメした版の方が無理がなくてしっくりきたので、こちらを採用した。</p>
-<p>その後、別のAI(Gemini)に動きも付けてもらった。歩く・走る・ジャンプ・ダンス・挨拶・落ち込む・倒れる、と一通りの動きができるようになり、十字キー(またはW/A/S/Dキー)で自由に歩かせて回せる。</p>
-<p>下の枠の中でドラッグすると、視点をぐるぐる回せる。</p>
+<p id="p1">このマスコット、実は一度3Dモデル化に挑戦して没になっている。画像から自動で3Dにしてくれるサービスを試した話は日記に書いた通り、形にはなったものの持ち帰るには課金が必要で見送った。</p>
+<p id="p2">今回はAIにthree.js(ブラウザの中で3Dの絵を描くためのプログラムの部品)のコードだけを書かせて3Dを作ってみた。最初は頭・胴体・腕・脚を分業させて細かく作り込んだけど、シンプルにデフォルメした版の方が無理がなくてしっくりきたので、こちらを採用した。</p>
+<p id="p3">その後、別のAI(Gemini)に動きも付けてもらった。歩く・走る・ジャンプ・ダンス・挨拶・落ち込む・倒れる、と一通りの動きができるようになり、十字キー(またはW/A/S/Dキー)で自由に歩かせて回せる。</p>
+<p id="p4">下の枠の中でドラッグすると、視点をぐるぐる回せる。</p>
 
 <div class="viewerCard">
 <iframe src="mascot3d/index.html" title="マスコット3Dビューア" loading="lazy"></iframe>
 </div>
-<p class="hint">▲パッドまたは矢印キーで動きます</p>
-<p class="hint">動かない場合は少し待つか、リロードしてみてください。細かく作り込んだ版は<a href="mascot3d/detail.html">こちら →</a></p>
+<p class="hint" id="hint1">▲パッドまたは矢印キーで動きます</p>
+<p class="hint" id="hint2">動かない場合は少し待つか、リロードしてみてください。細かく作り込んだ版は<a href="mascot3d/detail.html">こちら →</a></p>
 </div>
 
 <div class="origWrap section">
 <img src="images/mascot_v1.jpg" alt="元のマスコットイラスト">
-<p class="origCaption">元の絵はこちら。</p>
+<p class="origCaption" id="origCaption">元の絵はこちら。</p>
 </div>
 
-<div class="footer"><a href="./">← tukurimichi.com トップへ戻る</a></div>
+<div class="footer"><a href="./" id="footBack">← tukurimichi.com トップへ戻る</a></div>
 </div>
+<script>
+var LANG={"ja": {"toggleTo": "English", "title": "マスコットが3Dになった | tukurimichi.com", "desc": "マスコットをthree.jsのコードだけで3Dにしてもらった、2回目の挑戦の記録。", "t": {"backTop": "← tukurimichi.com トップへ", "bannerH1": "マスコットを3Dにしてもらった", "bannerP": "three.jsのコードだけで挑戦した、2回目の記録。", "p1": "このマスコット、実は一度3Dモデル化に挑戦して没になっている。画像から自動で3Dにしてくれるサービスを試した話は日記に書いた通り、形にはなったものの持ち帰るには課金が必要で見送った。", "p2": "今回はAIにthree.js(ブラウザの中で3Dの絵を描くためのプログラムの部品)のコードだけを書かせて3Dを作ってみた。最初は頭・胴体・腕・脚を分業させて細かく作り込んだけど、シンプルにデフォルメした版の方が無理がなくてしっくりきたので、こちらを採用した。", "p3": "その後、別のAI(Gemini)に動きも付けてもらった。歩く・走る・ジャンプ・ダンス・挨拶・落ち込む・倒れる、と一通りの動きができるようになり、十字キー(またはW/A/S/Dキー)で自由に歩かせて回せる。", "p4": "下の枠の中でドラッグすると、視点をぐるぐる回せる。", "hint1": "▲パッドまたは矢印キーで動きます", "hint2": "動かない場合は少し待つか、リロードしてみてください。細かく作り込んだ版は<a href=\"mascot3d/detail.html\">こちら →</a>", "origCaption": "元の絵はこちら。", "footBack": "← tukurimichi.com トップへ戻る"}}, "en": {"toggleTo": "日本語", "title": "The Mascot Went 3D | tukurimichi.com", "desc": "Rebuilding the mascot in 3D with nothing but three.js code. Playable in the browser.", "t": {"backTop": "← Back to tukurimichi.com", "bannerH1": "I Had the Mascot Rebuilt in 3D", "bannerP": "The second attempt, using nothing but three.js code.", "p1": "This mascot has been through one failed 3D attempt already. As I wrote in the diary, I tried a service that turns an image into a 3D model automatically — it produced something, but taking the file home required paying, so I dropped it.", "p2": "This time I had the AI write nothing but three.js code (the library browsers use to draw 3D) and build the model that way. At first I split the head, body, arms and legs into separate passes and made it very detailed, but the simpler, more cartoonish version felt far more natural — so that's the one on the site.", "p3": "After that, a different AI (Gemini) added the animations. It can now walk, run, jump, dance, wave, slump and fall over, and you can drive it around with the arrow keys (or W/A/S/D).", "p4": "Drag inside the frame below to spin the camera around.", "hint1": "▲ Use the pad or the arrow keys to move", "hint2": "If nothing moves, wait a moment or reload the page. The heavily detailed version is <a href=\"mascot3d/detail.html\">over here →</a>", "origCaption": "Here's the original drawing.", "footBack": "← Back to tukurimichi.com"}}};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
