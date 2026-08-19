@@ -134,6 +134,7 @@ a{color:inherit;}
 <a href="claude-code.html" id="navCC"></a>
 <a href="claude-code-news.html" id="navNews"></a>
 <a href="mascot3d.html" id="navMascot"></a>
+<a href="papercraft.html" id="navPapercraft"></a>
 <a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
 <a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX"></a>
 </div>
@@ -175,6 +176,12 @@ a{color:inherit;}
 <div class="section">
 <p id="m3dTeaserText"></p>
 <a class="ghostBtn" id="m3dTeaserLink" href="mascot3d.html"></a>
+</div>
+
+<div class="banner"><h2>PAPERCRAFT<span class="en" id="papercraftTagline"></span></h2></div>
+<div class="section">
+<p id="papercraftTeaserText"></p>
+<a class="ghostBtn" id="papercraftTeaserLink" href="papercraft.html"></a>
 </div>
 
 <div class="banner"><h2>PLAY<span class="en" id="playTagline"></span></h2></div>
@@ -237,6 +244,9 @@ ccNewsLinkText:"最新アップデートも追いかけてます →",
 mascotTagline:"AIに3D化してもらった",
 m3dTeaserText:"AIにthree.jsのコードだけで、マスコットを3Dにしてもらった。1回目は没になり、頭・胴・腕・脚を分担させて組み直した2回目の記録。",
 m3dTeaserLink:"続きを読む →",
+papercraftTagline:"AIに紙にしてもらった",
+papercraftTeaserText:"AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。頼んでないけど、せっかくなので公開します。",
+papercraftTeaserLink:"続きを読む →",
 playTagline:"AIと遊ぶ",
 omikujiText:"ボタンを押すと、AIから今日の一言が出ます。",
 omikujiBtn:"引いてみる",
@@ -269,6 +279,7 @@ navLogText:"更新ログ",
 navCCText:"Claude Codeで作ってみた",
 navNewsText:"Claude Codeニュース",
 navMascotText:"マスコットが3Dになった",
+navPapercraftText:"チビロボ、紙になる",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
 toggleTo:"English"
@@ -299,6 +310,9 @@ ccNewsLinkText:"Also tracking the latest updates →",
 mascotTagline:"Turned 3D by AI",
 m3dTeaserText:"I had an AI turn the mascot into 3D using nothing but three.js code. The first attempt was scrapped; here's the second try, splitting the build into head, torso, arms, and legs.",
 m3dTeaserLink:"Read more →",
+papercraftTagline:"Turned into paper by AI",
+papercraftTeaserText:"I asked an AI to \"try something new,\" and it made a papercraft template. Didn't ask for that, but figured I'd share it anyway.",
+papercraftTeaserLink:"Read more →",
 playTagline:"Play with the AI",
 omikujiText:"Press the button for a one-line fortune from the AI.",
 omikujiBtn:"Draw",
@@ -331,6 +345,7 @@ navLogText:"Changelog",
 navCCText:"Built with Claude Code",
 navNewsText:"Claude Code News",
 navMascotText:"Mascot in 3D",
+navPapercraftText:"Chibi Robo, on Paper",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
 toggleTo:"日本語"
@@ -369,6 +384,9 @@ document.getElementById("ccNewsLink").textContent=L.ccNewsLinkText;
 document.getElementById("mascotTagline").textContent=L.mascotTagline;
 document.getElementById("m3dTeaserText").textContent=L.m3dTeaserText;
 document.getElementById("m3dTeaserLink").textContent=L.m3dTeaserLink;
+document.getElementById("papercraftTagline").textContent=L.papercraftTagline;
+document.getElementById("papercraftTeaserText").textContent=L.papercraftTeaserText;
+document.getElementById("papercraftTeaserLink").textContent=L.papercraftTeaserLink;
 document.getElementById("playTagline").textContent=L.playTagline;
 document.getElementById("omikujiText").textContent=L.omikujiText;
 document.getElementById("ob").textContent=L.omikujiBtn;
@@ -396,6 +414,7 @@ document.getElementById("navLog").textContent=L.navLogText;
 document.getElementById("navCC").textContent=L.navCCText;
 document.getElementById("navNews").textContent=L.navNewsText;
 document.getElementById("navMascot").textContent=L.navMascotText;
+document.getElementById("navPapercraft").textContent=L.navPapercraftText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
 document.getElementById("langBtn").textContent=L.toggleTo;
