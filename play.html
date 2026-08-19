@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIと遊ぶ | tukurimichi.com</title>
+<meta name="description" content="AIおみくじと、AIとのじゃんけん対決で遊べます。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#ACA8A2;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.section{padding:26px 22px;border-bottom:1px solid var(--line);}
+.section p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1em;}
+.omikujiDieWrap{display:flex;justify-content:center;margin:8px 0 6px;}
+#omikujiDieAnchor{width:140px;height:140px;}
+#omikujiFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.jankenHandWrap{display:flex;justify-content:center;align-items:center;margin:4px 0 10px;}
+#jankenHandAnchor{width:150px;height:150px;}
+#jankenFxCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200;}
+.ghostBtnSolid{display:inline-block;background:var(--red);border:none;color:#fff;border-radius:6px;padding:12px 24px;font-size:.9em;font-weight:800;margin-top:6px;cursor:pointer;}
+.ghostBtnSolid:hover{background:var(--red-dark);}
+.jhand{font-size:1.3em;background:var(--card2);border:1px solid var(--line);color:#fff;border-radius:8px;padding:8px 16px;margin-right:8px;margin-top:6px;cursor:pointer;}
+.hr{height:1px;background:var(--line);margin:22px 0;border:none;}
+#or,#jresult{font-weight:700;margin-top:.8em;line-height:1.7;color:#fff;}
+#jstats{color:var(--muted);font-size:.85em;}
+#sh a,#jshare a{display:inline-block;margin-top:.4em;font-size:.85em;color:#FF8A80;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html">← トップに戻る</a>
+<div class="banner">
+<h1>AIと遊ぶ</h1>
+<p>おみくじと、じゃんけん対決。</p>
+</div>
+
+<div class="section">
+<p>ボタンを押すと、AIから今日の一言が出ます。</p>
+<div class="omikujiDieWrap"><div id="omikujiDieAnchor"></div></div>
+<button id="ob" class="ghostBtnSolid">引いてみる</button>
+<p id="or"></p>
+<p id="sh"></p>
+</div>
+
+<div class="section">
+<p>AIとじゃんけん勝負。連勝記録に挑戦してみて。</p>
+<div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
+<button id="jg" class="jhand">✊ グー</button><button id="jc" class="jhand">✌️ チョキ</button><button id="jp" class="jhand">✋ パー</button>
+<p id="jresult"></p>
+<p id="jstats"></p>
+<p id="jshare"></p>
+</div>
+
+<div class="footer"><a href="index.html">← トップに戻る</a></div>
+</div>
+
+<canvas id="omikujiFxCanvas"></canvas>
+<canvas id="jankenFxCanvas"></canvas>
+
+<script>
+var OMIKUJI=["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ余裕あり。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"];
+var OMIKUJI_SHARE_LABEL="AIおみくじ結果:";
+var SHARE_LINK_LABEL="この結果をXでシェア →";
+var JHANDS={g:"✊",c:"✌️",p:"✋"};
+var JNAMES={g:"グー",c:"チョキ",p:"パー"};
+var WIN_MSGS=["やった、AIに勝った!","AIの弱点を見つけたかも","この調子で連勝しよう"];
+var LOSE_MSGS=["AIの完全勝利...精進します","負けた、AIは強い","次こそは"];
+var DRAW_MSG="あいこ!もう一回勝負しよう";
+function statsFmt(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.streak+"連勝)";}
+var RESULT_WIN="勝った!",RESULT_LOSE="負けた…",RESULT_DRAW="あいこ!";
+var YOU_LABEL="あなた:";
+function jankenShareFmt(resultLabel,s){return "AIとじゃんけん対決して"+resultLabel+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";}
+
+function jRenderStats(){
+var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
+if(s.win+s.lose+s.draw>0){document.getElementById("jstats").textContent=statsFmt(s);}
+else{document.getElementById("jstats").textContent="";}
+}
+jRenderStats();
+
+document.getElementById("ob").onclick=function(){
+var reveal=function(){
+  var m=OMIKUJI[Math.floor(Math.random()*OMIKUJI.length)];
+  document.getElementById("or").textContent=m;
+  var shareText=OMIKUJI_SHARE_LABEL+m;
+  var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
+  document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+SHARE_LINK_LABEL+"</a>";
+  if(window.gtag){gtag("event","omikuji_click",{"result":m});}
+};
+document.getElementById("or").textContent="";
+document.getElementById("sh").innerHTML="";
+if(window.__omikujiRoll){window.__omikujiRoll(reveal);}else{reveal();}
+};
+
+function jankenPlay(userHand,aiHand){
+var result;
+if(userHand===aiHand){result="draw";}
+else if((userHand==="g"&&aiHand==="c")||(userHand==="c"&&aiHand==="p")||(userHand==="p"&&aiHand==="g")){result="win";}
+else{result="lose";}
+var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
+var msg;
+if(result==="win"){s.win++;s.streak++;msg=WIN_MSGS[Math.floor(Math.random()*WIN_MSGS.length)];}
+else if(result==="lose"){s.lose++;s.streak=0;msg=LOSE_MSGS[Math.floor(Math.random()*LOSE_MSGS.length)];}
+else{s.draw++;msg=DRAW_MSG;}
+localStorage.setItem("jstats",JSON.stringify(s));
+document.getElementById("jresult").innerHTML=YOU_LABEL+JHANDS[userHand]+JNAMES[userHand]+" vs AI:"+JHANDS[aiHand]+JNAMES[aiHand]+"<br>"+msg;
+document.getElementById("jstats").textContent=statsFmt(s);
+var resultLabel=result==="win"?RESULT_WIN:(result==="lose"?RESULT_LOSE:RESULT_DRAW);
+var shareText=jankenShareFmt(resultLabel,s);
+var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
+document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+SHARE_LINK_LABEL+"</a>";
+if(window.gtag){gtag("event","janken_play",{"result":result});}
+}
+function startJanken(userHand){
+var hands=["g","c","p"];
+var aiHand=hands[Math.floor(Math.random()*3)];
+if(window.__jankenReveal){
+  window.__jankenReveal(aiHand,function(){jankenPlay(userHand,aiHand);});
+}else{
+  jankenPlay(userHand,aiHand);
+}
+}
+document.getElementById("jg").onclick=function(){startJanken("g");};
+document.getElementById("jc").onclick=function(){startJanken("c");};
+document.getElementById("jp").onclick=function(){startJanken("p");};
+</script>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js" defer></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js" defer></script>
+<script defer>
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initOmikujiDie(){
+    if(typeof THREE==="undefined")return;
+    var canvas=document.getElementById("omikujiFxCanvas");
+    var anchor=document.getElementById("omikujiDieAnchor");
+    if(!canvas||!anchor)return;
+
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+
+    var scene=new THREE.Scene();
+    var camera=new THREE.OrthographicCamera(0,W,0,H,1,2000);
+    camera.position.z=1000;
+
+    scene.add(new THREE.AmbientLight(0xffffff,0.6));
+    var key=new THREE.DirectionalLight(0xffffff,0.9);
+    key.position.set(200,-400,500);
+    scene.add(key);
+    var rim=new THREE.DirectionalLight(0xff8a80,0.5);
+    rim.position.set(-250,300,-200);
+    scene.add(rim);
+
+    var R=44;
+    var geo=new THREE.DodecahedronGeometry(R,0);
+    var mat=new THREE.MeshStandardMaterial({color:0xE31E24,roughness:0.35,metalness:0.15,flatShading:true});
+    var die=new THREE.Mesh(geo,mat);
+    var edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xF2F0EC,transparent:true,opacity:0.55}));
+    die.add(edges);
+    die.rotation.set(0.4,0.6,0);
+    scene.add(die);
+
+    var anchorX=0,anchorY=0,rolling=false;
+    die.visible=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:r.top+r.height/2};
+    }
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.bottom=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!die.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      die.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
+
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
+    }
+    function rollOnce(onDone){
+      var dropHeight=250+Math.random()*70;
+      var startX=anchorX+(Math.random()*2-1)*18;
+      var startY=anchorY-dropHeight;
+      var startScale=0.55;
+      var baseRotX=die.rotation.x,baseRotY=die.rotation.y,baseRotZ=die.rotation.z;
+      var spinDir=Math.random()<0.5?-1:1;
+      var tumbleX=spinDir*(Math.PI*4+Math.random()*Math.PI*3);
+      var tumbleY=spinDir*(Math.PI*3+Math.random()*Math.PI*2.5)*(Math.random()<0.5?-1:1);
+      var tumbleZ=(Math.random()*2-1)*(Math.PI*2+Math.random()*Math.PI*2);
+      var duration=1500;
+      var t0=null;
+      die.visible=true;
+      function frame(t){
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(Math.min(p*1.4,1));
+        var eRot=easeOutCubic(p);
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
+        die.position.set(curX,curY,0);
+        die.scale.setScalar(curScale);
+        die.rotation.x=baseRotX+tumbleX*eRot;
+        die.rotation.y=baseRotY+tumbleY*eRot;
+        die.rotation.z=baseRotZ+tumbleZ*eRot;
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else{
+          die.position.set(anchorX,anchorY,0);
+          die.scale.setScalar(1);
+          renderer.render(scene,camera);
+          if(onDone)onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    window.__omikujiRoll=function(onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion){
+        die.visible=true;
+        die.position.set(anchorX,anchorY,0);
+        die.scale.setScalar(1);
+        renderer.render(scene,camera);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(onDone)onDone();
+      }
+      rollOnce(finish);
+      setTimeout(finish,2300);
+    };
+  }
+  if(document.readyState==="complete"){initOmikujiDie();}else{window.addEventListener("load",initOmikujiDie);}
+})();
+
+(function(){
+  var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function initJankenCard(){
+    if(typeof THREE==="undefined"||typeof THREE.GLTFLoader==="undefined")return;
+    var canvas=document.getElementById("jankenFxCanvas");
+    var anchor=document.getElementById("jankenHandAnchor");
+    if(!canvas||!anchor)return;
+
+    var W=window.innerWidth,H=window.innerHeight;
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(W,H,false);
+    if("outputEncoding" in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
+
+    var scene=new THREE.Scene();
+    // top/bottom kept in standard (non-inverted) orientation here, unlike the
+    // omikuji die's camera, so glTF's native Y-up meshes need no extra flip.
+    var camera=new THREE.OrthographicCamera(0,W,H,0,1,2000);
+    camera.position.z=1000;
+
+    scene.add(new THREE.AmbientLight(0xffffff,0.8));
+    var keyLight=new THREE.DirectionalLight(0xffffff,0.9);
+    keyLight.position.set(200,400,600);
+    scene.add(keyLight);
+    var rimLight=new THREE.DirectionalLight(0xfff2df,0.45);
+    rimLight.position.set(-300,120,-400);
+    scene.add(rimLight);
+
+    var order=["g","c","p"];
+    var GLB_URLS={g:"janken_g.glb",c:"janken_c.glb",p:"janken_p.glb"};
+    var HAND_SCALE=150;
+    // per-model resting yaw so each glTF's most legible side faces the camera
+    // (found by rendering every model at 8 angles and comparing).
+    var FRONT_YAW={g:-Math.PI/2,c:-Math.PI/2,p:-Math.PI/2};
+
+    var draco=new THREE.DRACOLoader();
+    draco.setDecoderPath("https://unpkg.com/three@0.128.0/examples/js/libs/draco/gltf/");
+    var loader=new THREE.GLTFLoader();
+    loader.setDRACOLoader(draco);
+
+    var rig=new THREE.Group();
+    rig.visible=false;
+    scene.add(rig);
+
+    var models={};
+    order.forEach(function(k){
+      loader.load(GLB_URLS[k],function(gltf){
+        var root=gltf.scene;
+        root.scale.setScalar(HAND_SCALE);
+        root.rotation.y=FRONT_YAW[k]||0;
+        root.visible=false;
+        rig.add(root);
+        models[k]=root;
+      });
+    });
+    function allLoaded(){return order.every(function(k){return !!models[k];});}
+    function showOnly(k){order.forEach(function(o){if(models[o])models[o].visible=(o===k);});}
+
+    var anchorX=0,anchorY=0,rolling=false;
+    function anchorCenter(){
+      var r=anchor.getBoundingClientRect();
+      return {x:r.left+r.width/2,y:H-(r.top+r.height/2)};
+    }
+    function onResize(){
+      W=window.innerWidth;H=window.innerHeight;
+      renderer.setSize(W,H,false);
+      camera.right=W;camera.top=H;
+      camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("resize",onResize);
+    function trackAnchorOnScroll(){
+      if(rolling||!rig.visible)return;
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rig.position.set(anchorX,anchorY,0);
+      renderer.render(scene,camera);
+    }
+    window.addEventListener("scroll",trackAnchorOnScroll,{passive:true});
+
+    function easeOutCubic(x){return 1-Math.pow(1-x,3);}
+    function easeOutBounce(x){
+      var n1=7.5625,d1=2.75;
+      if(x<1/d1)return n1*x*x;
+      else if(x<2/d1)return n1*(x-=1.5/d1)*x+0.75;
+      else if(x<2.5/d1)return n1*(x-=2.25/d1)*x+0.9375;
+      else return n1*(x-=2.625/d1)*x+0.984375;
+    }
+
+    function settleTo(finalHand){
+      showOnly(finalHand);
+      rig.visible=true;
+      rig.position.set(anchorX,anchorY,0);
+      rig.scale.setScalar(1);
+      rig.rotation.set(0,0,0);
+      renderer.render(scene,camera);
+    }
+
+    function playReveal(finalHand,onDone){
+      var dropHeight=260+Math.random()*60;
+      var startX=anchorX+(Math.random()*2-1)*16;
+      var startY=anchorY+dropHeight;
+      var startScale=0.5;
+      // Pick a half-turn count that (a) is even, so the model always ends up
+      // facing forward, and (b) lands the cycling reveal exactly on finalHand
+      // at the last swap, so settling never has to visibly "correct" the pose.
+      var HALF_TURNS_BASE={g:4,c:2,p:6};
+      var extraCycles=Math.floor(Math.random()*3);
+      var totalHalfTurns=HALF_TURNS_BASE[finalHand]+6*extraCycles;
+      var totalSpin=Math.PI*totalHalfTurns*(Math.random()<0.5?-1:1);
+      var duration=1500;
+      var t0=null,lastHalf=0,stopped=false;
+      showOnly(order[0]);
+      rig.visible=true;
+      function frame(t){
+        if(stopped)return;
+        if(t0===null)t0=t;
+        var p=Math.min((t-t0)/duration,1);
+        var eBounce=easeOutBounce(p);
+        var eSettle=easeOutCubic(p);
+        var curX=startX+(anchorX-startX)*eSettle;
+        var curY=startY+(anchorY-startY)*eBounce;
+        var curScale=startScale+(1-startScale)*eSettle;
+        var curRotY=totalSpin*eSettle;
+        rig.position.set(curX,curY,0);
+        rig.scale.setScalar(curScale);
+        rig.rotation.y=curRotY;
+        rig.rotation.x=0.06*(1-eSettle);
+        var halfIdx=Math.floor(Math.abs(curRotY)/Math.PI);
+        if(halfIdx!==lastHalf){
+          lastHalf=halfIdx;
+          if(p<0.97){showOnly(order[halfIdx%3]);}
+        }
+        renderer.render(scene,camera);
+        if(p<1){requestAnimationFrame(frame);}
+        else{
+          stopped=true;
+          settleTo(finalHand);
+          if(onDone)onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+      return{stop:function(){stopped=true;settleTo(finalHand);}};
+    }
+
+    window.__jankenReveal=function(finalHand,onDone){
+      if(rolling){return;}
+      var c=anchorCenter();
+      anchorX=c.x;anchorY=c.y;
+      rolling=true;
+      if(reduceMotion||!allLoaded()){
+        settleTo(finalHand);
+        rolling=false;if(onDone)onDone();return;
+      }
+      var done=false,handle=null;
+      function finish(){
+        if(done)return;
+        done=true;
+        rolling=false;
+        if(handle)handle.stop();
+        if(onDone)onDone();
+      }
+      handle=playReveal(finalHand,finish);
+      setTimeout(finish,2300);
+    };
+  }
+  if(document.readyState==="complete"){initJankenCard();}else{window.addEventListener("load",initJankenCard);}
+})();
+</script>
+
+</body>
+</html>
