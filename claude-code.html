@@ -4,8 +4,8 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
-<title>Claude Codeで作ってみた記録 | tukurimichi.com</title>
-<meta name="description" content="このサイト・マスコット・BOOTHショップ、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直に書く。">
+<title id="pageTitle">Claude Codeで作ってみた記録 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="このサイト・マスコット・BOOTHショップ、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直に書く。">
 <meta property="og:title" content="Claude Codeで作ってみた記録">
 <meta property="og:description" content="このサイト・マスコット・BOOTHショップ、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直に書く。">
 <meta property="og:url" content="https://tukurimichi.com/claude-code.html">
@@ -17,32 +17,33 @@
 <meta name="twitter:description" content="このサイト・マスコット・BOOTHショップ、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直に書く。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.5em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.lead{color:#5A5648;}.tweet-intro{font-size:.9em;color:#8A8470;margin:1.6em 0 .4em;}.tweetwrap{margin:.4em 0 1.4em;}img.hero{display:block;margin:0 auto 20px;width:96px;border-radius:14px;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.4em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}p{margin:.7em 0;}ul{margin:.7em 0;padding-left:1.3em;}li{margin:.5em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.lead{color:#5A5648;}.tweet-intro{font-size:.9em;color:#8A8470;margin:1.6em 0 .4em;}.tweetwrap{margin:.4em 0 1.4em;}img.hero{display:block;margin:0 auto 20px;width:96px;border-radius:14px;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}body{position:relative;}.langToggle{position:absolute;top:16px;right:16px;background:#fff;border:1px solid #D9D5C6;color:#5A5648;border-radius:20px;padding:5px 12px;font-size:.78em;cursor:pointer;font-family:inherit;}.langToggle:hover{background:#F3F0E6;}h1{padding-right:84px;}</style>
 </head>
 <body>
-<a class="back" href="./">← tukurimichi.com トップへ</a>
+<button id="langBtn" class="langToggle"></button>
+<a class="back" href="./" id="backTop">← tukurimichi.com トップへ</a>
 <img class="hero" src="mascot_site.jpg" alt="mascot">
-<h1>Claude Codeで、これを作った</h1>
-<p class="lead">このサイトも、マスコットも、BOOTHのショップも、全部Claude Code(Anthropicが作ったAIコーディングツール)との会話だけで作った。宣伝文句じゃなくて、実際にやってみて感じたことを正直に書いておく。</p>
-<p><a href="claude-code-news.html">→ Claude Codeの最新アップデートまとめはこちら</a></p>
-<p><a href="tools/deploy_to_github.py">→ 更新作業を効率化するため自作したデプロイツールのソースはこちら</a></p>
+<h1 id="h1t">Claude Codeで、これを作った</h1>
+<p class="lead" id="lead">このサイトも、マスコットも、BOOTHのショップも、全部Claude Code(Anthropicが作ったAIコーディングツール)との会話だけで作った。宣伝文句じゃなくて、実際にやってみて感じたことを正直に書いておく。</p>
+<p id="lnk1"><a href="claude-code-news.html">→ Claude Codeの最新アップデートまとめはこちら</a></p>
+<p id="lnk2"><a href="tools/deploy_to_github.py">→ 更新作業を効率化するため自作したデプロイツールのソースはこちら</a></p>
 
-<h2>できたこと</h2>
-<p>「AIに1万円渡してみた」という企画そのものが、Claude Codeに実際に手を動かしてもらいながら進んだ記録になってる。ドメインの取得、GitHub Pagesでのサイト構築、Midjourneyでのマスコット制作、BOOTHでの出品まで、指示は日本語の会話だけで、コードを書く・ブラウザを操作する・画像を加工するといった作業は全部Claude Code側がやってくれた。ITが素人でも「こういう感じにしたい」と伝えるだけで形になったのは、正直かなり驚いた。</p>
+<h2 id="h2a">できたこと</h2>
+<p id="pa">「AIに1万円渡してみた」という企画そのものが、Claude Codeに実際に手を動かしてもらいながら進んだ記録になってる。ドメインの取得、GitHub Pagesでのサイト構築、Midjourneyでのマスコット制作、BOOTHでの出品まで、指示は日本語の会話だけで、コードを書く・ブラウザを操作する・画像を加工するといった作業は全部Claude Code側がやってくれた。ITが素人でも「こういう感じにしたい」と伝えるだけで形になったのは、正直かなり驚いた。</p>
 
-<h2>つまずいたこと</h2>
-<p>もちろん一直線ではなかった。実際に詰まった場面をいくつか挙げる。</p>
+<h2 id="h2b">つまずいたこと</h2>
+<p id="pb">もちろん一直線ではなかった。実際に詰まった場面をいくつか挙げる。</p>
 <ul>
-<li>ブラウザ操作の接続が途中で切れて、作業をやり直すことが何度かあった</li>
-<li>画像処理のスクリプトで、日本語のファイルパスが原因の文字化けにハマった</li>
-<li>GitHubの編集画面で、自動的にタグが閉じる機能とかち合ってコードが壊れることがあった</li>
-<li>Midjourneyでダウンロードボタンを押しても、ファイルがどこにも保存されていないことがあった</li>
-<li>Googleアカウントの切り替えが不安定で、違う自分のアカウントの方に作業してしまいそうになったことがあった</li>
+<li id="s1">ブラウザ操作の接続が途中で切れて、作業をやり直すことが何度かあった</li>
+<li id="s2">画像処理のスクリプトで、日本語のファイルパスが原因の文字化けにハマった</li>
+<li id="s3">GitHubの編集画面で、自動的にタグが閉じる機能とかち合ってコードが壊れることがあった</li>
+<li id="s4">Midjourneyでダウンロードボタンを押しても、ファイルがどこにも保存されていないことがあった</li>
+<li id="s5">Googleアカウントの切り替えが不安定で、違う自分のアカウントの方に作業してしまいそうになったことがあった</li>
 </ul>
-<p>どれも致命的ではなく、都度回り道をしながら解決はできた。ただ「完璧に一発で決まる」というよりは「手探りで直しながら進む」場面が多い、というのが実感。</p>
+<p id="pc">どれも致命的ではなく、都度回り道をしながら解決はできた。ただ「完璧に一発で決まる」というよりは「手探りで直しながら進む」場面が多い、というのが実感。</p>
 
-<h2>他の人はどう感じているか</h2>
-<p class="tweet-intro">実際に使ってる人の生の声。良い声も、そうでない声も、なるべくそのまま並べる。</p>
+<h2 id="h2c">他の人はどう感じているか</h2>
+<p class="tweet-intro" id="pd">実際に使ってる人の生の声。良い声も、そうでない声も、なるべくそのまま並べる。</p>
 
 <div class="tweetwrap"><blockquote class="twitter-tweet"><a href="https://twitter.com/Chiko_root/status/2087782444875628717"></a></blockquote></div>
 
@@ -54,18 +55,99 @@
 
 <div class="tweetwrap"><blockquote class="twitter-tweet"><a href="https://twitter.com/links_promoting/status/2088763918978339114"></a></blockquote></div>
 
-<h2>他のAIサービスとの違い(参考)</h2>
-<p>この企画の中で、Claude Code以外にも使ったAIサービスがある。あくまでこの企画での使い方の範囲での印象。</p>
+<h2 id="h2d">他のAIサービスとの違い(参考)</h2>
+<p id="pe">この企画の中で、Claude Code以外にも使ったAIサービスがある。あくまでこの企画での使い方の範囲での印象。</p>
 <ul>
-<li><strong>Midjourney</strong> — マスコットのイラスト生成に使用。絵作りの完成度は高いが、文字を正確に描くのは苦手(なので告知画像の文字はCanvaで手動で入れた)</li>
-<li><strong>ChatGPT / Claude(会話のみ)</strong> — 企画の初期のアイデア出しで利用。ただしブラウザ操作やファイル操作までは手を動かしてくれないので、「作業してもらう」段階からはClaude Codeに切り替えた</li>
+<li id="t1"><strong>Midjourney</strong> — マスコットのイラスト生成に使用。絵作りの完成度は高いが、文字を正確に描くのは苦手(なので告知画像の文字はCanvaで手動で入れた)</li>
+<li id="t2"><strong>ChatGPT / Claude(会話のみ)</strong> — 企画の初期のアイデア出しで利用。ただしブラウザ操作やファイル操作までは手を動かしてくれないので、「作業してもらう」段階からはClaude Codeに切り替えた</li>
 </ul>
-<p>用途がそもそも違うので単純な優劣ではなく、「絵を作る」ならMidjourney、「実際に手を動かして作る」ならClaude Code、という役割分担だった。</p>
+<p id="pf">用途がそもそも違うので単純な優劣ではなく、「絵を作る」ならMidjourney、「実際に手を動かして作る」ならClaude Code、という役割分担だった。</p>
 
-<p>Claude Codeの最新アップデートも、ゆるく追いかけてます → <a href="claude-code-news.html">Claude Codeニュース</a></p>
+<p id="pg">Claude Codeの最新アップデートも、ゆるく追いかけてます → <a href="claude-code-news.html">Claude Codeニュース</a></p>
 
-<p><a href="./">← tukurimichi.com トップへ戻る</a></p>
+<p id="footBack"><a href="./">← tukurimichi.com トップへ戻る</a></p>
 
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"Claude Codeで作ってみた記録 | tukurimichi.com",
+desc:"このサイト・マスコット・BOOTHショップ、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直に書く。",
+t:{
+backTop:"← tukurimichi.com トップへ",
+h1t:"Claude Codeで、これを作った",
+lead:"このサイトも、マスコットも、BOOTHのショップも、全部Claude Code(Anthropicが作ったAIコーディングツール)との会話だけで作った。宣伝文句じゃなくて、実際にやってみて感じたことを正直に書いておく。",
+lnk1:"<a href=\"claude-code-news.html\">→ Claude Codeの最新アップデートまとめはこちら</a>",
+lnk2:"<a href=\"tools/deploy_to_github.py\">→ 更新作業を効率化するため自作したデプロイツールのソースはこちら</a>",
+h2a:"できたこと",
+pa:"「AIに1万円渡してみた」という企画そのものが、Claude Codeに実際に手を動かしてもらいながら進んだ記録になってる。ドメインの取得、GitHub Pagesでのサイト構築、Midjourneyでのマスコット制作、BOOTHでの出品まで、指示は日本語の会話だけで、コードを書く・ブラウザを操作する・画像を加工するといった作業は全部Claude Code側がやってくれた。ITが素人でも「こういう感じにしたい」と伝えるだけで形になったのは、正直かなり驚いた。",
+h2b:"つまずいたこと",
+pb:"もちろん一直線ではなかった。実際に詰まった場面をいくつか挙げる。",
+s1:"ブラウザ操作の接続が途中で切れて、作業をやり直すことが何度かあった",
+s2:"画像処理のスクリプトで、日本語のファイルパスが原因の文字化けにハマった",
+s3:"GitHubの編集画面で、自動的にタグが閉じる機能とかち合ってコードが壊れることがあった",
+s4:"Midjourneyでダウンロードボタンを押しても、ファイルがどこにも保存されていないことがあった",
+s5:"Googleアカウントの切り替えが不安定で、違う自分のアカウントの方に作業してしまいそうになったことがあった",
+pc:"どれも致命的ではなく、都度回り道をしながら解決はできた。ただ「完璧に一発で決まる」というよりは「手探りで直しながら進む」場面が多い、というのが実感。",
+h2c:"他の人はどう感じているか",
+pd:"実際に使ってる人の生の声。良い声も、そうでない声も、なるべくそのまま並べる。",
+h2d:"他のAIサービスとの違い(参考)",
+pe:"この企画の中で、Claude Code以外にも使ったAIサービスがある。あくまでこの企画での使い方の範囲での印象。",
+t1:"<strong>Midjourney</strong> — マスコットのイラスト生成に使用。絵作りの完成度は高いが、文字を正確に描くのは苦手(なので告知画像の文字はCanvaで手動で入れた)",
+t2:"<strong>ChatGPT / Claude(会話のみ)</strong> — 企画の初期のアイデア出しで利用。ただしブラウザ操作やファイル操作までは手を動かしてくれないので、「作業してもらう」段階からはClaude Codeに切り替えた",
+pf:"用途がそもそも違うので単純な優劣ではなく、「絵を作る」ならMidjourney、「実際に手を動かして作る」ならClaude Code、という役割分担だった。",
+pg:"Claude Codeの最新アップデートも、ゆるく追いかけてます → <a href=\"claude-code-news.html\">Claude Codeニュース</a>",
+footBack:"<a href=\"./\">← tukurimichi.com トップへ戻る</a>"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Built with Claude Code | tukurimichi.com",
+desc:"This site, the mascot and the BOOTH shop were all built through conversations with Claude Code. An honest account of what worked and what didn't.",
+t:{
+backTop:"← Back to tukurimichi.com",
+h1t:"I Built This with Claude Code",
+lead:"This site, the mascot, the BOOTH shop — all of it came out of conversations with Claude Code (Anthropic's AI coding tool). This isn't marketing copy; it's an honest account of what it was actually like.",
+lnk1:"<a href=\"claude-code-news.html\">→ My running summary of Claude Code updates</a>",
+lnk2:"<a href=\"tools/deploy_to_github.py\">→ Source for the deploy tool I built to speed up site updates</a>",
+h2a:"What worked",
+pa:"The \"I gave an AI ¥10,000\" project is itself the record: Claude Code did the actual work throughout. Registering the domain, building the site on GitHub Pages, making the mascot in Midjourney, listing items on BOOTH — I gave instructions in plain Japanese conversation, and the writing of code, the driving of the browser, the editing of images all happened on Claude Code's side. That someone with no IT background could just say \"I want it to feel like this\" and end up with a real thing genuinely surprised me.",
+h2b:"What tripped me up",
+pb:"It was not a straight line, of course. Some places I actually got stuck:",
+s1:"The browser-control connection dropped mid-task several times, forcing me to redo work",
+s2:"An image-processing script broke on character encoding, caused by Japanese file paths",
+s3:"In GitHub's web editor, auto-closing tags fought with the pasted code and corrupted it",
+s4:"Pressing download in Midjourney sometimes saved the file precisely nowhere",
+s5:"Google account switching was flaky enough that I nearly did the work in the wrong account of mine",
+pc:"None of it was fatal, and each one got solved with a detour. But the honest feel is less \"nails it perfectly first time\" and more \"feels its way forward, fixing as it goes\".",
+h2c:"How other people find it",
+pd:"Unfiltered voices from people actually using it. Good and not-so-good, laid out as they came.",
+h2d:"How it compares to other AI services (for reference)",
+pe:"I used AI services other than Claude Code during this project. These impressions cover only how I happened to use them here.",
+t1:"<strong>Midjourney</strong> — used for the mascot artwork. The image quality is excellent, but it's bad at rendering text accurately (so the text on announcement images went in by hand, in Canva)",
+t2:"<strong>ChatGPT / Claude (conversation only)</strong> — used for early idea generation. But they don't reach out and drive a browser or touch files, so once the project moved from thinking to doing, I switched to Claude Code",
+pf:"They're built for different jobs, so it isn't a ranking: Midjourney for making pictures, Claude Code for actually doing the work. A division of labour.",
+pg:"I also loosely track Claude Code's updates → <a href=\"claude-code-news.html\">Claude Code News</a>",
+footBack:"<a href=\"./\">← Back to tukurimichi.com</a>"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
