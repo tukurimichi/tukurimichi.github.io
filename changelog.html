@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>更新ログ | tukurimichi.com</title>
-<meta name="description" content="tukurimichi.comの更新履歴、全件はこちら。">
+<title id="pageTitle">更新ログ | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="tukurimichi.comの更新履歴、全件はこちら。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -21,9 +23,10 @@
 html{background:var(--bg);}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
-.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .section{padding:22px;}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
 .logList{list-style:none;padding:0;margin:0;}
@@ -36,24 +39,65 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="index.html">← トップに戻る</a>
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
 <div class="banner">
-<h1>更新ログ</h1>
-<p>tukurimichi.comのこれまでの更新を、すべてここに記録しています。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">更新ログ</h1>
+<p id="bannerP">tukurimichi.comのこれまでの更新を、すべてここに記録しています。</p>
 </div>
 <div class="section">
 <ul class="logList" id="logList"></ul>
 </div>
-<div class="footer"><a href="index.html">← トップに戻る</a></div>
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
 </div>
 <script>
-var log=["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。","2026-08-16:Claude Codeニュースページを追加した。","2026-08-16:サイト全体を赤×黒のデザインにリニューアルした。","2026-08-20:海辺の壁紙4枚セットを追加した。BOOTHで無料配布中。"];
+var LANG={
+ja:{
+toggleTo:"English",
+title:"更新ログ | tukurimichi.com",
+desc:"tukurimichi.comの更新履歴、全件はこちら。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"更新ログ",
+bannerP:"tukurimichi.comのこれまでの更新を、すべてここに記録しています。",
+footBack:"← トップに戻る"
+},
+log:["2026-08-15:GitHubアカウントを作って、GitHub Pagesでテストサイトを公開した。このページも公開。","2026-08-15:独自ドメインを接続し、見た目をデザインし直した。","2026-08-15:「AIおみくじ」を追加した。","2026-08-15:Xでシェアした時に見た目が良くなるよう設定した。","2026-08-15:おみくじ結果をXでシェアできるボタンを追加した。","2026-08-15:経過日数の表示と、アイデア募集ボタンを追加した。","2026-08-15:Xでシェアされた時のカード画像(OGP画像)を追加した。","2026-08-15:AIとじゃんけん対決できるミニゲームを追加した。","2026-08-15:マスコットキャラクターの画像を追加した。","2026-08-15:サイトを英語対応にした。","2026-08-15:BOOTHでマスコット壁紙を¥100で出品した。","2026-08-16:Claude Codeで作ってみた記録ページを追加した。","2026-08-16:つくるみち物語ギャラリーを追加した。BOOTHで無料壁紙4枚セットも公開した。","2026-08-16:Claude Codeニュースページを追加した。","2026-08-16:サイト全体を赤×黒のデザインにリニューアルした。","2026-08-20:海辺の壁紙4枚セットを追加した。BOOTHで無料配布中。"]
+},
+en:{
+toggleTo:"日本語",
+title:"Changelog | tukurimichi.com",
+desc:"Every update made to tukurimichi.com, in one place.",
+t:{
+backTop:"← Back to top",
+bannerH1:"Changelog",
+bannerP:"Every update ever made to tukurimichi.com is recorded here.",
+footBack:"← Back to top"
+},
+log:["2026-08-15:Created a GitHub account and put a test site up on GitHub Pages. This page went live too.","2026-08-15:Connected a custom domain and redesigned the look.","2026-08-15:Added the \"AI Fortune\" draw.","2026-08-15:Set things up so the site looks right when shared on X.","2026-08-15:Added a button to share your fortune result on X.","2026-08-15:Added a day counter and an idea-suggestion button.","2026-08-15:Added a card image (OGP image) for when the site is shared on X.","2026-08-15:Added a rock-paper-scissors mini-game against the AI.","2026-08-15:Added artwork for the mascot character.","2026-08-15:Made the site available in English.","2026-08-15:Listed the mascot wallpapers on BOOTH for ¥100.","2026-08-16:Added the \"Built with Claude Code\" write-up.","2026-08-16:Added the tukurimichi story gallery, and released a free four-wallpaper set on BOOTH.","2026-08-16:Added the Claude Code news page.","2026-08-16:Redesigned the whole site in red and black.","2026-08-20:Added the four-piece coast wallpaper set. Free on BOOTH."]
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
 var html="";
-for(var i=log.length-1;i>=0;i--){
-var parts=log[i].split(/:(.+)/);
+for(var i=L.log.length-1;i>=0;i--){
+var parts=L.log[i].split(/:(.+)/);
 html+="<li><span class=\"date\">"+parts[0]+"</span>"+parts[1]+"</li>";
 }
 document.getElementById("logList").innerHTML=html;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
 </script>
 </body>
 </html>
