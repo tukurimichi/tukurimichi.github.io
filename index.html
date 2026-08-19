@@ -75,9 +75,9 @@ a{color:inherit;}
 .deskWrap{position:relative;width:100%;height:50vh;max-height:560px;min-height:240px;margin-top:2px;background:radial-gradient(ellipse at 50% 15%,#241a14 0%,#120d0a 75%);overflow:hidden;touch-action:pan-y;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
 #deskCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;}
 #deskLabels{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-.deskLabel{position:absolute;transform:translate(-50%,-100%);pointer-events:none;font-size:.62em;font-weight:700;color:#fff;background:rgba(10,10,11,.5);padding:3px 8px;border-radius:9px;white-space:nowrap;opacity:.5;transition:opacity .15s ease,transform .15s ease,background .15s ease;}
-.deskLabel .en{display:block;font-size:.72em;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.65);margin-top:1px;}
-.deskLabel.hover{opacity:1;background:rgba(227,30,36,.92);transform:translate(-50%,-118%) scale(1.06);}
+.deskLabel{position:absolute;transform:translate(-50%,4px);pointer-events:none;font-size:.56em;font-weight:700;color:#fff;background:rgba(10,10,11,.5);padding:2px 7px;border-radius:9px;white-space:nowrap;opacity:.5;transition:opacity .15s ease,transform .15s ease,background .15s ease;}
+.deskLabel .en{display:block;font-size:.7em;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.65);margin-top:1px;}
+.deskLabel.hover{opacity:1;background:rgba(227,30,36,.92);transform:translate(-50%,10px) scale(1.06);}
 .deskFallback{padding:10px 20px 2px;font-size:.68em;color:var(--muted);text-align:center;line-height:1.8;}
 .deskFallback a{color:#FF8A80;text-decoration:none;background:none;border:none;font:inherit;cursor:pointer;padding:0;}
 
@@ -556,9 +556,9 @@ function initDeskScene(){
   renderer.setSize(W,H,false);
 
   var scene=new THREE.Scene();
-  var camera=new THREE.PerspectiveCamera(32,W/H,10,2000);
-  camera.position.set(0,210,480);
-  camera.lookAt(0,10,0);
+  var camera=new THREE.PerspectiveCamera(36,W/H,10,2000);
+  camera.position.set(0,430,225);
+  camera.lookAt(0,4,0);
 
   scene.add(new THREE.AmbientLight(0xffffff,0.75));
   var key=new THREE.DirectionalLight(0xffffff,0.6);
@@ -584,19 +584,19 @@ function initDeskScene(){
   }
 
   var OBJS=[
-    {key:"story",ja:"物語",en:"STORY",href:"story.html",build:buildDeskBook,pos:[-80,0,48],shadowR:34},
-    {key:"diary",ja:"日記",en:"DIARY",href:"diary.html",build:buildDeskDiaryBook,pos:[0,0,48],shadowR:32},
-    {key:"log",ja:"更新ログ",en:"LOG",href:"changelog.html",build:buildDeskGear,pos:[80,0,48],shadowR:28},
-    {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-108,0,-45],shadowR:28},
-    {key:"made",ja:"つくった",en:"MADE",href:"made.html",build:buildDeskBlocks,pos:[-38,0,-45],shadowR:30},
-    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[32,0,-45],shadowR:26},
-    {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[102,0,-45],shadowR:26}
+    {key:"story",ja:"物語",en:"STORY",href:"story.html",build:buildDeskBook,pos:[-125,0,-72],shadowR:34,labelFront:14},
+    {key:"diary",ja:"日記",en:"DIARY",href:"diary.html",build:buildDeskDiaryBook,pos:[-42,0,-74],shadowR:32,labelFront:14},
+    {key:"log",ja:"更新ログ",en:"LOG",href:"changelog.html",build:buildDeskGear,pos:[42,0,-72],shadowR:28,labelFront:14},
+    {key:"made",ja:"つくった",en:"MADE",href:"made.html",build:buildDeskBlocks,pos:[125,0,-72],shadowR:30,labelFront:14},
+    {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-90,0,55],shadowR:28,labelFront:18},
+    {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[0,0,58],shadowR:26,labelFront:18},
+    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[90,0,55],shadowR:26,labelFront:18}
   ];
 
   var items=[];
   OBJS.forEach(function(cfg){
     var group=cfg.build();
-    group.scale.setScalar(1.7);
+    group.scale.setScalar(1.0);
     group.position.set(cfg.pos[0],cfg.pos[1],cfg.pos[2]);
     group.userData.baseY=cfg.pos[1];
     deskGroup.add(group);
@@ -605,7 +605,7 @@ function initDeskScene(){
     var bbox=new THREE.Box3().setFromObject(group);
     var size=bbox.getSize(new THREE.Vector3());
     var center=bbox.getCenter(new THREE.Vector3());
-    var pad=10;
+    var pad=13;
     var hitbox=new THREE.Mesh(
       new THREE.BoxGeometry(Math.max(size.x,6)+pad*2,Math.max(size.y,6)+pad*2,Math.max(size.z,6)+pad*2),
       new THREE.MeshBasicMaterial({visible:false})
@@ -628,8 +628,8 @@ function initDeskScene(){
     items.push({cfg:cfg,group:group,label:label,glow:glow,hover:0,hoverTarget:0,bounceT:0});
   });
 
-  var mascot=buildMascotBody(1.15);
-  mascot.group.position.set(-138,26,-70);
+  var mascot=buildMascotBody(0.85);
+  mascot.group.position.set(-152,20,-90);
   mascot.group.rotation.y=0.6;
   deskGroup.add(mascot.group);
   var mascotBaseY=mascot.group.position.y;
@@ -730,7 +730,8 @@ function initDeskScene(){
   function updateLabels(){
     items.forEach(function(item){
       item.group.getWorldPosition(v3);
-      v3.y+=14;
+      v3.z+=item.cfg.labelFront!==undefined?item.cfg.labelFront:24;
+      v3.y-=4;
       v3.project(camera);
       var x=(v3.x*0.5+0.5)*W;
       var y=(-v3.y*0.5+0.5)*H;
@@ -745,6 +746,8 @@ function initDeskScene(){
       setTimeout(function(){item.bounceT=Math.max(item.bounceT,0.6);},i*160);
     });
   },600);
+
+  window.__deskDebug={camera:camera,items:items,getW:function(){return W;},getH:function(){return H;}};
 
   (function frame(){
     var navOpen=document.getElementById("navOverlay").classList.contains("open");
