@@ -140,7 +140,7 @@ a{color:inherit;}
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
-<a href="story.html">物語</a>・<a href="play.html">遊ぶ</a>・<a href="diary.html">日記</a>・<a href="made.html">つくったもの</a>・<a href="tips.html">AIワザ</a>・<a href="changelog.html">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html">ニュース</a>
+<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>
 </div>
 
 <div class="footer">
@@ -179,6 +179,7 @@ navPapercraftText:"チビロボ、紙になる",
     navWallpapersText:"海辺の壁紙",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
+fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",
 toggleTo:"English"
 },
 en:{
@@ -206,6 +207,7 @@ navPapercraftText:"Chibi Robo, on Paper",
     navWallpapersText:"Coast Wallpapers",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
+fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",
 toggleTo:"日本語"
 }
 };
@@ -234,6 +236,10 @@ document.getElementById("navPapercraft").textContent=L.navPapercraftText;
   document.getElementById("navWallpapers").textContent=L.navWallpapersText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
+["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews"].forEach(function(k){
+var el=document.getElementById(k);if(el)el.textContent=L[k+"Text"];});
+document.getElementById("ideaFallback").textContent=L.fbIdeaText;
+if(window.__deskRelabel)window.__deskRelabel();
 document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
@@ -568,6 +574,14 @@ if(document.readyState==="complete"){initHeroFX();}else{window.addEventListener(
 
 (function(){
 function initDeskScene(){
+  var deskLabelRefs=[];
+  function deskLabelHtml(cfg){
+    var en=(window.currentLang==="en");
+    return (en?cfg.en:cfg.ja)+"<span class=\"en\">"+(en?cfg.ja:cfg.en)+"</span>";
+  }
+  window.__deskRelabel=function(){
+    deskLabelRefs.forEach(function(r){r.el.innerHTML=deskLabelHtml(r.cfg);});
+  };
   var wrap=document.getElementById("deskWrap");
   var canvas=document.getElementById("deskCanvas");
   var labelsRoot=document.getElementById("deskLabels");
@@ -661,8 +675,9 @@ function initDeskScene(){
 
     var label=document.createElement("div");
     label.className="deskLabel";
-    label.innerHTML=cfg.ja+"<span class=\"en\">"+cfg.en+"</span>";
+    label.innerHTML=deskLabelHtml(cfg);
     labelsRoot.appendChild(label);
+    deskLabelRefs.push({el:label,cfg:cfg});
 
     var glow=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),new THREE.MeshBasicMaterial({color:0xE31E24,transparent:true,opacity:0}));
     glow.scale.setScalar(18);
