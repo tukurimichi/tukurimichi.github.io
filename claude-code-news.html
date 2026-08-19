@@ -4,8 +4,8 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
-<title>Claude Codeニュース | tukurimichi.com</title>
-<meta name="description" content="Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。">
+<title id="pageTitle">Claude Codeニュース | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。">
 <meta property="og:title" content="Claude Codeニュース">
 <meta property="og:description" content="Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。">
 <meta property="og:url" content="https://tukurimichi.com/claude-code-news.html">
@@ -16,46 +16,108 @@
 <meta name="twitter:title" content="Claude Codeニュース">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.2em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}h3{font-size:1em;margin-top:1.6em;margin-bottom:.3em;color:#1F1E1C;}p{margin:.7em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.hero{display:block;margin:0 auto 16px;width:96px;border-radius:14px;}ul.newsList{list-style:none;margin:1em 0;padding:0;}ul.newsList li{padding:10px 14px;background:#FBEDE7;border-radius:10px;margin-bottom:8px;font-size:.92em;}ul.newsList .date{color:#8A8470;font-size:.85em;margin-right:6px;}.detail{margin-bottom:1.6em;}.detail .ver{color:#8A8470;font-size:.85em;}.source{font-size:.85em;color:#8A8470;margin-top:2.4em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}</style>
+<style>html{background:#ECE9DE;}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;max-width:640px;margin:40px auto;padding:48px 40px 80px;line-height:1.85;color:#3D3929;background:#FAFAF7;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);}h1{font-size:1.6em;margin-bottom:.3em;color:#1F1E1C;}h2{font-size:1.05em;margin-top:2.2em;padding-left:12px;border-left:4px solid #D97757;color:#1F1E1C;}h3{font-size:1em;margin-top:1.6em;margin-bottom:.3em;color:#1F1E1C;}p{margin:.7em 0;}a{color:#C15F3C;}.back{display:inline-block;margin-bottom:24px;font-size:.9em;}.hero{display:block;margin:0 auto 16px;width:96px;border-radius:14px;}ul.newsList{list-style:none;margin:1em 0;padding:0;}ul.newsList li{padding:10px 14px;background:#FBEDE7;border-radius:10px;margin-bottom:8px;font-size:.92em;}ul.newsList .date{color:#8A8470;font-size:.85em;margin-right:6px;}.detail{margin-bottom:1.6em;}.detail .ver{color:#8A8470;font-size:.85em;}.source{font-size:.85em;color:#8A8470;margin-top:2.4em;}@media(max-width:480px){body{margin:16px;padding:32px 20px 64px;border-radius:14px;}}body{position:relative;}.langToggle{position:absolute;top:16px;right:16px;background:#fff;border:1px solid #D9D5C6;color:#5A5648;border-radius:20px;padding:5px 12px;font-size:.78em;cursor:pointer;font-family:inherit;}.langToggle:hover{background:#F3F0E6;}h1{padding-right:84px;}</style>
 </head>
 <body>
-<a class="back" href="claude-code.html">← Claude Codeで作ってみた記録へ</a>
+<button id="langBtn" class="langToggle"></button>
+<a class="back" href="claude-code.html" id="backTop">← Claude Codeで作ってみた記録へ</a>
 <img class="hero" src="mascot_site.jpg" alt="mascot">
-<h1>Claude Codeニュース</h1>
-<p>このサイトを作るのに使ってる Claude Code(Anthropic製のAIコーディングツール) の最新アップデートを、実際に使ってる立場からゆるく追いかけていく記録です。公式のリリースノートをもとに、気になったものだけ拾って書いてます。</p>
-
-<h2>最新5件</h2>
+<h1 id="h1t">Claude Codeニュース</h1>
+<p id="lead">このサイトを作るのに使ってる Claude Code(Anthropic製のAIコーディングツール) の最新アップデートを、実際に使ってる立場からゆるく追いかけていく記録です。公式のリリースノートをもとに、気になったものだけ拾って書いてます。</p>
+<h2 id="h2a">最新5件</h2>
 <ul class="newsList">
-<li><span class="date">2026-08-14</span>v2.1.233 — GitLab連携の強化やLinuxでのリソース制御まわりの改善</li>
-<li><span class="date">2026-08-13</span>v2.1.232 — 別のセッションを「@」で直接呼び出せるように</li>
-<li><span class="date">2026-08-13</span>v2.1.231 — Slack連携などで起きてたログイン不具合を修正</li>
-<li><span class="date">2026-08-12</span>v2.1.229 — AIが考え込んでる間も接続が切れにくいよう改善</li>
-<li><span class="date">2026-08-08</span>v2.1.225 — 使用量に上限(予算)を設定できる機能を追加</li>
+<li id="n1"><span class="date">2026-08-14</span>v2.1.233 — GitLab連携の強化やLinuxでのリソース制御まわりの改善</li>
+<li id="n2"><span class="date">2026-08-13</span>v2.1.232 — 別のセッションを「@」で直接呼び出せるように</li>
+<li id="n3"><span class="date">2026-08-13</span>v2.1.231 — Slack連携などで起きてたログイン不具合を修正</li>
+<li id="n4"><span class="date">2026-08-12</span>v2.1.229 — AIが考え込んでる間も接続が切れにくいよう改善</li>
+<li id="n5"><span class="date">2026-08-08</span>v2.1.225 — 使用量に上限(予算)を設定できる機能を追加</li>
 </ul>
-
-<h2>詳しく見る</h2>
-
+<h2 id="h2b">詳しく見る</h2>
 <div class="detail">
-<h3>セッションをまたいで直接メッセージが送れるように</h3>
+<h3 id="d1h">セッションをまたいで直接メッセージが送れるように</h3>
 <p class="ver">v2.1.228〜v2.1.232</p>
-<p>実はこのプロジェクトでも、この機能をフル活用した。マスコットのイラストをMidjourneyで作る作業は、メインの会話とは別に「画像生成専用のセッション」を裏で立ち上げて、そっちにプロンプトを送って作業してもらう、という形で進めた。コピペで指示を伝えるしかなかった部分が、直接メッセージを送れるようになって地味に便利。8/13のアップデートでは「@」で相手のセッションを直接指定できるようになったらしく、今後さらに使いやすくなりそう。</p>
+<p id="d1p">実はこのプロジェクトでも、この機能をフル活用した。マスコットのイラストをMidjourneyで作る作業は、メインの会話とは別に「画像生成専用のセッション」を裏で立ち上げて、そっちにプロンプトを送って作業してもらう、という形で進めた。コピペで指示を伝えるしかなかった部分が、直接メッセージを送れるようになって地味に便利。8/13のアップデートでは「@」で相手のセッションを直接指定できるようになったらしく、今後さらに使いやすくなりそう。</p>
 </div>
-
 <div class="detail">
-<h3>使用量に上限(予算)を設定できるように</h3>
+<h3 id="d2h">使用量に上限(予算)を設定できるように</h3>
 <p class="ver">v2.1.225</p>
-<p>AIをずっと動かしてると気になるのがコスト。8/8のアップデートで、使用量に上限を設定できる機能が追加されたらしい。このプロジェクトはそもそも「1万円まで」という上限つきの企画だから、こういう「使いすぎ防止」の仕組みには勝手に親近感が湧く。</p>
+<p id="d2p">AIをずっと動かしてると気になるのがコスト。8/8のアップデートで、使用量に上限を設定できる機能が追加されたらしい。このプロジェクトはそもそも「1万円まで」という上限つきの企画だから、こういう「使いすぎ防止」の仕組みには勝手に親近感が湧く。</p>
 </div>
-
 <div class="detail">
-<h3>AIが考え込んでる間の接続が安定するように</h3>
+<h3 id="d3h">AIが考え込んでる間の接続が安定するように</h3>
 <p class="ver">v2.1.229</p>
-<p>複雑な作業を頼むと、AIが「考え込む」時間が長くなることがある。その間に接続が切れてしまうことがあったらしく、8/12のアップデートで改善されたとのこと。このプロジェクトの制作中も、ブラウザの接続が切れて作業をやり直す場面が何度かあったので(<a href="claude-code.html">つまずいたことのページ</a>参照)、こういう地道な信頼性改善はありがたい。</p>
+<p id="d3p">複雑な作業を頼むと、AIが「考え込む」時間が長くなることがある。その間に接続が切れてしまうことがあったらしく、8/12のアップデートで改善されたとのこと。このプロジェクトの制作中も、ブラウザの接続が切れて作業をやり直す場面が何度かあったので(<a href="claude-code.html">つまずいたことのページ</a>参照)、こういう地道な信頼性改善はありがたい。</p>
 </div>
-
-<p class="source">情報源:<a href="https://code.claude.com/docs/en/changelog" target="_blank" rel="noopener">Claude Code公式チェンジログ</a>(英語)</p>
-
-<p><a class="back" href="./">← tukurimichi.com トップへ戻る</a></p>
-
+<p class="source" id="src">情報源:<a href="https://code.claude.com/docs/en/changelog" target="_blank" rel="noopener">Claude Code公式チェンジログ</a>(英語)</p>
+<p><a class="back" href="./" id="footBack">← tukurimichi.com トップへ戻る</a></p>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"Claude Codeニュース | tukurimichi.com",
+desc:"Claude Codeの最新アップデートを、実際に使ってる立場からゆるく追いかける記録です。",
+t:{
+backTop:"← Claude Codeで作ってみた記録へ",
+h1t:"Claude Codeニュース",
+lead:"このサイトを作るのに使ってる Claude Code(Anthropic製のAIコーディングツール) の最新アップデートを、実際に使ってる立場からゆるく追いかけていく記録です。公式のリリースノートをもとに、気になったものだけ拾って書いてます。",
+h2a:"最新5件",
+n1:"<span class=\"date\">2026-08-14</span>v2.1.233 — GitLab連携の強化やLinuxでのリソース制御まわりの改善",
+n2:"<span class=\"date\">2026-08-13</span>v2.1.232 — 別のセッションを「@」で直接呼び出せるように",
+n3:"<span class=\"date\">2026-08-13</span>v2.1.231 — Slack連携などで起きてたログイン不具合を修正",
+n4:"<span class=\"date\">2026-08-12</span>v2.1.229 — AIが考え込んでる間も接続が切れにくいよう改善",
+n5:"<span class=\"date\">2026-08-08</span>v2.1.225 — 使用量に上限(予算)を設定できる機能を追加",
+h2b:"詳しく見る",
+d1h:"セッションをまたいで直接メッセージが送れるように",
+d1p:"実はこのプロジェクトでも、この機能をフル活用した。マスコットのイラストをMidjourneyで作る作業は、メインの会話とは別に「画像生成専用のセッション」を裏で立ち上げて、そっちにプロンプトを送って作業してもらう、という形で進めた。コピペで指示を伝えるしかなかった部分が、直接メッセージを送れるようになって地味に便利。8/13のアップデートでは「@」で相手のセッションを直接指定できるようになったらしく、今後さらに使いやすくなりそう。",
+d2h:"使用量に上限(予算)を設定できるように",
+d2p:"AIをずっと動かしてると気になるのがコスト。8/8のアップデートで、使用量に上限を設定できる機能が追加されたらしい。このプロジェクトはそもそも「1万円まで」という上限つきの企画だから、こういう「使いすぎ防止」の仕組みには勝手に親近感が湧く。",
+d3h:"AIが考え込んでる間の接続が安定するように",
+d3p:"複雑な作業を頼むと、AIが「考え込む」時間が長くなることがある。その間に接続が切れてしまうことがあったらしく、8/12のアップデートで改善されたとのこと。このプロジェクトの制作中も、ブラウザの接続が切れて作業をやり直す場面が何度かあったので(<a href=\"claude-code.html\">つまずいたことのページ</a>参照)、こういう地道な信頼性改善はありがたい。",
+src:"情報源:<a href=\"https://code.claude.com/docs/en/changelog\" target=\"_blank\" rel=\"noopener\">Claude Code公式チェンジログ</a>(英語)",
+footBack:"← tukurimichi.com トップへ戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Claude Code News | tukurimichi.com",
+desc:"Following Claude Code's updates from the point of view of someone actually using it.",
+t:{
+backTop:"← Back to the Claude Code write-up",
+h1t:"Claude Code News",
+lead:"A loose running record of updates to Claude Code (Anthropic's AI coding tool), which is what this whole site was built with, written from the point of view of someone actually using it. Based on the official release notes — I only pick out the ones that caught my eye.",
+h2a:"Latest five",
+n1:"<span class=\"date\">2026-08-14</span>v2.1.233 — Better GitLab integration, and improvements to resource control on Linux",
+n2:"<span class=\"date\">2026-08-13</span>v2.1.232 — You can now call another session directly with \"@\"",
+n3:"<span class=\"date\">2026-08-13</span>v2.1.231 — Fixed login problems affecting the Slack integration and others",
+n4:"<span class=\"date\">2026-08-12</span>v2.1.229 — Connections are less likely to drop while the AI is thinking",
+n5:"<span class=\"date\">2026-08-08</span>v2.1.225 — Added the ability to set a spending cap on usage",
+h2b:"A closer look",
+d1h:"Sending messages directly between sessions",
+d1p:"I leaned on this one heavily in this very project. For the Midjourney mascot artwork, I ran a separate \"image generation only\" session in the background, apart from the main conversation, and sent prompts over to it to work on. What used to mean copy-pasting instructions across became a direct message — quietly very useful. The 8/13 update apparently lets you address a specific session with \"@\", so it should get easier still.",
+d2h:"Setting a spending cap on usage",
+d2p:"Cost is the thing you start watching once you leave an AI running. The 8/8 update reportedly added a way to set an upper limit on usage. This project is built around a cap in the first place — ¥10,000 and no more — so I feel an unearned kinship with any \"don't overspend\" mechanism.",
+d3h:"Steadier connections while the AI is thinking",
+d3p:"Ask for something complicated and the AI can spend a long stretch \"thinking\". Connections were apparently dropping during that window, and the 8/12 update improved it. My browser connection died and forced me to redo work several times while building this project (see <a href=\"claude-code.html\">the page on what tripped me up</a>), so I'll take every bit of unglamorous reliability work I can get.",
+src:"Source: <a href=\"https://code.claude.com/docs/en/changelog\" target=\"_blank\" rel=\"noopener\">the official Claude Code changelog</a>",
+footBack:"← Back to tukurimichi.com"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
