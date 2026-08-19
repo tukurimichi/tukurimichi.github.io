@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIと遊ぶ | tukurimichi.com</title>
-<meta name="description" content="AIおみくじと、AIとのじゃんけん対決で遊べます。">
+<title id="pageTitle">AIと遊ぶ | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="AIおみくじと、AIとのじゃんけん対決で遊べます。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -23,8 +23,9 @@
 html{background:var(--bg);}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
-.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
 .section{padding:26px 22px;border-bottom:1px solid var(--line);}
@@ -48,14 +49,15 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="index.html">← トップに戻る</a>
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
 <div class="banner">
-<h1>AIと遊ぶ</h1>
-<p>おみくじと、じゃんけん対決。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">AIと遊ぶ</h1>
+<p id="bannerP">おみくじと、じゃんけん対決。</p>
 </div>
 
 <div class="section">
-<p>ボタンを押すと、AIから今日の一言が出ます。</p>
+<p id="omikujiLead">ボタンを押すと、AIから今日の一言が出ます。</p>
 <div class="omikujiDieWrap"><div id="omikujiDieAnchor"></div></div>
 <button id="ob" class="ghostBtnSolid">引いてみる</button>
 <p id="or"></p>
@@ -63,7 +65,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </div>
 
 <div class="section">
-<p>AIとじゃんけん勝負。連勝記録に挑戦してみて。</p>
+<p id="jankenLead">AIとじゃんけん勝負。連勝記録に挑戦してみて。</p>
 <div class="jankenHandWrap"><div id="jankenHandAnchor"></div></div>
 <button id="jg" class="jhand">✊ グー</button><button id="jc" class="jhand">✌️ チョキ</button><button id="jp" class="jhand">✋ パー</button>
 <p id="jresult"></p>
@@ -71,40 +73,116 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 <p id="jshare"></p>
 </div>
 
-<div class="footer"><a href="index.html">← トップに戻る</a></div>
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
 </div>
 
 <canvas id="omikujiFxCanvas"></canvas>
 <canvas id="jankenFxCanvas"></canvas>
 
 <script>
-var OMIKUJI=["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ余裕あり。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"];
-var OMIKUJI_SHARE_LABEL="AIおみくじ結果:";
-var SHARE_LINK_LABEL="この結果をXでシェア →";
+var LANG={
+ja:{
+toggleTo:"English",
+title:"AIと遊ぶ | tukurimichi.com",
+desc:"AIおみくじと、AIとのじゃんけん対決で遊べます。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"AIと遊ぶ",
+bannerP:"おみくじと、じゃんけん対決。",
+omikujiLead:"ボタンを押すと、AIから今日の一言が出ます。",
+ob:"引いてみる",
+jankenLead:"AIとじゃんけん勝負。連勝記録に挑戦してみて。",
+jg:"✊ グー",
+jc:"✌️ チョキ",
+jp:"✋ パー",
+footBack:"← トップに戻る"
+},
+omikuji:["大吉:今日はAIとの相性最高。思い切って新しいことを試すと吉。","大吉:予算はまだ余裕あり。今のうちに一歩踏み出そう。","中吉:小さく試して、ダメなら潔く見送る。それが一番の近道。","中吉:焦らずコツコツ。今日の一つの作業が明日の土台になる。","小吉:今日は無理せず休むのも立派な前進。","小吉:わからないことは素直に聞くのが一番の近道。","末吉:うまくいかない日もAIとの開発記録としては貴重な一日。","凶:たまには思い通りにいかない日もある。次に活かそう。"],
+omikujiShareLabel:"AIおみくじ結果:",
+shareLinkLabel:"この結果をXでシェア →",
+jnames:{g:"グー",c:"チョキ",p:"パー"},
+winMsgs:["やった、AIに勝った!","AIの弱点を見つけたかも","この調子で連勝しよう"],
+loseMsgs:["AIの完全勝利...精進します","負けた、AIは強い","次こそは"],
+drawMsg:"あいこ!もう一回勝負しよう",
+resultWin:"勝った!",
+resultLose:"負けた…",
+resultDraw:"あいこ!",
+youLabel:"あなた:",
+vsLabel:" vs AI:",
+statsFmt:function(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.streak+"連勝)";},
+shareFmt:function(r,s){return "AIとじゃんけん対決して"+r+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";}
+},
+en:{
+toggleTo:"日本語",
+title:"Play with the AI | tukurimichi.com",
+desc:"Draw an AI fortune, or play rock-paper-scissors against the AI.",
+t:{
+backTop:"← Back to top",
+bannerH1:"Play with the AI",
+bannerP:"A fortune draw, and a rock-paper-scissors match.",
+omikujiLead:"Press the button and the AI gives you a line for today.",
+ob:"Draw one",
+jankenLead:"Rock-paper-scissors against the AI. See how long a streak you can build.",
+jg:"✊ Rock",
+jc:"✌️ Scissors",
+jp:"✋ Paper",
+footBack:"← Back to top"
+},
+omikuji:["GREAT LUCK: You and the AI are perfectly in sync today. A good day to try something bold.","GREAT LUCK: There's still room in the budget. Take your step now, while there is.","GOOD LUCK: Try it small, and drop it cleanly if it doesn't work. That's the shortest path.","GOOD LUCK: No rush. One piece of work today becomes tomorrow's foundation.","SMALL LUCK: Resting instead of pushing through is real progress too.","SMALL LUCK: When you don't understand something, just ask. It's the fastest route.","LUCK LATER: Even a day where nothing works is worth having in the log.","BAD LUCK: Some days simply don't go your way. Put it to use next time."],
+omikujiShareLabel:"My AI fortune: ",
+shareLinkLabel:"Share this result on X →",
+jnames:{g:"Rock",c:"Scissors",p:"Paper"},
+winMsgs:["Nice — you beat the AI!","You might have found its weak spot","Keep that streak going"],
+loseMsgs:["A clean sweep for the AI. I'll train harder","Lost. The AI is strong","Next time for sure"],
+drawMsg:"Draw! Go again",
+resultWin:"won",
+resultLose:"lost",
+resultDraw:"drew",
+youLabel:"You:",
+vsLabel:" vs AI:",
+statsFmt:function(s){return s.win+"W "+s.lose+"L "+s.draw+"D (streak "+s.streak+")";},
+shareFmt:function(r,s){return "I played rock-paper-scissors against an AI and "+r+". (Total: "+s.win+"W "+s.lose+"L "+s.draw+"D)";}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+var L=LANG[currentLang];
 var JHANDS={g:"✊",c:"✌️",p:"✋"};
-var JNAMES={g:"グー",c:"チョキ",p:"パー"};
-var WIN_MSGS=["やった、AIに勝った!","AIの弱点を見つけたかも","この調子で連勝しよう"];
-var LOSE_MSGS=["AIの完全勝利...精進します","負けた、AIは強い","次こそは"];
-var DRAW_MSG="あいこ!もう一回勝負しよう";
-function statsFmt(s){return s.win+"勝 "+s.lose+"敗 "+s.draw+"分(現在"+s.streak+"連勝)";}
-var RESULT_WIN="勝った!",RESULT_LOSE="負けた…",RESULT_DRAW="あいこ!";
-var YOU_LABEL="あなた:";
-function jankenShareFmt(resultLabel,s){return "AIとじゃんけん対決して"+resultLabel+"(通算"+s.win+"勝"+s.lose+"敗"+s.draw+"分)";}
 
 function jRenderStats(){
 var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
-if(s.win+s.lose+s.draw>0){document.getElementById("jstats").textContent=statsFmt(s);}
+if(s.win+s.lose+s.draw>0){document.getElementById("jstats").textContent=L.statsFmt(s);}
 else{document.getElementById("jstats").textContent="";}
 }
+
+function applyLang(lang){
+L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+// results already on screen belong to the old language, so clear them rather
+// than leave a half-translated line behind; the running tally is re-rendered.
+document.getElementById("or").textContent="";
+document.getElementById("sh").innerHTML="";
+document.getElementById("jresult").innerHTML="";
+document.getElementById("jshare").innerHTML="";
 jRenderStats();
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+applyLang(currentLang);
+};
+applyLang(currentLang);
 
 document.getElementById("ob").onclick=function(){
 var reveal=function(){
-  var m=OMIKUJI[Math.floor(Math.random()*OMIKUJI.length)];
+  var m=L.omikuji[Math.floor(Math.random()*L.omikuji.length)];
   document.getElementById("or").textContent=m;
-  var shareText=OMIKUJI_SHARE_LABEL+m;
+  var shareText=L.omikujiShareLabel+m;
   var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-  document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+SHARE_LINK_LABEL+"</a>";
+  document.getElementById("sh").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
   if(window.gtag){gtag("event","omikuji_click",{"result":m});}
 };
 document.getElementById("or").textContent="";
@@ -119,16 +197,16 @@ else if((userHand==="g"&&aiHand==="c")||(userHand==="c"&&aiHand==="p")||(userHan
 else{result="lose";}
 var s=JSON.parse(localStorage.getItem("jstats")||'{"win":0,"lose":0,"draw":0,"streak":0}');
 var msg;
-if(result==="win"){s.win++;s.streak++;msg=WIN_MSGS[Math.floor(Math.random()*WIN_MSGS.length)];}
-else if(result==="lose"){s.lose++;s.streak=0;msg=LOSE_MSGS[Math.floor(Math.random()*LOSE_MSGS.length)];}
-else{s.draw++;msg=DRAW_MSG;}
+if(result==="win"){s.win++;s.streak++;msg=L.winMsgs[Math.floor(Math.random()*L.winMsgs.length)];}
+else if(result==="lose"){s.lose++;s.streak=0;msg=L.loseMsgs[Math.floor(Math.random()*L.loseMsgs.length)];}
+else{s.draw++;msg=L.drawMsg;}
 localStorage.setItem("jstats",JSON.stringify(s));
-document.getElementById("jresult").innerHTML=YOU_LABEL+JHANDS[userHand]+JNAMES[userHand]+" vs AI:"+JHANDS[aiHand]+JNAMES[aiHand]+"<br>"+msg;
-document.getElementById("jstats").textContent=statsFmt(s);
-var resultLabel=result==="win"?RESULT_WIN:(result==="lose"?RESULT_LOSE:RESULT_DRAW);
-var shareText=jankenShareFmt(resultLabel,s);
+document.getElementById("jresult").innerHTML=L.youLabel+JHANDS[userHand]+L.jnames[userHand]+L.vsLabel+JHANDS[aiHand]+L.jnames[aiHand]+"<br>"+msg;
+document.getElementById("jstats").textContent=L.statsFmt(s);
+var resultLabel=result==="win"?L.resultWin:(result==="lose"?L.resultLose:L.resultDraw);
+var shareText=L.shareFmt(resultLabel,s);
 var shareUrl="https://x.com/intent/post?text="+encodeURIComponent(shareText)+"&url="+encodeURIComponent("https://tukurimichi.com/");
-document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+SHARE_LINK_LABEL+"</a>";
+document.getElementById("jshare").innerHTML="<a href='"+shareUrl+"' target='_blank' rel='noopener'>"+L.shareLinkLabel+"</a>";
 if(window.gtag){gtag("event","janken_play",{"result":result});}
 }
 function startJanken(userHand){
