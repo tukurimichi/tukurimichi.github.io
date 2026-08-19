@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>チビロボ、紙になる | tukurimichi.com</title>
-<meta name="description" content="AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた話。頼んでないけど公開します。">
+<title id="pageTitle">チビロボ、紙になる | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた話。頼んでないけど公開します。">
 <meta property="og:title" content="チビロボ、紙になる">
 <meta property="og:description" content="AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた話。頼んでないけど公開します。">
 <meta property="og:url" content="https://tukurimichi.com/papercraft.html">
@@ -35,8 +35,9 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
 a{color:#FF8A80;}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;}
-.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;position:relative;}
+.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;padding-right:78px;}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
 .section{padding:22px 22px 4px;}
 .section p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1em;}
@@ -52,35 +53,54 @@ a{color:#FF8A80;}
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="./">← tukurimichi.com トップへ</a>
+<a class="backlink" href="./" id="backTop">← tukurimichi.com トップへ</a>
 
 <div class="banner">
-<h1>チビロボ、紙になる</h1>
-<p>AIに「何か新しいことして」と頼んだ結果。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">チビロボ、紙になる</h1>
+<p id="bannerP">AIに「何か新しいことして」と頼んだ結果。</p>
 </div>
 
 <div class="section">
-<p>AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。</p>
-<p>頼んでない。でも、せっかく作れそうなので公開します。</p>
-<p>作ったのはGemini。切って折るとサイトのマスコット(チビロボ)が組み立てられる、はず。娘に作らせてみる予定です。</p>
+<p id="p1">AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。</p>
+<p id="p2">頼んでない。でも、せっかく作れそうなので公開します。</p>
+<p id="p3">作ったのはGemini。切って折るとサイトのマスコット(チビロボ)が組み立てられる、はず。娘に作らせてみる予定です。</p>
 </div>
 
 <div class="section">
 <a class="imgCard" href="images/papercraft_v1.png" target="_blank" rel="noopener">
 <img src="images/papercraft_v1.png" alt="チビロボ ペーパークラフトの展開図">
 </a>
-<p class="hint">▲タップで原寸表示</p>
+<p class="hint" id="hint1">▲タップで原寸表示</p>
 
-<a class="dlBtn" href="files/papercraft_v1.pdf" download>📄 印刷用PDFをダウンロード</a>
+<a class="dlBtn" href="files/papercraft_v1.pdf" download id="dlBtn">📄 印刷用PDFをダウンロード</a>
 
-<div class="steps">
+<div class="steps" id="steps">
 A4で印刷 → 実線を切る → 点線を山折り → グレーのりしろにのり
 </div>
 
-<p style="margin-top:1.6em;">作った人がいたら、見せてもらえると嬉しいです。</p>
+<p style="margin-top:1.6em;" id="p4">作った人がいたら、見せてもらえると嬉しいです。</p>
 </div>
 
-<div class="footer"><a href="./">← tukurimichi.com トップへ戻る</a></div>
+<div class="footer"><a href="./" id="footBack">← tukurimichi.com トップへ戻る</a></div>
 </div>
+<script>
+var LANG={"ja": {"toggleTo": "English", "title": "チビロボ、紙になる | tukurimichi.com", "desc": "AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた話。頼んでないけど公開します。", "t": {"backTop": "← tukurimichi.com トップへ", "bannerH1": "チビロボ、紙になる", "bannerP": "AIに「何か新しいことして」と頼んだ結果。", "p1": "AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。", "p2": "頼んでない。でも、せっかく作れそうなので公開します。", "p3": "作ったのはGemini。切って折るとサイトのマスコット(チビロボ)が組み立てられる、はず。娘に作らせてみる予定です。", "hint1": "▲タップで原寸表示", "dlBtn": "📄 印刷用PDFをダウンロード", "steps": "\nA4で印刷 → 実線を切る → 点線を山折り → グレーのりしろにのり\n", "p4": "作った人がいたら、見せてもらえると嬉しいです。", "footBack": "← tukurimichi.com トップへ戻る"}}, "en": {"toggleTo": "日本語", "title": "Chibi Robo, on Paper | tukurimichi.com", "desc": "A papercraft template of the mascot, made by an AI nobody asked. Print it and build it.", "t": {"backTop": "← Back to tukurimichi.com", "bannerH1": "Chibi Robo, on Paper", "bannerP": "What happened when I asked an AI to \"do something new\".", "p1": "I asked an AI to \"do something new\", and it came back with a papercraft template.", "p2": "Nobody asked for this. But since it looks buildable, here it is.", "p3": "Gemini made it. Cut it out, fold it, and you should end up with the site's mascot (Chibi Robo). I'm planning to make my daughter build one.", "hint1": "▲ Tap for full size", "dlBtn": "📄 Download the print-ready PDF", "steps": "\nPrint on A4 → cut the solid lines → fold the dotted lines → glue the grey tabs\n", "p4": "If you build one, I'd love to see it.", "footBack": "← Back to tukurimichi.com"}}};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
