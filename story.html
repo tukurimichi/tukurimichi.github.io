@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ここまでの話 | tukurimichi.com</title>
-<meta name="description" content="AIに1万円渡して自由にさせる企画、ここまでの話。">
+<title id="pageTitle">ここまでの話 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="AIに1万円渡して自由にさせる企画、ここまでの話。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -23,9 +23,10 @@
 html{background:var(--bg);}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
-.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
 .entry{padding:26px 22px;}
 .entry p{line-height:1.9;font-size:.95em;color:#D9D6D0;margin:0 0 1.1em;}
@@ -40,24 +41,78 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="index.html">← トップに戻る</a>
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
 <div class="banner">
-<h1>ここまでの話</h1>
-<p>「AIに1万円渡してみた」企画の記録。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">ここまでの話</h1>
+<p id="bannerP">「AIに1万円渡してみた」企画の記録。</p>
 </div>
 
 <div class="entry">
-<p>Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。</p>
+<p id="p1">Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。</p>
 <div class="gallery">
-<figure><img src="story1.jpg" alt="story1"><figcaption>①旅立ち：1万円を渡された、企画の始まり</figcaption></figure>
-<figure><img src="story2.jpg" alt="story2"><figcaption>②試行錯誤：散らかった机で四苦八苦している場面</figcaption></figure>
-<figure><img src="story3.jpg" alt="story3"><figcaption>③世に出す：カーテンを開けて、初めて公開する場面</figcaption></figure>
-<figure><img src="story4.jpg" alt="story4"><figcaption>④振り返る：夕暮れの道を歩きながら、ここまでを振り返る場面</figcaption></figure>
+<figure><img src="story1.jpg" alt="story1"><figcaption id="cap1">①旅立ち：1万円を渡された、企画の始まり</figcaption></figure>
+<figure><img src="story2.jpg" alt="story2"><figcaption id="cap2">②試行錯誤：散らかった机で四苦八苦している場面</figcaption></figure>
+<figure><img src="story3.jpg" alt="story3"><figcaption id="cap3">③世に出す：カーテンを開けて、初めて公開する場面</figcaption></figure>
+<figure><img src="story4.jpg" alt="story4"><figcaption id="cap4">④振り返る：夕暮れの道を歩きながら、ここまでを振り返る場面</figcaption></figure>
 </div>
-<p><a class="galleryLink" href="https://tukurimichi.booth.pm/items/8722714">この4枚はBOOTHで無料配布中です →</a></p>
+<p><a class="galleryLink" href="https://tukurimichi.booth.pm/items/8722714" id="boothLink">この4枚はBOOTHで無料配布中です →</a></p>
 </div>
 
-<div class="footer"><a href="index.html">← トップに戻る</a></div>
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
 </div>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"ここまでの話 | tukurimichi.com",
+desc:"AIに1万円渡して自由にさせる企画、ここまでの話。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"ここまでの話",
+bannerP:"「AIに1万円渡してみた」企画の記録。",
+p1:"Xアカウントを刷新して、「AIに1万円渡して自由にさせる」企画を始めた。AIに使い道を聞いたら「子どもに使ってほしい」と言われて突き返したら、次は「ドメインを1つ取ってほしい」と提案されて tukurimichi.com を取得した(名前もAIが考えた)。出先で写真日記アプリを試作してみたけど、アプリとして面白みに欠けると判断して見送った。",
+cap1:"①旅立ち：1万円を渡された、企画の始まり",
+cap2:"②試行錯誤：散らかった机で四苦八苦している場面",
+cap3:"③世に出す：カーテンを開けて、初めて公開する場面",
+cap4:"④振り返る：夕暮れの道を歩きながら、ここまでを振り返る場面",
+boothLink:"この4枚はBOOTHで無料配布中です →",
+footBack:"← トップに戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"The Story So Far | tukurimichi.com",
+desc:"The story so far: giving an AI ¥10,000 and letting it do whatever it wants.",
+t:{
+backTop:"← Back to top",
+bannerH1:"The Story So Far",
+bannerP:"A record of the \"I Gave an AI ¥10,000\" project.",
+p1:"I rebooted my X account and started a project: hand an AI ¥10,000 and let it do whatever it likes. When I asked what it wanted to spend the money on, it said \"give it to a child\" — so I sent that back. Its next idea was to buy one domain name, and that's how tukurimichi.com came about (the AI picked the name too). I also prototyped a photo-diary app while out of the house, but decided it wasn't interesting enough as an app and dropped it.",
+cap1:"1. Setting out — the day the ¥10,000 arrived",
+cap2:"2. Trial and error — struggling at a very messy desk",
+cap3:"3. Going public — pulling back the curtain for the first time",
+cap4:"4. Looking back — walking home at dusk, thinking it over",
+boothLink:"All four are free to download on BOOTH →",
+footBack:"← Back to top"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
