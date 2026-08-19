@@ -74,6 +74,7 @@ a{color:inherit;}
 
 .deskWrap{position:relative;width:100%;height:50vh;max-height:560px;min-height:240px;margin-top:2px;background:radial-gradient(ellipse at 50% 15%,#241a14 0%,#120d0a 75%);overflow:hidden;touch-action:pan-y;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
 #deskCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;}
+.deskVignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 75% at 50% 62%,transparent 45%,rgba(6,4,3,.6) 100%);}
 #deskLabels{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 .deskLabel{position:absolute;transform:translate(-50%,4px);pointer-events:none;font-size:.56em;font-weight:700;color:#fff;background:rgba(10,10,11,.5);padding:2px 7px;border-radius:9px;white-space:nowrap;opacity:.5;transition:opacity .15s ease,transform .15s ease,background .15s ease;}
 .deskLabel .en{display:block;font-size:.7em;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.65);margin-top:1px;}
@@ -134,6 +135,7 @@ a{color:inherit;}
 
 <div class="deskWrap" id="deskWrap">
 <canvas id="deskCanvas"></canvas>
+<div class="deskVignette"></div>
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
@@ -568,12 +570,21 @@ function initDeskScene(){
   var deskGroup=new THREE.Group();
   scene.add(deskGroup);
 
-  var desk=new THREE.Mesh(new THREE.BoxGeometry(300,14,190),new THREE.MeshStandardMaterial({color:0x3B2A20,roughness:0.9}));
+  var DESK_W=240,DESK_D=152;
+  var desk=new THREE.Mesh(new THREE.BoxGeometry(DESK_W,14,DESK_D),new THREE.MeshStandardMaterial({color:0x3B2A20,roughness:0.9}));
   desk.position.y=-7;
   deskGroup.add(desk);
-  var deskEdge=new THREE.Mesh(new THREE.BoxGeometry(300,3,190),new THREE.MeshStandardMaterial({color:0x241811}));
+  var deskEdge=new THREE.Mesh(new THREE.BoxGeometry(DESK_W,3,DESK_D),new THREE.MeshStandardMaterial({color:0x241811}));
   deskEdge.position.y=-14.4;
   deskGroup.add(deskEdge);
+
+  // large soft floor blob under everything so the (now smaller) desk + mascot
+  // read as "sitting on a floor" rather than floating in empty space
+  var floorTex=makeShadowTexture();
+  var floor=new THREE.Mesh(new THREE.PlaneGeometry(900,900),new THREE.MeshBasicMaterial({map:floorTex,transparent:true,depthWrite:false,opacity:0.9}));
+  floor.rotation.x=-Math.PI/2;
+  floor.position.set(-20,-20,10);
+  deskGroup.add(floor);
 
   var shadowTex=makeShadowTexture();
   function addShadow(x,z,r){
@@ -583,21 +594,25 @@ function initDeskScene(){
     deskGroup.add(m);
   }
 
+  // hand-picked "scattered" positions/rotations (fixed, not Math.random, so it's
+  // stable across reloads) instead of a grid: each item nudged off-axis so it
+  // reads as naturally placed rather than lined up
   var OBJS=[
-    {key:"story",ja:"物語",en:"STORY",href:"story.html",build:buildDeskBook,pos:[-125,0,-72],shadowR:34,labelFront:14},
-    {key:"diary",ja:"日記",en:"DIARY",href:"diary.html",build:buildDeskDiaryBook,pos:[-42,0,-74],shadowR:32,labelFront:14},
-    {key:"log",ja:"更新ログ",en:"LOG",href:"changelog.html",build:buildDeskGear,pos:[42,0,-72],shadowR:28,labelFront:14},
-    {key:"made",ja:"つくった",en:"MADE",href:"made.html",build:buildDeskBlocks,pos:[125,0,-72],shadowR:30,labelFront:14},
-    {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-90,0,55],shadowR:28,labelFront:18},
-    {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[0,0,58],shadowR:26,labelFront:18},
-    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[90,0,55],shadowR:26,labelFront:18}
+    {key:"story",ja:"物語",en:"STORY",href:"story.html",build:buildDeskBook,pos:[-78,0,-55],rot:0.35,shadowR:29,labelFront:14},
+    {key:"diary",ja:"日記",en:"DIARY",href:"diary.html",build:buildDeskDiaryBook,pos:[-8,0,-60],rot:-0.22,shadowR:27,labelFront:14,padExtra:4},
+    {key:"log",ja:"更新ログ",en:"LOG",href:"changelog.html",build:buildDeskGear,pos:[100,0,-40],rot:0.5,shadowR:24,labelFront:16},
+    {key:"made",ja:"つくった",en:"MADE",href:"made.html",build:buildDeskBlocks,pos:[-75,0,38],rot:-0.35,shadowR:26,labelFront:18},
+    {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-15,0,25],rot:0.6,shadowR:24,labelFront:20},
+    {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[78,0,38],rot:-0.28,shadowR:22,labelFront:16},
+    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[25,0,68],rot:0.9,shadowR:22,labelFront:8}
   ];
 
   var items=[];
   OBJS.forEach(function(cfg){
     var group=cfg.build();
-    group.scale.setScalar(1.0);
+    group.scale.setScalar(0.78);
     group.position.set(cfg.pos[0],cfg.pos[1],cfg.pos[2]);
+    group.rotation.y=cfg.rot||0;
     group.userData.baseY=cfg.pos[1];
     deskGroup.add(group);
     // generous invisible hitbox so touch/near-misses on thin objects still register
@@ -605,7 +620,7 @@ function initDeskScene(){
     var bbox=new THREE.Box3().setFromObject(group);
     var size=bbox.getSize(new THREE.Vector3());
     var center=bbox.getCenter(new THREE.Vector3());
-    var pad=13;
+    var pad=12+(cfg.padExtra||0);
     var hitbox=new THREE.Mesh(
       new THREE.BoxGeometry(Math.max(size.x,6)+pad*2,Math.max(size.y,6)+pad*2,Math.max(size.z,6)+pad*2),
       new THREE.MeshBasicMaterial({visible:false})
@@ -628,10 +643,12 @@ function initDeskScene(){
     items.push({cfg:cfg,group:group,label:label,glow:glow,hover:0,hoverTarget:0,bounceT:0});
   });
 
-  var mascot=buildMascotBody(0.85);
-  mascot.group.position.set(-152,20,-90);
-  mascot.group.rotation.y=0.6;
+  var mascot=buildMascotBody(1.0);
+  var MASCOT_X=-112,MASCOT_Z=-15;
+  mascot.group.position.set(MASCOT_X,24,MASCOT_Z);
+  mascot.group.rotation.y=0.9;
   deskGroup.add(mascot.group);
+  addShadow(MASCOT_X,MASCOT_Z+4,32);
   var mascotBaseY=mascot.group.position.y;
   var waveState=null;
   var nextAutoWaveAt=Date.now()+3000+Math.random()*3000;
@@ -747,7 +764,7 @@ function initDeskScene(){
     });
   },600);
 
-  window.__deskDebug={camera:camera,items:items,getW:function(){return W;},getH:function(){return H;}};
+  window.__deskDebug={camera:camera,items:items,mascot:mascot,getW:function(){return W;},getH:function(){return H;},isWaving:function(){return !!waveState;}};
 
   (function frame(){
     var navOpen=document.getElementById("navOverlay").classList.contains("open");
