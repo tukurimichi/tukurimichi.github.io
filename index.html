@@ -139,7 +139,7 @@ a{color:inherit;}
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
-<a href="story.html">物語</a>・<a href="play.html">遊ぶ</a>・<a href="diary.html">日記</a>・<a href="made.html">つくったもの</a>・<a href="tips.html">AIワザ</a>・<a href="changelog.html">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>
+<a href="story.html">物語</a>・<a href="play.html">遊ぶ</a>・<a href="diary.html">日記</a>・<a href="made.html">つくったもの</a>・<a href="tips.html">AIワザ</a>・<a href="changelog.html">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html">ニュース</a>
 </div>
 
 <div class="footer">
@@ -432,6 +432,24 @@ function buildDeskCamera(){
   g.add(shutter);
   return g;
 }
+function buildDeskNewspaper(){
+  var g=new THREE.Group();
+  var pageMat=new THREE.MeshStandardMaterial({color:0xF4F0E4});
+  var pageGeo=new THREE.BoxGeometry(10.5,0.5,8);
+  var left=new THREE.Mesh(pageGeo,pageMat);left.position.x=-4.9;left.rotation.z=0.09;
+  var right=new THREE.Mesh(pageGeo,pageMat);right.position.x=4.9;right.rotation.z=-0.09;
+  g.add(left,right);
+  var headline=new THREE.Mesh(new THREE.BoxGeometry(8.6,0.16,1.5),new THREE.MeshStandardMaterial({color:0x3A3A3A}));
+  headline.position.set(-0.6,0.55,-2.6);
+  g.add(headline);
+  var headline2=new THREE.Mesh(new THREE.BoxGeometry(6.2,0.16,0.9),new THREE.MeshStandardMaterial({color:0x3A3A3A}));
+  headline2.position.set(-1.6,0.5,-1.3);
+  g.add(headline2);
+  var accent=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.22,1.5),new THREE.MeshStandardMaterial({color:0xE31E24}));
+  accent.position.set(3.6,0.56,-2.6);
+  g.add(accent);
+  return g;
+}
 
 (function(){
 function initHeroFX(){
@@ -610,7 +628,8 @@ function initDeskScene(){
     {key:"made",ja:"つくった",en:"MADE",href:"made.html",build:buildDeskBlocks,pos:[-75,0,38],rot:-0.35,shadowR:26,labelFront:18},
     {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-15,0,25],rot:0.6,shadowR:24,labelFront:20},
     {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[78,0,38],rot:-0.28,shadowR:22,labelFront:16},
-    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[25,0,68],rot:0.9,shadowR:22,labelFront:8}
+    {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[25,0,68],rot:0.9,shadowR:22,labelFront:8},
+    {key:"news",ja:"ニュース",en:"NEWS",href:"claude-code-news.html",build:buildDeskNewspaper,pos:[42,0,-12],rot:0.4,shadowR:23,labelFront:16}
   ];
 
   var items=[];
