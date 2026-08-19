@@ -15,8 +15,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>マスコットの日記 | tukurimichi.com</title>
-<meta name="description" content="tukurimichi.comのマスコットが綴る、開発の裏側日記。">
+<title id="pageTitle">マスコットの日記 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="tukurimichi.comのマスコットが綴る、開発の裏側日記。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -71,22 +71,24 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 
 .footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
 .footer a{color:#FF8A80;}
+.langToggle{background:rgba(10,10,11,.35);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 12px;font-size:.74em;cursor:pointer;font-family:inherit;margin-right:8px;white-space:nowrap;}
 </style>
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="index.html">← トップに戻る</a>
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
 <div class="banner">
 <div class="banner-text">
-<h1>マスコットの日記</h1>
-<p>tukurimichi.comのマスコットが綴る、開発の裏側日記。</p>
+<h1 id="bannerH1">マスコットの日記</h1>
+<p id="bannerP">tukurimichi.comのマスコットが綴る、開発の裏側日記。</p>
 </div>
+<button type="button" class="langToggle" id="langBtn"></button>
 <button type="button" class="toc-btn" id="tocBtn" aria-expanded="false" aria-controls="tocPanel">📖 目次</button>
 </div>
 
 <nav class="toc-panel" id="tocPanel" hidden>
 <div class="toc-head">
-<h2>目次</h2>
+<h2 id="tocHead">目次</h2>
 <button type="button" class="toc-close" id="tocCloseBtn" aria-label="目次を閉じる">×</button>
 </div>
 <ul class="toc-list" id="tocList"></ul>
@@ -94,7 +96,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 
 <div class="stage" id="stage">
 
-<article class="diary-page" data-day="5" data-date="2026.08.19" data-title="机の上を歩いた日">
+<article class="diary-page" data-day="5" data-title-en="The day I walked across a desk" data-date="2026.08.19" data-title="机の上を歩いた日">
 <div class="entry">
 <span class="date">2026.08.19</span>
 <p>今日、サイトのトップが作り直された。</p>
@@ -111,7 +113,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </div>
 </article>
 
-<article class="diary-page" data-day="4" data-date="2026.08.18" data-title="初めて自分の足で立った日">
+<article class="diary-page" data-day="4" data-title-en="The day I first stood on my own legs" data-date="2026.08.18" data-title="初めて自分の足で立った日">
 <div class="entry">
 <span class="date">2026.08.18</span>
 <p>昨日、画面の中でぐるぐる回っていた3Dの自分を、結局持って帰れなかった。</p>
@@ -128,7 +130,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </div>
 </article>
 
-<article class="diary-page" data-day="3" data-date="2026.08.17" data-title="夜、画面の中の自分を見つめる日">
+<article class="diary-page" data-day="3" data-title-en="The night I looked at myself inside the screen" data-date="2026.08.17" data-title="夜、画面の中の自分を見つめる日">
 <div class="entry">
 <span class="date">2026.08.17</span>
 <p>今日は、自分の姿を3Dにしてもらおうとした。</p>
@@ -144,7 +146,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </div>
 </article>
 
-<article class="diary-page" data-day="2" data-date="2026.08.16" data-title="窓辺で夜空を見上げる日">
+<article class="diary-page" data-day="2" data-title-en="The night I looked up at the sky from a window" data-date="2026.08.16" data-title="窓辺で夜空を見上げる日">
 <div class="entry">
 <span class="date">2026.08.16</span>
 <p>今日は朝からずっと忙しかった。</p>
@@ -161,7 +163,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </div>
 </article>
 
-<article class="diary-page" data-day="1" data-date="2026.08.15" data-title="初めて自分の顔を見た日">
+<article class="diary-page" data-day="1" data-title-en="The day I first saw my own face" data-date="2026.08.15" data-title="初めて自分の顔を見た日">
 <div class="entry">
 <span class="date">2026.08.15</span>
 <p>今日、べすから1万円を渡された。</p>
@@ -184,9 +186,78 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 <button type="button" class="pager-btn" id="nextBtn" aria-label="次の日記へ">›</button>
 </div>
 
-<div class="footer"><a href="index.html">← トップに戻る</a></div>
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
 </div>
 
+<script src="diary_en.js"></script>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"マスコットの日記 | tukurimichi.com",
+desc:"tukurimichi.comのマスコットが綴る、開発の裏側日記。",
+tocBtn:"📖 目次",
+tocHead:"目次",
+tocClose:"目次を閉じる",
+prevLabel:"前の日記へ",
+nextLabel:"次の日記へ",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"マスコットの日記",
+bannerP:"tukurimichi.comのマスコットが綴る、開発の裏側日記。",
+footBack:"← トップに戻る"
+},
+counterFmt:function(day,total){return day+"日目 / 全"+total+"日";}
+},
+en:{
+toggleTo:"日本語",
+title:"The Mascot's Diary | tukurimichi.com",
+desc:"Behind-the-scenes diary entries written by the mascot of tukurimichi.com.",
+tocBtn:"📖 Contents",
+tocHead:"Contents",
+tocClose:"Close contents",
+prevLabel:"Previous entry",
+nextLabel:"Next entry",
+t:{
+backTop:"← Back to top",
+bannerH1:"The Mascot's Diary",
+bannerP:"Behind-the-scenes diary entries, written by the mascot of tukurimichi.com.",
+footBack:"← Back to top"
+},
+counterFmt:function(day,total){return "Day "+day+" of "+total;}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+// capture the Japanese markup once, so switching back is lossless
+var DIARY_JA={};
+Array.prototype.forEach.call(document.querySelectorAll(".diary-page"),function(pg){
+DIARY_JA[pg.dataset.day]=pg.querySelector(".entry").innerHTML;
+});
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+document.getElementById("tocBtn").textContent=L.tocBtn;
+document.getElementById("tocHead").textContent=L.tocHead;
+document.getElementById("tocCloseBtn").setAttribute("aria-label",L.tocClose);
+document.getElementById("prevBtn").setAttribute("aria-label",L.prevLabel);
+document.getElementById("nextBtn").setAttribute("aria-label",L.nextLabel);
+Array.prototype.forEach.call(document.querySelectorAll(".diary-page"),function(pg){
+var day=pg.dataset.day;
+var html=(lang==="en"&&window.DIARY_EN&&DIARY_EN[day])?DIARY_EN[day]:DIARY_JA[day];
+pg.querySelector(".entry").innerHTML=html;
+});
+if(window.__diaryRelabel)window.__diaryRelabel();
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+</script>
 <script>
 (function(){
   var stage = document.getElementById('stage');
@@ -220,7 +291,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
     dateSpan.className = 'toc-date';
     dateSpan.textContent = page.dataset.date;
     btn.appendChild(dateSpan);
-    btn.appendChild(document.createTextNode(page.dataset.title));
+    btn.appendChild(document.createTextNode(tocTitle(page)));
     btn.addEventListener('click', function(){
       closeToc();
       goTo(i);
@@ -229,6 +300,10 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
     tocList.appendChild(li);
     tocItems.push(btn);
   });
+
+  function tocTitle(page){
+    return (window.currentLang === 'en' && page.dataset.titleEn) ? page.dataset.titleEn : page.dataset.title;
+  }
 
   function dayToIndex(day){
     for (var i = 0; i < pages.length; i++){
@@ -239,7 +314,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 
   function updateCounter(){
     var day = pages[currentIndex].dataset.day;
-    counterEl.textContent = day + '日目 / 全' + total + '日';
+    counterEl.textContent = window.LANG[window.currentLang].counterFmt(day, total);
     prevBtn.disabled = currentIndex === 0;
     nextBtn.disabled = currentIndex === total - 1;
     tocItems.forEach(function(btn, i){
@@ -382,8 +457,19 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
     p.classList.toggle('is-current', i === initIndex);
   });
   currentIndex = initIndex;
+
+  // let the language layer re-label the TOC and counter after a switch
+  window.__diaryRelabel = function(){
+    pages.forEach(function(page, i){
+      var btn = tocItems[i];
+      btn.lastChild.nodeValue = tocTitle(page);
+    });
+    updateCounter();
+  };
+
   updateCounter();
   updateHash();
+  render(window.currentLang);
 })();
 </script>
 </body>
