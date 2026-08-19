@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!--
+  エントリ追加手順:
+  1. 下の <article class="tip"> ブロックをまるごとコピーして、footerの直前に貼り付ける
+  2. 画像を images/tips/ フォルダに置く（例: 02_〇〇_result.jpg）。無ければ img の onerror で自動的に隠れる
+  3. 元ネタツイートのURLを <blockquote class="twitter-tweet"><a href="..."></a></blockquote> のhrefに差し替える
+  4. 難易度(★の数)・使ったツールのバッジ・感想・プロンプトを埋める
+  5. 一番下の widgets.js の読み込みは1ページに1回でOK（追加不要）
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIワザ、真似してみた | tukurimichi.com</title>
+<meta name="description" content="Xで見かけた「AIでこんなことできる」を、自分の素材で実際にやってみるコーナー。">
+<meta property="og:title" content="AIワザ、真似してみた">
+<meta property="og:description" content="Xで見かけた「AIでこんなことできる」を、自分の素材で実際にやってみるコーナー。">
+<meta property="og:url" content="https://tukurimichi.com/tips.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;position:relative;}
+a{color:#FF8A80;}
+.topRow{display:flex;align-items:center;justify-content:space-between;padding:16px 22px 0;}
+.backlink{display:inline-block;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.menuBtn{background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:34px;height:34px;font-size:1em;cursor:pointer;}
+
+.navOverlay{position:fixed;inset:0;background:rgba(8,8,9,.98);z-index:50;display:none;flex-direction:column;padding:24px;overflow-y:auto;}
+.navOverlay.open{display:flex;}
+.navOverlay .navClose{align-self:flex-end;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;margin-bottom:20px;}
+.navOverlay a{display:block;color:#fff;text-decoration:none;font-size:1.1em;font-weight:700;padding:15px 4px;border-bottom:1px solid var(--line);}
+
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;margin-top:16px;}
+.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1.3;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.9);line-height:1.7;}
+
+.tip{padding:26px 22px;border-bottom:1px solid var(--line);}
+.tipHead h2{margin:0 0 8px;font-size:1.15em;font-weight:900;color:#fff;line-height:1.4;}
+.tipMeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px;}
+.tipDate{font-size:.75em;color:var(--muted);background:var(--card2);padding:4px 10px;border-radius:12px;}
+.tipDiff{font-size:.8em;color:#FFD166;letter-spacing:.05em;}
+.toolBadge{display:inline-block;font-size:.72em;font-weight:700;color:#fff;background:var(--red);border-radius:10px;padding:3px 9px;}
+
+.tipSection{margin:18px 0;}
+.tipSection h3{margin:0 0 10px;font-size:.85em;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.tipSection p{line-height:1.9;font-size:.92em;color:#D9D6D0;margin:0 0 .8em;}
+
+.tweetWrap{margin:4px 0;}
+
+.resultImg{display:block;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--card2);margin:.6em 0;}
+.resultImg img{display:block;width:100%;max-width:100%;height:auto;}
+.hint{font-size:.78em;color:var(--muted);margin:.5em 0 0;}
+
+.thumbRow{display:flex;gap:10px;align-items:flex-end;margin:14px 0 0;flex-wrap:wrap;}
+.thumbRow figure{margin:0;width:110px;}
+.thumbRow img{width:100%;border-radius:8px;display:block;border:1px solid var(--line);}
+.thumbRow figcaption{font-size:.7em;color:var(--muted);margin-top:4px;text-align:center;}
+
+details.promptBox{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:.4em;}
+details.promptBox summary{cursor:pointer;font-size:.88em;font-weight:700;color:#fff;}
+details.promptBox pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:.85em;color:#D9D6D0;line-height:1.8;margin:10px 0 0;}
+
+.footer{padding:24px 22px 8px;font-size:.85em;}
+.footer a{display:inline-block;color:#FF8A80;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topRow">
+<a class="backlink" href="./">← tukurimichi.com トップへ</a>
+<button id="menuBtn" class="menuBtn">☰</button>
+</div>
+
+<div id="navOverlay" class="navOverlay">
+<button id="navClose" class="navClose">✕</button>
+<a href="index.html">トップ</a>
+<a href="diary.html">マスコットの日記</a>
+<a href="tips.html">AIワザ、真似してみた</a>
+<a href="mascot3d.html">3Dマスコット</a>
+<a href="papercraft.html">ペーパークラフト</a>
+<a href="claude-code.html">Claude Code</a>
+<a href="claude-code-news.html">Claude Codeニュース</a>
+<a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener">BOOTH</a>
+<a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener">X (@tsukuru_besu)</a>
+</div>
+
+<div class="banner">
+<h1>AIワザ、真似してみた</h1>
+<p>Xで見かけた「AIでこんなことできる」を、自分の素材で実際にやってみて、結果とつまずきごと載せていくコーナー。<br>
+元ネタは埋め込みで紹介（作った人に敬意）。<br>
+うまくいかなかったのも載せる。</p>
+</div>
+
+<article class="tip">
+  <div class="tipHead">
+    <h2>写真をアートポスター風にする</h2>
+    <div class="tipMeta">
+      <span class="tipDate">2026.08.19</span>
+      <span class="tipDiff" title="難易度">★☆☆</span>
+      <span class="toolBadge">Midjourney</span>
+    </div>
+  </div>
+
+  <div class="tipSection">
+    <h3>元ネタ</h3>
+    <div class="tweetWrap">
+      <!-- TODO: 元ネタツイートURL未確定。判明したらこのhrefを差し替える -->
+      <blockquote class="twitter-tweet" data-theme="dark" data-src-todo="1">
+        <a href="https://x.com/ken_tbdz/status/TODO"></a>
+      </blockquote>
+    </div>
+  </div>
+
+  <div class="tipSection">
+    <h3>やってみた</h3>
+    <a class="resultImg" href="images/tips/01_poster_result.jpg" target="_blank" rel="noopener">
+      <img src="images/tips/01_poster_result.jpg" alt="アートポスター風にした結果" onerror="this.parentElement.style.display='none'">
+    </a>
+    <p class="hint">▲タップで原寸表示</p>
+    <div class="thumbRow">
+      <figure>
+        <img src="diary4.jpg" alt="日記4日目の挿絵" onerror="this.closest('figure').style.display='none'">
+        <figcaption>参考：日記の挿絵もこの路線</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="tipSection">
+    <h3>感想</h3>
+    <p>（準備中）</p>
+  </div>
+
+  <div class="tipSection">
+    <details class="promptBox">
+      <summary>自分が使ったプロンプト</summary>
+      <pre>（準備中）</pre>
+    </details>
+  </div>
+</article>
+
+<div class="footer"><a href="./">← tukurimichi.com トップへ戻る</a></div>
+</div>
+
+<script>
+document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");};
+document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
+</script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</body>
+</html>
