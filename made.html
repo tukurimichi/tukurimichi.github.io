@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>つくったもの | tukurimichi.com</title>
-<meta name="description" content="Claude Code、3Dマスコット、ペーパークラフト、壁紙。AIと一緒につくってきたもの。">
+<title id="pageTitle">つくったもの | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="Claude Code、3Dマスコット、ペーパークラフト、壁紙。AIと一緒につくってきたもの。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -24,9 +24,10 @@
 html{background:var(--bg);}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
 .wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
-.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;}
-.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
 .banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
 .backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
 .entry{padding:26px 22px;}
 .madeCard{display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--card2);text-decoration:none;margin-bottom:14px;}
@@ -43,49 +44,117 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 </head>
 <body>
 <div class="wrap">
-<a class="backlink" href="index.html">← トップに戻る</a>
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
 <div class="banner">
-<h1>つくったもの</h1>
-<p>AIと一緒につくってきた記録。</p>
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">つくったもの</h1>
+<p id="bannerP">AIと一緒につくってきた記録。</p>
 </div>
 
 <div class="entry">
 <a class="madeCard" href="claude-code.html">
 <div class="madeThumb"><img src="mascot_site.jpg" alt=""></div>
 <div class="madeBody">
-<h2>Claude Codeで作ってみた</h2>
-<p>このサイトも、マスコットも、BOOTHのショップも、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直にまとめた記録。</p>
-<span class="arrow">続きを読む →</span>
+<h2 id="c1t">Claude Codeで作ってみた</h2>
+<p id="c1d">このサイトも、マスコットも、BOOTHのショップも、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直にまとめた記録。</p>
+<span class="arrow" id="c1a">続きを読む →</span>
 </div>
 </a>
 <a class="madeCard" href="mascot3d.html">
 <div class="madeThumb"><img src="images/mascot_v1.jpg" alt=""></div>
 <div class="madeBody">
-<h2>AIに3D化してもらった</h2>
-<p>AIにthree.jsのコードだけで、マスコットを3Dにしてもらった。頭・胴・腕・脚を分担させて組み直した2回目の記録。</p>
-<span class="arrow">続きを読む →</span>
+<h2 id="c2t">AIに3D化してもらった</h2>
+<p id="c2d">AIにthree.jsのコードだけで、マスコットを3Dにしてもらった。頭・胴・腕・脚を分担させて組み直した2回目の記録。</p>
+<span class="arrow" id="c2a">続きを読む →</span>
 </div>
 </a>
 <a class="madeCard" href="papercraft.html">
 <div class="madeThumb"><img src="images/papercraft_v1.png" alt=""></div>
 <div class="madeBody">
-<h2>AIに紙にしてもらった</h2>
-<p>AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。頼んでないけど、せっかくなので公開します。</p>
-<span class="arrow">続きを読む →</span>
+<h2 id="c3t">AIに紙にしてもらった</h2>
+<p id="c3d">AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。頼んでないけど、せっかくなので公開します。</p>
+<span class="arrow" id="c3a">続きを読む →</span>
 </div>
 </a>
 <a class="madeCard" href="wallpapers.html">
 <div class="madeThumb"><img src="images/coast_thumb.jpg" alt=""></div>
 <div class="madeBody">
-<h2>写真の色から壁紙をつくった</h2>
-<p>赤い壁と青い海の写真を見せてもらった。色と構図だけ借りて、スマホ壁紙を4枚。BOOTHで無料配布中。</p>
-<span class="arrow">続きを読む →</span>
+<h2 id="c4t">写真の色から壁紙をつくった</h2>
+<p id="c4d">赤い壁と青い海の写真を見せてもらった。色と構図だけ借りて、スマホ壁紙を4枚。BOOTHで無料配布中。</p>
+<span class="arrow" id="c4a">続きを読む →</span>
 </div>
 </a>
-<p><a class="moreLink" href="claude-code-news.html">Claude Codeの最新アップデートも追いかけてます →</a></p>
+<p><a class="moreLink" href="claude-code-news.html" id="moreLink">Claude Codeの最新アップデートも追いかけてます →</a></p>
 </div>
 
-<div class="footer"><a href="index.html">← トップに戻る</a></div>
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
 </div>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"つくったもの | tukurimichi.com",
+desc:"Claude Code、3Dマスコット、ペーパークラフト、壁紙。AIと一緒につくってきたもの。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"つくったもの",
+bannerP:"AIと一緒につくってきた記録。",
+c1t:"Claude Codeで作ってみた",
+c1d:"このサイトも、マスコットも、BOOTHのショップも、全部Claude Codeとの会話だけで作った。良かったこと・つまずいたこと、正直にまとめた記録。",
+c1a:"続きを読む →",
+c2t:"AIに3D化してもらった",
+c2d:"AIにthree.jsのコードだけで、マスコットを3Dにしてもらった。頭・胴・腕・脚を分担させて組み直した2回目の記録。",
+c2a:"続きを読む →",
+c3t:"AIに紙にしてもらった",
+c3d:"AIに「何か新しいことして」と頼んだら、ペーパークラフトの展開図を作ってきた。頼んでないけど、せっかくなので公開します。",
+c3a:"続きを読む →",
+c4t:"写真の色から壁紙をつくった",
+c4d:"赤い壁と青い海の写真を見せてもらった。色と構図だけ借りて、スマホ壁紙を4枚。BOOTHで無料配布中。",
+c4a:"続きを読む →",
+moreLink:"Claude Codeの最新アップデートも追いかけてます →",
+footBack:"← トップに戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Things I've Made | tukurimichi.com",
+desc:"Claude Code, a 3D mascot, papercraft, wallpapers. Things built together with an AI.",
+t:{
+backTop:"← Back to top",
+bannerH1:"Things I've Made",
+bannerP:"A record of what I've built with an AI.",
+c1t:"Built with Claude Code",
+c1d:"This site, the mascot, even the BOOTH shop — all of it came out of conversations with Claude Code. An honest write-up of what worked and what tripped me up.",
+c1a:"Read more →",
+c2t:"I Asked an AI to Make It 3D",
+c2d:"I had an AI rebuild the mascot in 3D using nothing but three.js code. The second attempt, this time splitting the head, body, arms and legs between separate passes.",
+c2a:"Read more →",
+c3t:"I Asked an AI to Make It Paper",
+c3d:"I asked an AI to \"do something new\" and it came back with a papercraft template. Nobody asked for it, but here it is.",
+c3a:"Read more →",
+c4t:"Wallpapers Built from a Photo's Colors",
+c4d:"Someone showed me a photo of a red wall against a blue sea. I borrowed the palette and the composition and made four phone wallpapers. Free on BOOTH.",
+c4a:"Read more →",
+moreLink:"I also track the latest Claude Code updates →",
+footBack:"← Back to top"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
 </body>
 </html>
