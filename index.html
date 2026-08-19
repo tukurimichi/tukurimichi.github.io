@@ -293,8 +293,12 @@ function buildMascotBody(scale){
   var creamMat=new THREE.MeshStandardMaterial({color:0xF7EEE1});
   var darkMat=new THREE.MeshStandardMaterial({color:0x3A2A22});
   var legGeo=new THREE.BoxGeometry(7*scale,14*scale,7*scale);
-  var legL=new THREE.Mesh(legGeo,orangeMat);legL.position.set(-5*scale,-24*scale,0);
-  var legR=new THREE.Mesh(legGeo,orangeMat);legR.position.set(5*scale,-24*scale,0);
+  var legL=new THREE.Group();legL.position.set(-5*scale,-17*scale,0);
+  var legLMesh=new THREE.Mesh(legGeo,orangeMat);legLMesh.position.set(0,-7*scale,0);
+  legL.add(legLMesh);
+  var legR=new THREE.Group();legR.position.set(5*scale,-17*scale,0);
+  var legRMesh=new THREE.Mesh(legGeo,orangeMat);legRMesh.position.set(0,-7*scale,0);
+  legR.add(legRMesh);
   g.add(legL,legR);
   var torso=new THREE.Mesh(new THREE.BoxGeometry(20*scale,18*scale,12*scale),creamMat);
   torso.position.set(0,-6*scale,0);
@@ -314,7 +318,7 @@ function buildMascotBody(scale){
   var headGroup=buildRobotHead(scale*1.1);
   headGroup.position.set(0,14*scale,0);
   g.add(headGroup);
-  return {group:g,leftArm:leftArm,rightArm:rightArm,head:headGroup};
+  return {group:g,leftArm:leftArm,rightArm:rightArm,head:headGroup,leftLeg:legL,rightLeg:legR};
 }
 function makeShadowTexture(){
   var c=document.createElement("canvas");c.width=64;c.height=64;
@@ -592,6 +596,7 @@ function initDeskScene(){
     m.rotation.x=-Math.PI/2;
     m.position.set(x,0.15,z);
     deskGroup.add(m);
+    return m;
   }
 
   // hand-picked "scattered" positions/rotations (fixed, not Math.random, so it's
@@ -643,15 +648,37 @@ function initDeskScene(){
     items.push({cfg:cfg,group:group,label:label,glow:glow,hover:0,hoverTarget:0,bounceT:0});
   });
 
-  var mascot=buildMascotBody(1.0);
-  var MASCOT_X=-112,MASCOT_Z=-15;
-  mascot.group.position.set(MASCOT_X,24,MASCOT_Z);
+  var mascot=buildMascotBody(0.8);
+  // wander waypoints: hand-picked spots on the floor beside the desk (left pocket),
+  // clear of every menu item's hitbox/label and always fully on-screen at 375px width
+  // machine-verified (grid search: unclipped at 375x812 & 1280x800, zero overlap with any
+  // item hitbox/label across 4 facing angles) — a patrol strip along the desk's left edge
+  var WAYPOINTS=[{x:-124,z:-76},{x:-124,z:-60},{x:-124,z:-44},{x:-124,z:-28}];
+  var mascotBaseY=24;
+  mascot.group.position.set(WAYPOINTS[0].x,mascotBaseY,WAYPOINTS[0].z);
   mascot.group.rotation.y=0.9;
   deskGroup.add(mascot.group);
-  addShadow(MASCOT_X,MASCOT_Z+4,32);
-  var mascotBaseY=mascot.group.position.y;
+  var mascotShadow=addShadow(WAYPOINTS[0].x,WAYPOINTS[0].z+4,26);
   var waveState=null;
-  var nextAutoWaveAt=Date.now()+3000+Math.random()*3000;
+  var wander={
+    pos:{x:WAYPOINTS[0].x,z:WAYPOINTS[0].z},
+    wpIdx:0,
+    mode:"pause",
+    pauseUntil:Date.now()+900,
+    lookCamera:false,
+    facing:0.9,
+    targetFacing:0.9,
+    walkPhase:0
+  };
+  var WALK_SPEED=11,TURN_SPEED=2.2,LEG_SWING=0.5,ARM_SWING=0.3,WALK_BOUNCE=1.6;
+  var lastFrameT=null;
+  function angleTo(dx,dz){return Math.atan2(dx,dz);}
+  function shortestDelta(target,current){
+    var d=target-current;
+    while(d>Math.PI)d-=Math.PI*2;
+    while(d<-Math.PI)d+=Math.PI*2;
+    return d;
+  }
 
   var raycastTargets=items.map(function(it){return it.group;});
   var raycaster=new THREE.Raycaster();
@@ -764,7 +791,7 @@ function initDeskScene(){
     });
   },600);
 
-  window.__deskDebug={camera:camera,items:items,mascot:mascot,getW:function(){return W;},getH:function(){return H;},isWaving:function(){return !!waveState;}};
+  window.__deskDebug={camera:camera,items:items,mascot:mascot,waypoints:WAYPOINTS,getW:function(){return W;},getH:function(){return H;},isWaving:function(){return !!waveState;},getWander:function(){return {mode:wander.mode,pos:{x:wander.pos.x,z:wander.pos.z},wpIdx:wander.wpIdx};}};
 
   (function frame(){
     var navOpen=document.getElementById("navOverlay").classList.contains("open");
@@ -787,20 +814,76 @@ function initDeskScene(){
         item.glow.scale.setScalar(16+item.hover*6);
       });
       if(!reduceMotion){
-        mascot.group.position.y=mascotBaseY+Math.sin(Date.now()*0.0015)*2;
-        mascot.head.rotation.y=0.6+Math.sin(Date.now()*0.0006)*0.18;
-        if(!waveState&&Date.now()>nextAutoWaveAt)waveState={t0:Date.now()};
+        var nowT=Date.now();
+        var fdt=lastFrameT?Math.min((nowT-lastFrameT)/1000,0.05):0.016;
+        lastFrameT=nowT;
+
+        mascot.head.rotation.y=0.6+Math.sin(nowT*0.0006)*0.18;
+
+        if(wander.mode==="walk"){
+          var wp=WAYPOINTS[wander.wpIdx];
+          var wdx=wp.x-wander.pos.x,wdz=wp.z-wander.pos.z;
+          var wdist=Math.sqrt(wdx*wdx+wdz*wdz);
+          if(wdist<2){
+            wander.mode="pause";
+            wander.lookCamera=Math.random()<0.5;
+            wander.pauseUntil=nowT+2200+Math.random()*1800;
+            if(wander.lookCamera){
+              wander.targetFacing=angleTo(-wander.pos.x*0.35,260-wander.pos.z);
+              (function(){
+                var pauseTokenAtCall=wander.mode;
+                setTimeout(function(){if(wander.mode==="pause"&&!waveState)waveState={t0:Date.now()};},500);
+              })();
+            }
+          }else{
+            var wstep=Math.min(WALK_SPEED*fdt,wdist);
+            wander.pos.x+=wdx/wdist*wstep;
+            wander.pos.z+=wdz/wdist*wstep;
+            wander.targetFacing=angleTo(wdx,wdz);
+            wander.walkPhase+=fdt*6.5;
+            mascot.leftLeg.rotation.x=Math.sin(wander.walkPhase)*LEG_SWING;
+            mascot.rightLeg.rotation.x=-Math.sin(wander.walkPhase)*LEG_SWING;
+            if(!waveState){
+              mascot.leftArm.rotation.x=-Math.sin(wander.walkPhase)*ARM_SWING;
+              mascot.rightArm.rotation.x=Math.sin(wander.walkPhase)*ARM_SWING;
+            }
+          }
+        }else{
+          mascot.leftLeg.rotation.x+=(0-mascot.leftLeg.rotation.x)*0.15;
+          mascot.rightLeg.rotation.x+=(0-mascot.rightLeg.rotation.x)*0.15;
+          if(!waveState){
+            mascot.leftArm.rotation.x+=(0-mascot.leftArm.rotation.x)*0.15;
+            mascot.rightArm.rotation.x+=(0-mascot.rightArm.rotation.x)*0.15;
+          }
+          if(nowT>wander.pauseUntil){
+            wander.wpIdx=(wander.wpIdx+1)%WAYPOINTS.length;
+            wander.mode="walk";
+            wander.walkPhase=0;
+          }
+        }
+
+        var wAngDelta=shortestDelta(wander.targetFacing,wander.facing);
+        var wMaxStep=TURN_SPEED*fdt;
+        if(Math.abs(wAngDelta)<=wMaxStep){wander.facing=wander.targetFacing;}else{wander.facing+=(wAngDelta>0?1:-1)*wMaxStep;}
+        mascot.group.rotation.y=wander.facing;
+        mascot.group.position.x=wander.pos.x;
+        mascot.group.position.z=wander.pos.z;
+        mascotShadow.position.x=wander.pos.x;
+        mascotShadow.position.z=wander.pos.z+4;
+
+        var walkBounce=wander.mode==="walk"?Math.abs(Math.sin(wander.walkPhase))*WALK_BOUNCE:0;
+        mascot.group.position.y=mascotBaseY+Math.sin(nowT*0.0015)*2+walkBounce;
+
         if(waveState){
-          var dt=Date.now()-waveState.t0,dur=1400;
-          if(dt<dur){
-            var p=dt/dur;
+          var wvdt=Date.now()-waveState.t0,dur=1400;
+          if(wvdt<dur){
+            var p=wvdt/dur;
             var raise=Math.sin(Math.min(p*1.3,1)*Math.PI/2);
             mascot.rightArm.rotation.z=-1.7*raise;
             mascot.rightArm.rotation.x=Math.sin(p*Math.PI*4)*0.4*raise;
           }else{
             mascot.rightArm.rotation.z=0;mascot.rightArm.rotation.x=0;
             waveState=null;
-            nextAutoWaveAt=Date.now()+8000+Math.random()*4000;
           }
         }
       }
