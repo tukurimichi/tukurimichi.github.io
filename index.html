@@ -657,6 +657,237 @@ function initHeroFX(){
   addLamp(5,60,200,-260);
   addLamp(6.5,330,-230,-180);
 
+  // ---------- electronics: boards bolted into the machine, loose parts adrift ----------
+  var pcbGreen=new THREE.MeshStandardMaterial({color:0x1B3A2A,roughness:0.62,metalness:0.22});
+  var pcbBlack=new THREE.MeshStandardMaterial({color:0x14141A,roughness:0.55,metalness:0.3});
+  var gold=new THREE.MeshStandardMaterial({color:0xC9A227,roughness:0.35,metalness:0.92});
+  var silver=new THREE.MeshStandardMaterial({color:0xB8BCC4,roughness:0.35,metalness:0.9});
+  var wire=new THREE.MeshStandardMaterial({color:0x9AA0A8,roughness:0.4,metalness:0.85});
+  var resistorBody=new THREE.MeshStandardMaterial({color:0xC8AE84,roughness:0.7,metalness:0.05});
+  var capBlue=new THREE.MeshStandardMaterial({color:0x1B3A6B,roughness:0.45,metalness:0.35});
+  var capBlack=new THREE.MeshStandardMaterial({color:0x1A1A1E,roughness:0.5,metalness:0.3});
+  var chipBlack=new THREE.MeshStandardMaterial({color:0x1A1A1C,roughness:0.55,metalness:0.25});
+  var BAND_COLORS=[0x8B3A1F,0x1A1A1A,0xB33A2E,0xC9A227,0x2F5E9E,0x3E7A46];
+
+  // the board artwork is drawn once onto a canvas: traces, pads and silkscreen
+  function pcbTexture(dark){
+    var c=document.createElement("canvas");c.width=c.height=256;
+    var ctx=c.getContext("2d");
+    ctx.fillStyle=dark?"#14141A":"#1B3A2A";
+    ctx.fillRect(0,0,256,256);
+    ctx.strokeStyle="#C9A227";ctx.lineCap="square";
+    for(var i=0;i<26;i++){
+      ctx.lineWidth=1+rnd()*2.2;
+      ctx.globalAlpha=0.5+rnd()*0.45;
+      var x=rnd()*256,y=rnd()*256;
+      ctx.beginPath();ctx.moveTo(x,y);
+      for(var seg=0;seg<3;seg++){
+        if(rnd()<0.5)x+=(rnd()-0.5)*110;else y+=(rnd()-0.5)*110;
+        ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    ctx.fillStyle="#D8B43A";
+    for(var p=0;p<40;p++){
+      ctx.beginPath();ctx.arc(rnd()*256,rnd()*256,2+rnd()*2.6,0,Math.PI*2);ctx.fill();
+    }
+    // IC footprints: two rows of pads
+    for(var ic=0;ic<3;ic++){
+      var ix=20+rnd()*180,iy=20+rnd()*180,n=4+Math.floor(rnd()*4);
+      ctx.fillStyle="#B9BEC6";
+      for(var q=0;q<n;q++){
+        ctx.fillRect(ix+q*7,iy,4,3);
+        ctx.fillRect(ix+q*7,iy+22,4,3);
+      }
+      ctx.fillStyle="#E6E2D8";ctx.globalAlpha=0.55;
+      ctx.fillRect(ix-2,iy+4,n*7,17);
+      ctx.globalAlpha=1;
+    }
+    var t=new THREE.CanvasTexture(c);
+    return t;
+  }
+  var pcbTexA=pcbTexture(false),pcbTexB=pcbTexture(true);
+
+  function makePCB(w,h,dark){
+    var g=new THREE.Group();
+    var faceMat=new THREE.MeshStandardMaterial({map:dark?pcbTexB:pcbTexA,roughness:0.6,metalness:0.25});
+    var edge=dark?pcbBlack:pcbGreen;
+    var board=new THREE.Mesh(new THREE.BoxGeometry(w,h,2.6),[edge,edge,edge,edge,faceMat,edge]);
+    g.add(board);
+    // a few real components standing on the board
+    for(var i=0;i<5;i++){
+      var part;
+      var roll=rnd();
+      if(roll<0.34)part=makeResistor();
+      else if(roll<0.68)part=makeCapacitor();
+      else part=makeChip();
+      part.position.set((rnd()-0.5)*w*0.74,(rnd()-0.5)*h*0.74,3.4);
+      part.rotation.z=rnd()*Math.PI;
+      part.scale.setScalar(0.85);
+      g.add(part);
+    }
+    // corner mounting holes
+    for(var sx=-1;sx<=1;sx+=2)for(var sy=-1;sy<=1;sy+=2){
+      var ring=new THREE.Mesh(new THREE.TorusGeometry(3.2,1.0,6,12),gold);
+      ring.position.set(sx*(w/2-7),sy*(h/2-7),1.6);
+      g.add(ring);
+    }
+    return g;
+  }
+
+  function makeResistor(){
+    var g=new THREE.Group();
+    var body=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,10,10),resistorBody);
+    body.rotation.z=Math.PI/2;
+    g.add(body);
+    for(var b=0;b<4;b++){
+      var band=new THREE.Mesh(new THREE.CylinderGeometry(2.75,2.75,1.1,10),new THREE.MeshStandardMaterial({color:BAND_COLORS[Math.floor(rnd()*BAND_COLORS.length)],roughness:0.6}));
+      band.rotation.z=Math.PI/2;
+      band.position.x=-3.2+b*2.1;
+      g.add(band);
+    }
+    for(var e=-1;e<=1;e+=2){
+      var leg=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,7,6),wire);
+      leg.rotation.z=Math.PI/2;
+      leg.position.x=e*8;
+      g.add(leg);
+    }
+    return g;
+  }
+
+  function makeCapacitor(){
+    var g=new THREE.Group();
+    var blue=rnd()<0.55;
+    var can=new THREE.Mesh(new THREE.CylinderGeometry(4,4,11,14),blue?capBlue:capBlack);
+    g.add(can);
+    var top=new THREE.Mesh(new THREE.CylinderGeometry(4.05,4.05,1.2,14),silver);
+    top.position.y=5.6;
+    g.add(top);
+    // the polarity stripe every electrolytic has
+    var stripe=new THREE.Mesh(new THREE.BoxGeometry(1.8,10,0.4),new THREE.MeshStandardMaterial({color:0xD8D4CC,roughness:0.6}));
+    stripe.position.z=4.05;
+    g.add(stripe);
+    for(var e=-1;e<=1;e+=2){
+      var leg=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,7,6),wire);
+      leg.position.set(e*1.7,-8.5,0);
+      g.add(leg);
+    }
+    return g;
+  }
+
+  function makeTransistor(){
+    var g=new THREE.Group();
+    // TO-92: a rounded body with one flat face
+    var body=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.4,7,14,1,false,0,Math.PI*1.35),chipBlack);
+    g.add(body);
+    var flat=new THREE.Mesh(new THREE.BoxGeometry(6.2,7,0.9),chipBlack);
+    flat.position.z=-2.1;
+    g.add(flat);
+    for(var i=-1;i<=1;i++){
+      var leg=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,7.5,6),wire);
+      leg.position.set(i*2.0,-6.6,0);
+      g.add(leg);
+    }
+    return g;
+  }
+
+  function makeChip(){
+    var g=new THREE.Group();
+    var body=new THREE.Mesh(new THREE.BoxGeometry(12,7,2.6),chipBlack);
+    g.add(body);
+    var notch=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,0.6,10),new THREE.MeshStandardMaterial({color:0x33333A,roughness:0.7}));
+    notch.rotation.x=Math.PI/2;
+    notch.position.set(-4.4,0,1.4);
+    g.add(notch);
+    for(var i=0;i<4;i++)for(var sy=-1;sy<=1;sy+=2){
+      var pin=new THREE.Mesh(new THREE.BoxGeometry(1,2.4,0.7),silver);
+      pin.position.set(-4.2+i*2.8,sy*4.4,-0.4);
+      g.add(pin);
+    }
+    return g;
+  }
+
+  // electromagnetic relay: coil around a core, contacts on top, pins below
+  function makeRelay(){
+    var g=new THREE.Group();
+    var shell=new THREE.Mesh(new THREE.BoxGeometry(22,18,14),new THREE.MeshStandardMaterial({color:0x1E1E24,roughness:0.5,metalness:0.3}));
+    g.add(shell);
+    var core=new THREE.Mesh(new THREE.CylinderGeometry(4.2,4.2,13,14),copper);
+    core.rotation.x=Math.PI/2;
+    core.position.set(-4,0,0.5);
+    g.add(core);
+    for(var w2=0;w2<5;w2++){
+      var coil=new THREE.Mesh(new THREE.TorusGeometry(4.8,0.85,6,16),copper);
+      coil.position.set(-4,0,-5.2+w2*2.6);
+      g.add(coil);
+    }
+    var arm=new THREE.Mesh(new THREE.BoxGeometry(13,1.6,3),silver);
+    arm.position.set(3,7,0);
+    g.add(arm);
+    var contact=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,1.4,10),gold);
+    contact.position.set(8.5,6,0);
+    g.add(contact);
+    for(var p2=0;p2<4;p2++){
+      var pin=new THREE.Mesh(new THREE.BoxGeometry(1.2,5,1.2),silver);
+      pin.position.set(-8+p2*5.4,-11,0);
+      g.add(pin);
+    }
+    return g;
+  }
+
+  // boards and relays mounted into the machine, at mid depth
+  var boardSpots=[[-300,150,-170,0.18],[250,-70,-150,-0.12],[-60,-190,-230,0.3],[380,140,-280,-0.22],[-420,-40,-300,0.1]];
+  for(var bi=0;bi<boardSpots.length;bi++){
+    var b2=makePCB(range(90,150),range(60,100),rnd()<0.4);
+    b2.position.set(boardSpots[bi][0],boardSpots[bi][1],boardSpots[bi][2]);
+    b2.rotation.set(range(-0.25,0.25),range(-0.4,0.4),boardSpots[bi][3]);
+    scene.add(b2);
+  }
+  var relaySpots=[[160,180,-90],[-200,-150,-120],[330,-120,-230]];
+  for(var ri=0;ri<relaySpots.length;ri++){
+    var rl=makeRelay();
+    rl.position.set(relaySpots[ri][0],relaySpots[ri][1],relaySpots[ri][2]);
+    rl.rotation.set(range(-0.3,0.3),range(-0.5,0.5),range(-0.3,0.3));
+    scene.add(rl);
+  }
+
+  // loose parts adrift: built once per type, then cloned so they cost almost nothing
+  var PROTOS=[makeResistor(),makeCapacitor(),makeTransistor(),makeChip()];
+  var drifting=[];
+  var DRIFT=34;
+  for(var d=0;d<DRIFT;d++){
+    var proto=PROTOS[Math.floor(rnd()*PROTOS.length)];
+    var o=proto.clone();
+    o.position.set(range(-520,520),range(-330,330),range(-330,60));
+    o.scale.setScalar(range(0.8,1.9));
+    scene.add(o);
+    drifting.push({
+      o:o,
+      vx:range(-0.10,0.10),
+      vy:range(0.10,0.34),
+      sx:range(-0.012,0.012),
+      sy:range(-0.014,0.014),
+      sz:range(-0.010,0.010)
+    });
+  }
+  function stepDrift(){
+    for(var i=0;i<drifting.length;i++){
+      var p=drifting[i];
+      p.o.position.x+=p.vx;
+      p.o.position.y+=p.vy;
+      p.o.rotation.x+=p.sx;
+      p.o.rotation.y+=p.sy;
+      p.o.rotation.z+=p.sz;
+      if(p.o.position.y>350){
+        p.o.position.y=-350;
+        p.o.position.x=range(-520,520);
+      }
+      if(p.o.position.x>560)p.o.position.x=-560;
+      else if(p.o.position.x<-560)p.o.position.x=560;
+    }
+  }
+
   var puffTex=(function(){
     var c=document.createElement("canvas");c.width=c.height=64;
     var ctx=c.getContext("2d");
@@ -688,6 +919,7 @@ function initHeroFX(){
     for(var v=0;v<valves.length;v++)valves[v].mesh.rotation.z+=valves[v].speed*0.01;
     for(var k=0;k<rams.length;k++)rams[k].rod.position.y=rams[k].base+Math.sin(e*0.9+rams[k].phase)*11;
     for(var l=0;l<lamps.length;l++)lamps[l].mat.emissiveIntensity=1.2+Math.sin(e*2.1+lamps[l].phase)*0.5;
+    stepDrift();
     lampLight.intensity=1.2+Math.sin(e*2.1)*0.45;
     var pa=sgeo.attributes.position.array;
     for(var j2=0;j2<PUFFS;j2++){
