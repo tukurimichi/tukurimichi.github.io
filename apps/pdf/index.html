@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">PDF結合 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="複数のPDFを1つにまとめる無料ツール。ファイルはブラウザの中だけで処理され、どこにも送信されません。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root {
+    --bg: #EDE6D6;
+    --ink: #2B2318;
+    --ink-muted: #8A7F68;
+    --accent: #1E7A52;
+    --accent-warm: #D9823B;
+    --surface: #FBF4E4;
+    --border: rgba(43,35,24,0.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body {
+    font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    color: var(--ink);
+    padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .langToggle {
+    appearance: none; border: 1px solid var(--border); background: var(--surface);
+    color: var(--ink); border-radius: 999px; padding: 5px 13px;
+    font-family: inherit; font-size: 12px; cursor: pointer;
+  }
+  .langToggle:hover { background: #fff; }
+  .thumb {
+    flex: none; width: 40px; height: 54px; border-radius: 6px;
+    background: rgba(43,35,24,0.06); border: 1px solid var(--border);
+    object-fit: contain; display: block;
+  }
+  .thumb.ph { display: flex; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+
+  .drop {
+    border: 2px dashed var(--border);
+    border-radius: 18px;
+    background: var(--surface);
+    padding: 34px 20px;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+    cursor: pointer;
+  }
+  .drop:hover { border-color: var(--accent); }
+  .drop.over { border-color: var(--accent); background: #F3FBF6; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+
+  .list { list-style: none; padding: 0; margin: 20px 0 0; }
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: grab;
+    user-select: none;
+  }
+  .item.dragging {
+    position: fixed;
+    z-index: 50;
+    margin: 0;
+    cursor: grabbing;
+    box-shadow: 0 14px 30px rgba(43,35,24,0.24);
+    border-color: var(--accent);
+  }
+  .slot {
+    border: 2px dashed var(--accent);
+    border-radius: 14px;
+    background: rgba(30,122,82,0.07);
+    margin-bottom: 10px;
+    list-style: none;
+  }
+  .grip {
+    flex: none;
+    width: 16px;
+    color: var(--ink-muted);
+    font-size: 15px;
+    line-height: 1;
+    text-align: center;
+    cursor: grab;
+    touch-action: none;
+  }
+  .item.dragging .grip { cursor: grabbing; }
+  .num {
+    flex: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .meta { flex: 1; min-width: 0; }
+  .name {
+    font-size: 14px; font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sub { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .sub.err { color: var(--accent-warm); font-weight: 700; }
+  .ops { flex: none; display: flex; gap: 6px; }
+  .icon-btn {
+    appearance: none; border: none; cursor: pointer;
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(43,35,24,0.07);
+    color: var(--ink);
+    font-size: 14px; line-height: 1;
+  }
+  .icon-btn:hover:not(:disabled) { background: rgba(43,35,24,0.16); }
+  .icon-btn:disabled { opacity: .3; cursor: default; }
+  .icon-btn.del:hover { background: var(--accent-warm); color: var(--surface); }
+  .icon-btn.rot { width: auto; min-width: 30px; padding: 0 7px; font-size: 11.5px; font-weight: 700; }
+  .icon-btn.rot.on { background: var(--accent); color: var(--surface); }
+
+  .bar {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 22px; flex-wrap: wrap;
+  }
+  .total { font-size: 13px; color: var(--ink-muted); flex: 1; min-width: 160px; }
+  .btn {
+    appearance: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 700;
+    padding: 11px 22px; border-radius: 999px;
+  }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:hover:not(:disabled) { background: #249062; }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); }
+  .btn.ghost:hover { background: rgba(43,35,24,0.16); }
+
+  .warn {
+    margin-top: 14px; padding: 11px 14px; border-radius: 12px;
+    font-size: 13px; line-height: 1.7; display: none;
+  }
+  .warn.block { display: block; background: #FDEFE3; border: 1px solid rgba(217,130,59,0.5); color: #8A4A15; }
+  .warn.soft  { display: block; background: rgba(43,35,24,0.05); border: 1px solid var(--border); color: var(--ink-muted); }
+
+  .status { margin-top: 14px; font-size: 13px; min-height: 1.6em; line-height: 1.6; }
+  .status.ok { color: var(--accent); font-weight: 700; }
+  .status.ng { color: var(--accent-warm); font-weight: 700; }
+
+  .name-row { margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+  .name-row label { font-size: 13px; color: var(--ink-muted); flex: none; }
+  #outName {
+    flex: 1; min-width: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 12px; font-family: inherit; font-size: 13px;
+    background: #fff; color: var(--ink);
+  }
+  #outName:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  .range { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+  .range label { font-size: 11.5px; color: var(--ink-muted); flex: none; }
+  .range input {
+    width: 132px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 8px; font-family: inherit; font-size: 12px;
+    background: #fff; color: var(--ink);
+  }
+  .range input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .range input.bad { border-color: var(--accent-warm); background: #FFF4EC; }
+
+  .credit { display: block; margin-top: 8px; font-size: 11.5px; opacity: .85; }
+  .note {
+    margin-top: 28px; font-size: 12px; color: var(--ink-muted);
+    line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button"></button>
+  </div>
+  <h1 id="h1t">PDF結合</h1>
+  <p class="lead" id="leadT"></p>
+
+  <div class="drop" id="drop">
+    <div class="drop-title" id="dropTitle"></div>
+    <div class="drop-sub" id="dropSub"></div>
+  </div>
+  <input type="file" id="picker" accept="application/pdf,.pdf" multiple>
+
+  <ul class="list" id="list"></ul>
+
+  <div class="name-row" id="nameRow" style="display:none">
+    <label for="outName" id="nameLabel"></label>
+    <input type="text" id="outName" value="結合.pdf">
+  </div>
+
+  <div class="warn" id="warn"></div>
+
+  <div class="bar">
+    <span class="total" id="total"></span>
+    <button class="btn ghost" id="clearBtn" type="button" style="display:none"></button>
+    <button class="btn primary" id="mergeBtn" type="button" disabled></button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="note">
+    <span id="notesT"></span><br>
+    <span class="credit">PDFの処理に <a href="https://github.com/Hopding/pdf-lib" target="_blank" rel="noopener">pdf-lib</a> v1.17.1（MIT / © 2019 Andrew Dillon、<a href="LICENSE-pdf-lib.txt">全文</a>）、
+    サムネイル表示に <a href="https://github.com/mozilla/pdf.js" target="_blank" rel="noopener">PDF.js</a> v6.2.108（Apache-2.0 / © Mozilla、<a href="LICENSE-pdf.js.txt">全文</a>）を使用しています。</span>
+  </div>
+</div>
+
+<script src="pdf-lib.min.js"></script>
+<script>
+(function () {
+  var dropEl = document.getElementById("drop");
+  var pickerEl = document.getElementById("picker");
+  var listEl = document.getElementById("list");
+  var totalEl = document.getElementById("total");
+  var mergeBtn = document.getElementById("mergeBtn");
+  var clearBtn = document.getElementById("clearBtn");
+  var statusEl = document.getElementById("status");
+  var nameRow = document.getElementById("nameRow");
+  var outNameEl = document.getElementById("outName");
+  var warnEl = document.getElementById("warn");
+  var SIZE_WARN = 500 * 1024 * 1024;
+
+  // 追加されたPDF。{ id, name, size, bytes, pages, error }
+  var items = [];
+  var nextId = 1;
+
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "PDF結合 | tukurimichi.com",
+      docDesc: "複数のPDFを1つにまとめる無料ツール。ファイルはブラウザの中だけで処理され、どこにも送信されません。",
+      back: "← つくるみち の道具箱へ",
+      h1: "PDF結合",
+      lead: "複数のPDFを1つにまとめます。並び順は上から順に結合されます（ドラッグで入れ替えられます）。<br>ファイルはこのブラウザの中だけで処理され、どこにも送信されません。",
+      dropTitle: "PDFをここにドラッグ＆ドロップ",
+      dropSub: "またはクリックしてファイルを選ぶ（複数選択できます）",
+      nameLabel: "保存ファイル名",
+      clear: "すべて削除",
+      merge: "結合してダウンロード",
+      rangeLabel: "使うページ",
+      rangePh: "全ページ",
+      rangeTip: "例: 1-3, 7, 10-　空欄なら全ページ",
+      rotTip: "押すたびに90°ずつ回ります",
+      upTip: "上へ", downTip: "下へ", delTip: "削除", gripTip: "ドラッグで並べ替え",
+      loading: "読み込み中...",
+      encrypted: "パスワード保護のため読み込めません",
+      broken: "読み込めませんでした（壊れているか、PDFではない可能性）",
+      badRange: "ページ指定を確認してください（例: 1-3, 7, 10-）",
+      pages: function (n) { return n + "ページ"; },
+      pagesUsed: function (total, used) { return total + "ページ中 " + used + "ページを使用"; },
+      rotated: function (deg) { return deg + "°回転"; },
+      total: function (f, p) { return f + "ファイル ・ 合計" + p + "ページ"; },
+      warnRange: function (n) { return n + "件のページ指定に誤りがあります。直すか、✕ で取り除いてください。"; },
+      warnRead: function (n) { return n + "件のファイルを読み込めません。✕ で取り除いてから結合してください。"; },
+      warnSize: function (sz) { return "合計 " + sz + " あります。大きすぎると結合に失敗することがあります。"; },
+      notPdf: "PDFファイルを選んでください",
+      mergingN: function (i, n, name) { return "結合中... " + i + "/" + n + "ファイル（" + name + "）"; },
+      merging0: function (n) { return "結合中... 0/" + n + "ファイル"; },
+      aborted: function (a, b) { return "使えないファイルが含まれているため結合を中止しました（" + a + "/" + b + "ファイル）"; },
+      doneMsg: function (f, p, name) { return f + "ファイル・" + p + "ページを結合しました（" + name + "）"; },
+      failed: function (e) { return "結合に失敗しました：" + e; },
+      defaultName: "結合.pdf",
+      notes: "・<b>⟳</b> を押すとそのファイルが90°ずつ回ります（スキャンの向き直しに）<br>"
+        + "・「使うページ」を空欄にすると全ページ。<code>1-3, 7, 10-</code> のように指定できます（<code>10-</code> は10ページ目から最後まで）<br>"
+        + "・読み込めないファイルやページ指定の誤りが1件でもあると、結合できません（一部だけ結合された書類ができるのを防ぐため）<br>"
+        + "・パスワード保護されたPDFは読み込めません（解除してから追加してください）<br>"
+        + "・しおり（目次）やフォームの入力内容は引き継がれない場合があります"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Merge PDFs | tukurimichi.com",
+      docDesc: "A free tool that joins several PDFs into one. Files are processed inside your browser and never uploaded.",
+      back: "← Back to the tukurimichi toolbox",
+      h1: "Merge PDFs",
+      lead: "Joins several PDFs into one, in the order shown (drag the rows to reorder).<br>Your files are processed inside this browser and are never sent anywhere.",
+      dropTitle: "Drop your PDFs here",
+      dropSub: "or click to choose files (you can pick several)",
+      nameLabel: "Save as",
+      clear: "Remove all",
+      merge: "Merge and download",
+      rangeLabel: "Pages to use",
+      rangePh: "all pages",
+      rangeTip: "e.g. 1-3, 7, 10-　leave empty for every page",
+      rotTip: "Each press turns this file 90°",
+      upTip: "Move up", downTip: "Move down", delTip: "Remove", gripTip: "Drag to reorder",
+      loading: "Reading...",
+      encrypted: "Password-protected, so it cannot be read",
+      broken: "Could not be read (damaged, or not a PDF)",
+      badRange: "Check the page numbers (e.g. 1-3, 7, 10-)",
+      pages: function (n) { return n + (n === 1 ? " page" : " pages"); },
+      pagesUsed: function (total, used) { return used + " of " + total + " pages"; },
+      rotated: function (deg) { return "rotated " + deg + "°"; },
+      total: function (f, p) { return f + (f === 1 ? " file" : " files") + " ・ " + p + (p === 1 ? " page" : " pages") + " in total"; },
+      warnRange: function (n) { return "The page numbers are wrong on " + n + " file(s). Fix them, or remove the file with ✕."; },
+      warnRead: function (n) { return n + " file(s) cannot be read. Remove them with ✕ before merging."; },
+      warnSize: function (sz) { return "That is " + sz + " in total. Very large jobs can fail."; },
+      notPdf: "Please choose PDF files",
+      mergingN: function (i, n, name) { return "Merging... " + i + "/" + n + " (" + name + ")"; },
+      merging0: function (n) { return "Merging... 0/" + n; },
+      aborted: function (a, b) { return "Stopped: some files cannot be used (" + a + "/" + b + ")"; },
+      doneMsg: function (f, p, name) { return "Merged " + f + " file(s), " + p + " page(s) → " + name; },
+      failed: function (e) { return "The merge failed: " + e; },
+      defaultName: "merged.pdf",
+      notes: "・Press <b>⟳</b> to turn a file 90° at a time (handy for sideways scans)<br>"
+        + "・Leave \"Pages to use\" empty for every page, or write <code>1-3, 7, 10-</code> (<code>10-</code> means page 10 to the end)<br>"
+        + "・If any file is unreadable or has a wrong page number, merging is blocked — so you never get a document that is quietly missing a part<br>"
+        + "・Password-protected PDFs cannot be read (please unlock them first)<br>"
+        + "・Bookmarks and form entries may not carry over"
+    }
+  };
+  var lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja");
+  function T() { return LANG[lang]; }
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    document.getElementById("pageTitle").textContent = L.docTitle;
+    document.getElementById("metaDesc").setAttribute("content", L.docDesc);
+    document.getElementById("backLink").textContent = L.back;
+    document.getElementById("h1t").textContent = L.h1;
+    document.getElementById("leadT").innerHTML = L.lead;
+    document.getElementById("dropTitle").textContent = L.dropTitle;
+    document.getElementById("dropSub").textContent = L.dropSub;
+    document.getElementById("nameLabel").textContent = L.nameLabel;
+    clearBtn.textContent = L.clear;
+    mergeBtn.textContent = L.merge;
+    document.getElementById("notesT").innerHTML = L.notes;
+    document.getElementById("langBtn").textContent = L.toggleTo;
+    var cur = outNameEl.value.trim();
+    if (!cur || cur === LANG.ja.defaultName || cur === LANG.en.defaultName) outNameEl.value = L.defaultName;
+    render();
+  }
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text || "";
+    statusEl.className = "status" + (kind ? " " + kind : "");
+  }
+
+  function fmtSize(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(0) + " KB";
+    return (n / 1024 / 1024).toFixed(1) + " MB";
+  }
+
+  // "1-3, 7, 10-" を 0 始まりのページ番号の配列にする。
+  // 戻り値: null=全ページ / "bad"=書式が不正 / 配列=そのページだけ
+  function parseRange(spec, total) {
+    if (!spec || !spec.trim()) return null;
+    var parts = spec.replace(/[、，]/g, ",").split(/[,\s]+/).filter(Boolean);
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var m = /^(\d+)?-(\d+)?$/.exec(parts[i]);
+      if (m) {
+        if (!m[1] && !m[2]) return "bad";
+        var a = m[1] ? parseInt(m[1], 10) : 1;
+        var b = m[2] ? parseInt(m[2], 10) : total;
+        if (a < 1 || b < 1 || a > total || b > total) return "bad";
+        if (a <= b) { for (var p = a; p <= b; p++) out.push(p - 1); }
+        else { for (var q = a; q >= b; q--) out.push(q - 1); }
+        continue;
+      }
+      var one = /^(\d+)$/.exec(parts[i]);
+      if (!one) return "bad";
+      var n = parseInt(one[1], 10);
+      if (n < 1 || n > total) return "bad";
+      out.push(n - 1);
+    }
+    return out.length ? out : "bad";
+  }
+
+  // その行が実際に出力するページ。null=まだ読めていない / "bad"=指定が不正
+  function effIndices(it) {
+    if (it.error || it.pages === null) return null;
+    var r = parseRange(it.range, it.pages);
+    if (r === "bad") return "bad";
+    if (r === null) {
+      var all = [];
+      for (var i = 0; i < it.pages; i++) all.push(i);
+      return all;
+    }
+    return r;
+  }
+
+  function subText(it) {
+    if (it.error) return it.error;
+    if (it.pages === null) return T().loading;
+    var eff = effIndices(it);
+    if (eff === "bad") return T().badRange;
+    var head = eff.length === it.pages ? T().pages(it.pages) : T().pagesUsed(it.pages, eff.length);
+    return head + " ・ " + fmtSize(it.size) + (it.rotate ? " ・ " + T().rotated(it.rotate) : "");
+  }
+
+  function updateTotals() {
+    var pages = 0, usable = 0, badRange = 0, unreadable = 0, bytes = 0, loading = 0;
+    items.forEach(function (it) {
+      bytes += it.size || 0;
+      if (it.error) { unreadable++; return; }
+      if (it.pages === null) { loading++; return; }
+      var eff = effIndices(it);
+      if (eff === "bad") { badRange++; return; }
+      if (eff && eff.length) { pages += eff.length; usable++; }
+    });
+
+    totalEl.textContent = items.length ? T().total(items.length, pages) : "";
+
+    // 一部だけ結合されて「1ファイル抜けたPDF」が黙って出来上がるのが一番危ないので、
+    // 使えない行が1つでもあれば結合させない。直すか ✕ で取り除いてもらう。
+    var msgs = [];
+    if (badRange) msgs.push(T().warnRange(badRange));
+    if (unreadable) msgs.push(T().warnRead(unreadable));
+
+    if (msgs.length) {
+      warnEl.className = "warn block";
+      warnEl.textContent = msgs.join(" ");
+      mergeBtn.disabled = true;
+    } else if (bytes > SIZE_WARN) {
+      warnEl.className = "warn soft";
+      warnEl.textContent = T().warnSize(fmtSize(bytes));
+      mergeBtn.disabled = usable === 0 || loading > 0;
+    } else {
+      warnEl.className = "warn";
+      warnEl.textContent = "";
+      mergeBtn.disabled = usable === 0 || loading > 0;
+    }
+
+    clearBtn.style.display = items.length ? "" : "none";
+    nameRow.style.display = items.length ? "" : "none";
+  }
+
+  function render() {
+    // ドラッグ中に描き直すと掴んでいる行が消えてしまうので、離すまで待つ
+    if (drag) return;
+    listEl.innerHTML = "";
+    items.forEach(function (it, i) {
+      var li = document.createElement("li");
+      li.className = "item";
+      li.dataset.idx = String(i);
+      li.addEventListener("pointerdown", function (e) { startPointer(e, li); });
+
+      var grip = document.createElement("div");
+      grip.className = "grip";
+      grip.textContent = "⠿";
+      grip.title = T().gripTip;
+      li.appendChild(grip);
+
+      if (it.thumb) {
+        var th = document.createElement("img");
+        th.className = "thumb";
+        th.src = it.thumb;
+        th.alt = "";
+        li.appendChild(th);
+      } else if (!it.error) {
+        var ph = document.createElement("div");
+        ph.className = "thumb";
+        li.appendChild(ph);
+      }
+
+      var num = document.createElement("div");
+      num.className = "num";
+      num.textContent = String(i + 1);
+      li.appendChild(num);
+
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      var name = document.createElement("div");
+      name.className = "name";
+      name.textContent = it.name;
+      var sub = document.createElement("div");
+      var eff0 = effIndices(it);
+      sub.className = "sub" + (it.error || eff0 === "bad" ? " err" : "");
+      sub.textContent = subText(it);
+      meta.appendChild(name);
+      meta.appendChild(sub);
+
+      // ページ範囲。読み込めたファイルにだけ出す
+      if (!it.error && it.pages !== null) {
+        var rangeWrap = document.createElement("div");
+        rangeWrap.className = "range";
+        var rlab = document.createElement("label");
+        rlab.textContent = T().rangeLabel;
+        var rin = document.createElement("input");
+        rin.type = "text";
+        rin.value = it.range || "";
+        rin.placeholder = T().rangePh;
+        rin.title = T().rangeTip;
+        rin.addEventListener("input", function () {
+          it.range = rin.value;
+          var eff = effIndices(it);
+          rin.classList.toggle("bad", eff === "bad");
+          sub.textContent = subText(it);
+          sub.className = "sub" + (eff === "bad" ? " err" : "");
+          updateTotals();
+        });
+        rin.classList.toggle("bad", eff0 === "bad");
+        rlab.setAttribute("for", "");
+        rangeWrap.appendChild(rlab);
+        rangeWrap.appendChild(rin);
+        meta.appendChild(rangeWrap);
+      }
+      li.appendChild(meta);
+
+      var ops = document.createElement("div");
+      ops.className = "ops";
+
+      var up = document.createElement("button");
+      up.className = "icon-btn";
+      up.type = "button";
+      up.textContent = "↑";
+      up.title = T().upTip;
+      up.disabled = i === 0;
+      up.onclick = function () { move(i, -1); };
+      ops.appendChild(up);
+
+      var down = document.createElement("button");
+      down.className = "icon-btn";
+      down.type = "button";
+      down.textContent = "↓";
+      down.title = T().downTip;
+      down.disabled = i === items.length - 1;
+      down.onclick = function () { move(i, 1); };
+      ops.appendChild(down);
+
+      if (!it.error && it.pages !== null) {
+        var rot = document.createElement("button");
+        rot.className = "icon-btn rot" + (it.rotate ? " on" : "");
+        rot.type = "button";
+        rot.textContent = it.rotate ? it.rotate + "°" : "⟳";
+        rot.title = T().rotTip;
+        rot.onclick = function () {
+          it.rotate = ((it.rotate || 0) + 90) % 360;
+          render();
+        };
+        ops.appendChild(rot);
+      }
+
+      var del = document.createElement("button");
+      del.className = "icon-btn del";
+      del.type = "button";
+      del.textContent = "✕";
+      del.title = T().delTip;
+      del.onclick = function () { removeAt(i); };
+      ops.appendChild(del);
+
+      li.appendChild(ops);
+      listEl.appendChild(li);
+    });
+
+    updateTotals();
+  }
+
+  // ---- ドラッグで並べ替え ----
+  // タッチは誤操作（スクロールとの取り合い）を避けるため、掴む所（⠿）からのみ開始する
+  var DRAG_START_PX = 5;
+  var drag = null;
+
+  function startPointer(e, li) {
+    if (e.button != null && e.button !== 0) return;
+    if (e.target.closest("button")) return;
+    if (e.target.closest("input, textarea, label")) return;
+    if (e.pointerType !== "mouse" && !e.target.closest(".grip")) return;
+
+    var startX = e.clientX, startY = e.clientY;
+    var started = false;
+    try { li.setPointerCapture(e.pointerId); } catch (err) {}
+
+    function onMove(ev) {
+      if (!started) {
+        if (Math.abs(ev.clientX - startX) < DRAG_START_PX &&
+            Math.abs(ev.clientY - startY) < DRAG_START_PX) return;
+        started = true;
+        beginDrag(li, ev);
+      }
+      ev.preventDefault();
+      moveDrag(ev);
+    }
+    function onUp() {
+      li.removeEventListener("pointermove", onMove);
+      li.removeEventListener("pointerup", onUp);
+      li.removeEventListener("pointercancel", onUp);
+      if (started) endDrag();
+    }
+    li.addEventListener("pointermove", onMove);
+    li.addEventListener("pointerup", onUp);
+    li.addEventListener("pointercancel", onUp);
+  }
+
+  function beginDrag(li, ev) {
+    var rect = li.getBoundingClientRect();
+    var slot = document.createElement("li");
+    slot.className = "slot";
+    slot.style.height = rect.height + "px";
+    listEl.insertBefore(slot, li);
+
+    drag = { el: li, slot: slot, dx: ev.clientX - rect.left, dy: ev.clientY - rect.top };
+    li.classList.add("dragging");
+    li.style.width = rect.width + "px";
+    li.style.height = rect.height + "px";
+    li.style.left = rect.left + "px";
+    li.style.top = rect.top + "px";
+  }
+
+  function moveDrag(ev) {
+    if (!drag) return;
+    drag.el.style.left = (ev.clientX - drag.dx) + "px";
+    drag.el.style.top = (ev.clientY - drag.dy) + "px";
+
+    var rows = Array.prototype.slice.call(listEl.children).filter(function (n) {
+      return n !== drag.el && n !== drag.slot;
+    });
+    var before = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i].getBoundingClientRect();
+      if (ev.clientY < r.top + r.height / 2) { before = rows[i]; break; }
+    }
+    if (before) listEl.insertBefore(drag.slot, before);
+    else listEl.appendChild(drag.slot);
+  }
+
+  function endDrag() {
+    if (!drag) return;
+    // 空き枠(slot)の位置＝掴んでいた行の新しい位置。DOMの並びから新しい順序を作る
+    var order = [];
+    Array.prototype.slice.call(listEl.children).forEach(function (n) {
+      if (n === drag.el) return;
+      order.push(Number(n === drag.slot ? drag.el.dataset.idx : n.dataset.idx));
+    });
+    drag.el.classList.remove("dragging");
+    drag.el.removeAttribute("style");
+    drag.slot.remove();
+    drag = null;
+
+    items = order.map(function (i) { return items[i]; });
+    render();
+  }
+
+  function move(i, dir) {
+    var j = i + dir;
+    if (j < 0 || j >= items.length) return;
+    var t = items[i];
+    items[i] = items[j];
+    items[j] = t;
+    render();
+  }
+
+  function removeAt(i) {
+    items.splice(i, 1);
+    render();
+    setStatus("");
+  }
+
+  // 1ページ目だけを小さく描いて data URL にしておく。render() が何度走っても
+  // 描き直さずに済むよう、結果は行に持たせる
+  function makeThumb(it) {
+    var pdfjs = window.__pdfjsLib;
+    if (!pdfjs || !it.bytes || it.thumb) return;
+    // getDocument は渡した配列を手放す（detach する）ことがあるので、必ず複製を渡す。
+    // 元の bytes は結合で使うため壊せない
+    var copy = it.bytes.slice();
+    var task = pdfjs.getDocument({ data: copy, isEvalSupported: false });
+    task.promise.then(function (doc) {
+      return doc.getPage(1).then(function (page) {
+        var v0 = page.getViewport({ scale: 1 });
+        var scale = Math.min(80 / v0.width, 108 / v0.height);
+        var vp = page.getViewport({ scale: scale });
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(vp.width));
+        c.height = Math.max(1, Math.round(vp.height));
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, c.width, c.height);
+        return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () {
+          // 先に画面へ反映する。後片付けで転んでも表示は残るように
+          it.thumb = c.toDataURL("image/png");
+          render();
+        });
+      });
+    }).catch(function () {
+      /* サムネイルは出なくても本体の動作には影響しない */
+    }).then(function () {
+      // 破棄の作法はPDF.jsのバージョンで変わるので、失敗しても無視する
+      try { task.destroy(); } catch (e) {}
+    });
+  }
+
+  // 追加されたファイルを読み込んでページ数を調べる
+  function addFiles(fileList) {
+    var files = Array.prototype.slice.call(fileList).filter(function (f) {
+      return /\.pdf$/i.test(f.name) || f.type === "application/pdf";
+    });
+    if (!files.length) {
+      setStatus(T().notPdf, "ng");
+      return;
+    }
+    setStatus("");
+
+    files.forEach(function (f) {
+      var it = { id: nextId++, name: f.name, size: f.size, bytes: null, pages: null, error: null, range: "", rotate: 0, thumb: null };
+      items.push(it);
+      render();
+
+      f.arrayBuffer().then(function (buf) {
+        it.bytes = new Uint8Array(buf);
+        return PDFLib.PDFDocument.load(it.bytes, { ignoreEncryption: false });
+      }).then(function (doc) {
+        it.pages = doc.getPageCount();
+        render();
+        makeThumb(it);
+      }).catch(function (e) {
+        var msg = String(e && e.message || e);
+        it.error = /encrypt/i.test(msg)
+          ? T().encrypted
+          : T().broken;
+        it.pages = null;
+        render();
+      });
+    });
+  }
+
+  dropEl.onclick = function () { pickerEl.click(); };
+  pickerEl.onchange = function () {
+    addFiles(pickerEl.files);
+    pickerEl.value = "";
+  };
+
+  ["dragenter", "dragover"].forEach(function (ev) {
+    dropEl.addEventListener(ev, function (e) {
+      e.preventDefault();
+      dropEl.classList.add("over");
+    });
+  });
+  ["dragleave", "drop"].forEach(function (ev) {
+    dropEl.addEventListener(ev, function (e) {
+      e.preventDefault();
+      dropEl.classList.remove("over");
+    });
+  });
+  dropEl.addEventListener("drop", function (e) {
+    if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+  });
+  // ページ外にドロップした時にブラウザがPDFを開いてしまうのを防ぐ
+  window.addEventListener("dragover", function (e) { e.preventDefault(); });
+  window.addEventListener("drop", function (e) { e.preventDefault(); });
+
+  clearBtn.onclick = function () {
+    items = [];
+    render();
+    setStatus("");
+  };
+
+  mergeBtn.onclick = function () {
+    var usable = [];
+    items.forEach(function (it) {
+      var eff = effIndices(it);
+      if (it.bytes && eff && eff !== "bad" && eff.length) usable.push({ it: it, idx: eff });
+    });
+    if (!usable.length) return;
+    // 画面と実際に結合する数がずれていたら、黙って一部だけ出力しない
+    if (usable.length !== items.length) {
+      setStatus(T().aborted(usable.length, items.length), "ng");
+      return;
+    }
+
+    mergeBtn.disabled = true;
+    setStatus(T().merging0(usable.length));
+
+    PDFLib.PDFDocument.create().then(function (out) {
+      var chain = Promise.resolve();
+      var done = 0;
+      usable.forEach(function (u) {
+        chain = chain.then(function () {
+          setStatus(T().mergingN(done + 1, usable.length, u.it.name));
+          return PDFLib.PDFDocument.load(u.it.bytes).then(function (src) {
+            return out.copyPages(src, u.idx).then(function (pages) {
+              pages.forEach(function (p) {
+                if (u.it.rotate) {
+                  // 元から回転が入っているPDFもあるので、置き換えずに足す
+                  var cur = 0;
+                  try { cur = p.getRotation().angle || 0; } catch (err) {}
+                  p.setRotation(PDFLib.degrees((cur + u.it.rotate) % 360));
+                }
+                out.addPage(p);
+              });
+              done++;
+            });
+          });
+        });
+      });
+      return chain.then(function () { return out.save(); }).then(function (bytes) {
+        return { bytes: bytes, count: out.getPageCount() };
+      });
+    }).then(function (res) {
+      var name = (outNameEl.value || T().defaultName).trim();
+      if (!/\.pdf$/i.test(name)) name += ".pdf";
+      var blob = new Blob([res.bytes], { type: "application/pdf" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      setStatus(T().doneMsg(usable.length, res.count, name), "ok");
+      mergeBtn.disabled = false;
+    }).catch(function (e) {
+      setStatus(T().failed(String(e && e.message || e)), "ng");
+      mergeBtn.disabled = false;
+    });
+  };
+
+  document.getElementById("langBtn").onclick = function () {
+    lang = (lang === "ja") ? "en" : "ja";
+    localStorage.setItem("lang", lang);
+    applyLang();
+  };
+
+  // PDF.js は ESM なので別スクリプトから届く。間に合わなくても本体は動く
+  window.addEventListener("pdfjs-ready", function () {
+    items.forEach(makeThumb);
+  });
+
+  applyLang();
+})();
+</script>
+<script type="module">
+  // 4.2.67 未満の PDF.js には細工した PDF で任意コードが動く不具合(CVE-2024-4367)があるため
+  // 修正済みの 6.2.108 を使い、さらに念のため isEvalSupported も切っている
+  import * as pdfjsLib from "./pdf.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
+  window.__pdfjsLib = pdfjsLib;
+  window.dispatchEvent(new Event("pdfjs-ready"));
+</script>
+</body>
+</html>
