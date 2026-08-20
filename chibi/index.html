@@ -35,7 +35,11 @@
   h2 { margin:0 0 7px; font-size:12px; color:#7a3600; letter-spacing:.04em; }
 
   /* ---------- 共通の並び ---------- */
-  #hud { position:fixed; top:var(--pad); left:var(--pad); padding:9px 14px;
+  #backTop { position:fixed; top:var(--pad); left:var(--pad); z-index:8;
+    padding:9px 13px; font-size:12px; font-weight:700; color:#7a3600;
+    text-decoration:none; display:inline-block; }
+  #backTop:hover { color:#FA7200; }
+  #hud { position:fixed; top:54px; left:var(--pad); padding:9px 14px;
     border-left:5px solid #FA7200; z-index:5; }
   #hud h1 { margin:0 0 2px; font-size:14px; color:#7a3600; }
   #hud p  { margin:0; font-size:11px; color:#5c5852; }
@@ -78,15 +82,19 @@
 
   /* ---------- 広い画面：左に縦パネル ---------- */
   @media (min-width: 760px) {
-    #ctrl { top:92px; left:var(--pad); width:196px; padding:11px 12px 13px;
-      max-height:calc(100vh - 168px); overflow-y:auto; }
+    #ctrl { top:136px; left:var(--pad); width:196px; padding:11px 12px 13px;
+      max-height:calc(100vh - 212px); overflow-y:auto; }
     #chars { bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:8px; }
   }
 
   /* ---------- 狭い画面：下から出るシート ---------- */
   @media (max-width: 759px) {
     #hud { display:none; }                 /* タイトルは場所ボタンに譲る */
-    #menuBtn { display:block; }
+    #menuBtn { display:block; left:60px; }
+    #backTop { padding:10px 12px; }
+    #backTop .btLong { display:none; }
+    /* 場所名を出すと幅が伸びて視点ボタンにぶつかるため、狭い画面では隠す */
+    #views button:nth-of-type(4) { display:none; }
     #locMenu { top:60px; max-height:calc(100vh - 190px); overflow-y:auto; }
     #ctrl .locH, #ctrl #locRow { display:none; }   /* 場所はメニュー側に集約 */
     #views button { padding:10px 11px; font-size:12px; }
@@ -117,6 +125,9 @@
 <body>
 <button id="menuBtn" onclick="toggleMenu()">場所</button>
 <div id="locMenu"></div>
+
+<a id="backTop" class="panel" href="../"><span>←</span><span class="btLong"
+   data-ja="&nbsp;トップに戻る" data-en="&nbsp;Back to top"></span></a>
 
 <div id="hud" class="panel">
   <h1 id="title">チビロボ</h1>
@@ -258,7 +269,7 @@ function applyLang() {
   }
   var L = LOCS[curLoc];
   document.getElementById('menuBtn').textContent =
-    (curLoc === 0) ? T().place : lab(L.label);
+    (curLoc === 0 || innerWidth < 760) ? T().place : lab(L.label);
 }
 
 // 言語ボタンの置き場所：広い画面は視点ボタンの行、狭い画面はシートのヘッダー
@@ -403,7 +414,8 @@ function setLoc(i) {
     b.className = (+b.getAttribute('data-loc') === i) ? 'on' : '';
   });
   var mb = document.getElementById('menuBtn');
-  mb.textContent = (i === 0) ? T().place : lab(L.label);
+  // 狭い画面では「場所」固定（場所名を入れるとボタンが伸びて視点ボタンと重なる）
+  mb.textContent = (i === 0 || innerWidth < 760) ? T().place : lab(L.label);
   if (menuOpen) mb.classList.add('on');
   if (locObj) { scene.remove(locObj); locObj = null; }
   if (flow) { scene.remove(flow); flow = null; }
@@ -607,7 +619,7 @@ addEventListener('resize', function () {
 // resize が取りこぼされる環境があるので、ブレークポイントの跨ぎ自体も監視する
 var mq = matchMedia('(max-width: 759px)');
 (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(
-  function () { placeLangBtn(); applyMenuFraming(); });
+  function () { placeLangBtn(); applyMenuFraming(); applyLang(); });
 </script>
 </body>
 </html>
