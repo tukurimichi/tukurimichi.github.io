@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>チビロボ 着せ替え・ロケーション</title>
+<style>
+  :root { --pad: 10px; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; overflow:hidden; overscroll-behavior:none;
+    background: radial-gradient(circle at 50% 35%, #f2efe9 0%, #d9d4cb 100%);
+    font-family: system-ui, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    -webkit-text-size-adjust: 100%; }
+  canvas { touch-action: none; display:block; }
+
+  .panel { background:rgba(255,255,255,.88); border-radius:12px;
+    backdrop-filter:blur(6px); box-shadow:0 2px 12px rgba(0,0,0,.10); }
+  button { font-size:12px; padding:7px 12px; border:1px solid #c8c1b6; background:#fff;
+    border-radius:8px; cursor:pointer; color:#3c3a36; line-height:1.2;
+    -webkit-tap-highlight-color: transparent; }
+  button:disabled { opacity:.38; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; }
+  .grp { font-size:10px; color:#8a857d; margin:10px 0 5px; }
+  h2 { margin:0 0 7px; font-size:12px; color:#7a3600; letter-spacing:.04em; }
+
+  /* ---------- 共通の並び ---------- */
+  #hud { position:fixed; top:var(--pad); left:var(--pad); padding:9px 14px;
+    border-left:5px solid #FA7200; z-index:5; }
+  #hud h1 { margin:0 0 2px; font-size:14px; color:#7a3600; }
+  #hud p  { margin:0; font-size:11px; color:#5c5852; }
+  #views { position:fixed; top:var(--pad); right:var(--pad); z-index:5; gap:5px; }
+  #err { position:fixed; bottom:4px; left:var(--pad); color:#a01414; font-size:11px;
+    z-index:6; }
+
+  #ctrl { position:fixed; z-index:4; }
+  #sheetHead { display:none; }
+  #chars { position:fixed; z-index:5; padding:7px 9px; }
+  #chars button { padding:8px 13px; font-size:13px; }
+  #chars button.on { background:#FA7200; border-color:#FA7200; color:#fff; font-weight:bold; }
+  #locRow button.on { background:#2c7a91; border-color:#2c7a91; color:#fff; font-weight:bold; }
+  #bgRow  button.on { background:#3c3a36; border-color:#3c3a36; color:#fff; }
+  #wearGroups button.on { background:#FA7200; border-color:#FA7200; color:#fff; font-weight:bold; }
+  #clear { margin-top:11px; width:100%; padding:7px; }
+
+  /* ---------- 広い画面：左に縦パネル ---------- */
+  @media (min-width: 760px) {
+    #ctrl { top:92px; left:var(--pad); width:196px; padding:11px 12px 13px;
+      max-height:calc(100vh - 168px); overflow-y:auto; }
+    #chars { bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:8px; }
+  }
+
+  /* ---------- 狭い画面：下から出るシート ---------- */
+  @media (max-width: 759px) {
+    #hud { padding:7px 11px; }
+    #hud h1 { font-size:13px; }
+    #hud p { display:none; }
+    #views button { padding:10px 11px; font-size:12px; }
+    #chars { left:0; right:0; bottom:0; border-radius:0; padding:7px 8px;
+      display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+      background:rgba(255,255,255,.94); }
+    #chars button { flex:0 0 auto; padding:11px 15px; font-size:13px; }
+    #ctrl { left:0; right:0; bottom:58px; border-radius:14px 14px 0 0;
+      padding:0 12px 12px; max-height:52vh; overflow-y:auto;
+      background:rgba(255,255,255,.94); }
+    #sheetHead { display:flex; position:sticky; top:0; align-items:center;
+      justify-content:space-between; padding:9px 0 7px; margin:0 0 2px;
+      background:rgba(255,255,255,.97); }
+    #sheetHead span { font-size:12px; color:#7a3600; font-weight:bold; }
+    #sheetHead button { padding:5px 12px; font-size:12px; }
+    body.collapsed #ctrl { max-height:44px; overflow:hidden; }
+    .row { gap:7px; }
+    #ctrl button { padding:9px 13px; font-size:13px; }
+    #clear { padding:9px; }
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+<div id="hud" class="panel">
+  <h1 id="title">チビロボ</h1>
+  <p>ドラッグで回転 / ホイールで拡大縮小</p>
+</div>
+<div class="panel row" id="views">
+  <button onclick="setView('front')">正面</button>
+  <button onclick="setView('iso')">斜め</button>
+  <button onclick="setView('side')">横</button>
+  <button onclick="setView('back')">背面</button>
+  <button onclick="spin=!spin">回転</button>
+</div>
+
+<div id="ctrl" class="panel">
+  <div id="sheetHead">
+    <span>ロケーション・着せ替え</span>
+    <button id="toggleSheet" onclick="toggleSheet()">閉じる</button>
+  </div>
+  <h2>ロケーション</h2>
+  <div id="locRow" class="row"></div>
+  <h2 style="margin-top:13px">背景</h2>
+  <div id="bgRow" class="row"></div>
+  <h2 style="margin-top:13px">着せ替え</h2>
+  <div id="wearGroups"></div>
+  <button id="clear" onclick="clearParts()">全部はずす</button>
+</div>
+
+<div id="chars" class="panel"></div>
+<div id="err"></div>
+
+<script>
+// ---------------------------------------------------------------- scene
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.05, 100);
+var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+var controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.05, 0);
+controls.minDistance = 2;
+controls.maxDistance = 16;
+
+var hemi = new THREE.HemisphereLight(0xffffff, 0xbdb7ad, 0.75); scene.add(hemi);
+var key = new THREE.DirectionalLight(0xffffff, 1.5);
+key.position.set(2.2, 4.2, 3.0); key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.left = -2.2; key.shadow.camera.right = 2.2;
+key.shadow.camera.top = 3.2;   key.shadow.camera.bottom = -0.5;
+scene.add(key);
+var fill = new THREE.DirectionalLight(0xffffff, 0.55); fill.position.set(-3, 1.6, 2.4); scene.add(fill);
+var rim  = new THREE.DirectionalLight(0xffffff, 0.85); rim.position.set(0.4, 3.0, -3.0); scene.add(rim);
+
+var floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
+  new THREE.ShadowMaterial({ opacity: 0.16 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+
+function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+function err(t) { document.getElementById('err').textContent = t || ''; }
+
+// ---------------------------------------------------------------- 背景
+var BGS = [
+  { label:'スタジオ', css:'radial-gradient(circle at 50% 35%, #f2efe9 0%, #d9d4cb 100%)', shadow:0.16 },
+  { label:'白',       css:'#ffffff', shadow:0.10 },
+  { label:'ダーク',   css:'radial-gradient(circle at 50% 35%, #322c27 0%, #17130f 100%)', shadow:0.34 },
+  { label:'オレンジ', css:'radial-gradient(circle at 50% 42%, #ffdcb6 0%, #f7973a 100%)', shadow:0.20 },
+  { label:'空',       css:'linear-gradient(#bfe4f2 0%, #eaf6fb 58%, #f7efe2 100%)', shadow:0.16 },
+  { label:'市松',     css:'repeating-conic-gradient(#e6e2da 0% 25%, #f8f6f2 0% 50%) 0 0 / 30px 30px', shadow:0.13 }
+];
+function setBg(i) {
+  document.body.style.background = BGS[i].css;
+  floor.material.opacity = BGS[i].shadow;
+  each('#bgRow button', function (b, n) { b.className = (n === i) ? 'on' : ''; });
+}
+
+// ---------------------------------------------------------------- ロケーション
+var LOCS = [
+  { id:'none', label:'なし', glb:null, bg:null, fog:null, flow:null,
+    hemi:[0xffffff,0xbdb7ad,0.75], keyLight:[0xffffff,1.5], fill:0.55, rim:0.85, shadowPlane:true },
+  { id:'sea', label:'海の中', glb:'sea',
+    bg:'linear-gradient(#2f86ad 0%, #12546f 58%, #08324a 100%)',
+    fog:{color:0x14607f, near:3.0, far:20.0},
+    flow:{mode:'rise', count:260, color:0xdff4ff, size:0.09, opacity:0.55, speed:0.55, top:6.4, spread:15},
+    hemi:[0x9fd8f0,0x0d3346,1.05], keyLight:[0xcdefff,1.7], fill:0.30, rim:0.55, shadowPlane:false },
+  { id:'river', label:'川の中', glb:'river',
+    bg:'linear-gradient(#8fd2e0 0%, #418593 52%, #2a5c68 100%)',
+    fog:{color:0x3d8391, near:2.6, far:16.0},
+    flow:{mode:'flow', count:340, color:0xf0fbff, size:0.075, opacity:0.5, speed:3.6, top:3.6, spread:15},
+    hemi:[0xbfe9f2,0x1d4a52,1.10], keyLight:[0xe4fbff,1.9], fill:0.34, rim:0.60, shadowPlane:false },
+  { id:'forest', label:'森の中', glb:'forest',
+    bg:'linear-gradient(#8fb46a 0%, #4c6b3c 55%, #2c3f24 100%)',
+    fog:{color:0x405a34, near:5.0, far:26.0},
+    flow:{mode:'rise', count:150, color:0xfff3cf, size:0.055, opacity:0.42, speed:0.18, top:5.5, spread:16},
+    hemi:[0xcfe6a8,0x27331d,0.95], keyLight:[0xfff2d2,1.9], fill:0.42, rim:0.55, shadowPlane:false },
+  { id:'city_night', label:'夜の街', glb:'city_night',
+    bg:'linear-gradient(#1c2742 0%, #131b2e 55%, #0b1020 100%)',
+    fog:{color:0x141d33, near:8.0, far:42.0},
+    flow:{mode:'rise', count:120, color:0xffe6b0, size:0.05, opacity:0.35, speed:0.12, top:9.0, spread:22},
+    hemi:[0x8fa6d8,0x0d1020,0.55], keyLight:[0x9fb6ff,0.55], fill:0.20, rim:0.35, shadowPlane:false },
+  { id:'space', label:'宇宙', glb:'space',
+    bg:'radial-gradient(circle at 62% 28%, #1b2340 0%, #080b16 55%, #03040a 100%)',
+    fog:null,
+    flow:{mode:'rise', count:420, color:0xffffff, size:0.055, opacity:0.85, speed:0.04, top:16.0, spread:34},
+    hemi:[0x5f6f9a,0x05060c,0.35], keyLight:[0xffffff,2.4], fill:0.10, rim:0.25, shadowPlane:false },
+  { id:'construction', label:'工事現場', glb:'construction',
+    bg:'linear-gradient(#bcd2e2 0%, #93a9bb 58%, #7b8b98 100%)',
+    fog:{color:0xa8bccb, near:9.0, far:38.0},
+    flow:{mode:'rise', count:130, color:0xe8d9b8, size:0.05, opacity:0.30, speed:0.14, top:4.0, spread:18},
+    hemi:[0xdcebf7,0x6b5f4a,0.95], keyLight:[0xfff0d6,2.0], fill:0.55, rim:0.60, shadowPlane:false },
+  { id:'snow', label:'雪原', glb:'snow',
+    bg:'linear-gradient(#cfe2f2 0%, #e6eef6 52%, #f4f8fb 100%)',
+    fog:{color:0xdae8f4, near:5.0, far:28.0},
+    flow:{mode:'fall', count:400, color:0xffffff, size:0.075, opacity:0.85, speed:0.75, top:9.0, spread:18},
+    hemi:[0xeaf4ff,0xb8c8d8,1.15], keyLight:[0xffffff,1.7], fill:0.60, rim:0.55, shadowPlane:false },
+  { id:'lab', label:'ラボ', glb:'lab',
+    bg:'linear-gradient(#eef1f5 0%, #dfe4ea 60%, #ccd3db 100%)',
+    fog:{color:0xe4e8ee, near:10.0, far:34.0}, flow:null,
+    hemi:[0xffffff,0xc8cdd4,1.05], keyLight:[0xfffdf8,1.5], fill:0.55, rim:0.55, shadowPlane:false }
+];
+
+function sprite() {
+  var c = document.createElement('canvas'); c.width = c.height = 64;
+  var g = c.getContext('2d');
+  var gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)');
+  gr.addColorStop(0.5, 'rgba(255,255,255,0.6)');
+  gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 32, 0, 6.2832); g.fill();
+  return new THREE.CanvasTexture(c);
+}
+var SPRITE = sprite();
+
+function makeFlow(f) {
+  var n = f.count, pos = new Float32Array(n * 3), spd = new Float32Array(n);
+  for (var i = 0; i < n; i++) {
+    pos[i*3]     = (Math.random() - 0.5) * f.spread;
+    pos[i*3 + 1] = Math.random() * f.top;
+    pos[i*3 + 2] = (Math.random() - 0.5) * f.spread;
+    spd[i] = 0.45 + Math.random() * 1.1;
+  }
+  var geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  var p = new THREE.Points(geo, new THREE.PointsMaterial({
+    size:f.size, map:SPRITE, color:f.color, transparent:true,
+    opacity:f.opacity, depthWrite:false, sizeAttenuation:true }));
+  p.userData.f = f; p.userData.spd = spd;
+  return p;
+}
+
+function stepFlow(dt) {
+  if (!flow) return;
+  var f = flow.userData.f, spd = flow.userData.spd;
+  var a = flow.geometry.attributes.position, arr = a.array;
+  for (var i = 0; i < spd.length; i++) {
+    var j = i * 3;
+    if (f.mode === 'rise') {
+      arr[j+1] += f.speed * spd[i] * dt;
+      arr[j] += Math.sin((arr[j+1] + i) * 2.0) * 0.004;
+      if (arr[j+1] > f.top) arr[j+1] = 0.05;
+    } else if (f.mode === 'fall') {
+      arr[j+1] -= f.speed * spd[i] * dt;
+      arr[j] += Math.sin((arr[j+1] + i) * 1.1) * 0.010;
+      if (arr[j+1] < 0.02) arr[j+1] = f.top;
+    } else {
+      arr[j] += f.speed * spd[i] * dt;
+      arr[j+1] += Math.sin((arr[j] + i) * 1.3) * 0.006;
+      if (arr[j] > f.spread / 2) arr[j] = -f.spread / 2;
+    }
+  }
+  a.needsUpdate = true;
+}
+
+var locObj = null, flow = null, curLoc = 0;
+
+function setLoc(i) {
+  var L = LOCS[i]; curLoc = i;
+  each('#locRow button', function (b, n) { b.className = (n === i) ? 'on' : ''; });
+  if (locObj) { scene.remove(locObj); locObj = null; }
+  if (flow) { scene.remove(flow); flow = null; }
+
+  scene.fog = L.fog ? new THREE.Fog(L.fog.color, L.fog.near, L.fog.far) : null;
+  hemi.color.setHex(L.hemi[0]); hemi.groundColor.setHex(L.hemi[1]); hemi.intensity = L.hemi[2];
+  key.color.setHex(L.keyLight[0]); key.intensity = L.keyLight[1];
+  fill.intensity = L.fill; rim.intensity = L.rim;
+  floor.visible = L.shadowPlane;
+
+  if (L.bg) document.body.style.background = L.bg; else setBg(0);
+  each('#bgRow button', function (b) { b.disabled = !!L.bg; });
+
+  if (L.flow) { flow = makeFlow(L.flow); scene.add(flow); }
+  if (!L.glb) return;
+  loader.load('locations/loc_' + L.glb + '.glb', function (g) {
+    if (curLoc !== i) return;
+    locObj = g.scene;
+    locObj.traverse(function (o) { if (o.isMesh) { o.receiveShadow = true; o.castShadow = false; } });
+    scene.add(locObj); err();
+  }, undefined, function (e) { err('ロケーション読み込み失敗: ' + L.glb + ' / ' + e); });
+}
+
+// ---------------------------------------------------------------- 視点
+var VIEWS = { front:[0,1.05,6.4], iso:[3.9,2.1,4.8], side:[6.4,1.05,0], back:[0,1.05,-6.4] };
+function setView(k) {
+  var v = VIEWS[k], m = innerWidth < 760 ? 1.28 : 1.0;   // スマホは少し引く
+  camera.position.set(v[0]*m, v[1]*m, v[2]*m);
+  controls.update();
+}
+
+// ---------------------------------------------------------------- キャラ・着せ替え
+var CHARS = [
+  { file:'tsukuru',  label:'本人',     scale:1 },
+  { file:'worker',   label:'作業着',   scale:1 },
+  { file:'sleepy',   label:'眠そう',   scale:1 },
+  { file:'traveler', label:'旅',       scale:1 },
+  { file:'chibi',    label:'ちびちび', scale:0.72 }
+];
+var GROUPS = [
+  { title:'頭', items:[['helmet','ヘルメット'],['cap','キャップ'],['beanie','ニット帽'],['crown','王冠']] },
+  { title:'顔', items:[['goggles','ゴーグル'],['glasses','メガネ']] },
+  { title:'首・胴', items:[['scarf','マフラー'],['bowtie','蝶ネクタイ'],['apron','エプロン'],['tool_belt','工具ベルト']] },
+  { title:'背中', items:[['cape','マント'],['backpack','リュック'],['map','地図'],['jetpack','ジェットパック']] },
+  { title:'持ち物', items:[['cup','カップ'],['extinguisher','消火器'],['clipboard','バインダー']] }
+];
+
+var loader = new THREE.GLTFLoader();
+var spin = true, body = null, current = null, currentScale = 1;
+var worn = {};
+
+function prep(obj) {
+  obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  return obj;
+}
+
+function loadChar(idx) {
+  var c = CHARS[idx];
+  if (current === idx) return;
+  current = idx; currentScale = c.scale;
+  document.getElementById('title').textContent = 'チビロボ ' + c.label;
+  each('#chars button', function (b, i) { b.className = (i === idx) ? 'on' : ''; });
+  loader.load(c.file + '.glb', function (g) {
+    if (body) scene.remove(body);
+    body = prep(g.scene); body.scale.setScalar(c.scale); scene.add(body);
+    Object.keys(worn).forEach(function (n) { worn[n].scale.setScalar(c.scale); });
+    err();
+  }, undefined, function (e) { err('本体の読み込み失敗: ' + c.file + ' / ' + e); });
+}
+
+function togglePart(name) {
+  if (worn[name]) { scene.remove(worn[name]); delete worn[name]; syncPartButtons(); return; }
+  worn[name] = new THREE.Group();
+  worn[name].scale.setScalar(currentScale);
+  scene.add(worn[name]);
+  syncPartButtons();
+  loader.load('parts/part_' + name + '.glb', function (g) {
+    if (!worn[name]) return;
+    worn[name].add(prep(g.scene));
+    err();
+  }, undefined, function (e) { err('パーツの読み込み失敗: ' + name + ' / ' + e); });
+}
+
+function clearParts() {
+  Object.keys(worn).forEach(function (n) { scene.remove(worn[n]); delete worn[n]; });
+  syncPartButtons();
+}
+function syncPartButtons() {
+  each('#wearGroups button[data-part]', function (b) {
+    b.className = worn[b.getAttribute('data-part')] ? 'on' : '';
+  });
+}
+
+// ---------------------------------------------------------------- UI 生成
+function mkBtn(parent, label, onclick, attrs) {
+  var b = document.createElement('button');
+  b.textContent = label; b.onclick = onclick;
+  if (attrs) Object.keys(attrs).forEach(function (k) { b.setAttribute(k, attrs[k]); });
+  parent.appendChild(b); return b;
+}
+
+LOCS.forEach(function (L, i) {
+  mkBtn(document.getElementById('locRow'), L.label, function () { setLoc(i); });
+});
+BGS.forEach(function (bg, i) {
+  mkBtn(document.getElementById('bgRow'), bg.label, function () { setBg(i); });
+});
+var wg = document.getElementById('wearGroups');
+GROUPS.forEach(function (grp) {
+  var h = document.createElement('div'); h.className = 'grp'; h.textContent = grp.title;
+  wg.appendChild(h);
+  var row = document.createElement('div'); row.className = 'row';
+  grp.items.forEach(function (it) {
+    mkBtn(row, it[1], function () { togglePart(it[0]); }, { 'data-part': it[0] });
+  });
+  wg.appendChild(row);
+});
+CHARS.forEach(function (c, i) {
+  mkBtn(document.getElementById('chars'), c.label, function () { loadChar(i); });
+});
+
+function toggleSheet() {
+  document.body.classList.toggle('collapsed');
+  document.getElementById('toggleSheet').textContent =
+    document.body.classList.contains('collapsed') ? '開く' : '閉じる';
+}
+
+setBg(0); setLoc(0); setView('iso'); loadChar(0);
+if (innerWidth < 760) document.body.classList.add('collapsed'),
+  document.getElementById('toggleSheet').textContent = '開く';
+
+// ---------------------------------------------------------------- ループ
+var clock = new THREE.Clock();
+(function animate() {
+  requestAnimationFrame(animate);
+  stepFlow(Math.min(clock.getDelta(), 0.05));
+  if (spin) {
+    var a = (body ? body.rotation.y : 0) + 0.004;
+    if (body) body.rotation.y = a;
+    Object.keys(worn).forEach(function (n) { worn[n].rotation.y = a; });
+  }
+  controls.update();
+  renderer.render(scene, camera);
+})();
+
+addEventListener('resize', function () {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
