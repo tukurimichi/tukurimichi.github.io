@@ -109,6 +109,7 @@ a{color:inherit;}
 <a href="claude-code-news.html" id="navNews"></a>
 <a href="mascot3d.html" id="navMascot"></a>
 <a href="papercraft.html" id="navPapercraft"></a>
+<a href="chibi/" id="navChibi"></a>
 <a href="wallpapers.html" id="navWallpapers"></a>
 <a href="tools.html" id="navTools"></a>
 <a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
@@ -128,7 +129,7 @@ a{color:inherit;}
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
-<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>
+<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>・<a href="chibi/" id="fbChibi">着せ替え</a>
 </div>
 
 <div class="footer">
@@ -164,11 +165,12 @@ navCCText:"Claude Codeで作ってみた",
 navNewsText:"Claude Codeニュース",
 navMascotText:"マスコットが3Dになった",
 navPapercraftText:"チビロボ、紙になる",
+navChibiText:"チビロボを着せ替える",
     navWallpapersText:"海辺の壁紙",
 navToolsText:"道具箱",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
-fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",
+fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",fbChibiText:"着せ替え",
 toggleTo:"English"
 },
 en:{
@@ -193,11 +195,12 @@ navCCText:"Built with Claude Code",
 navNewsText:"Claude Code News",
 navMascotText:"Mascot in 3D",
 navPapercraftText:"Chibi Robo, on Paper",
+navChibiText:"Dress Up Chibi Robo",
     navWallpapersText:"Coast Wallpapers",
 navToolsText:"Toolbox",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
-fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",
+fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",fbChibiText:"Dress Up",
 toggleTo:"日本語"
 }
 };
@@ -223,11 +226,12 @@ document.getElementById("navCC").textContent=L.navCCText;
 document.getElementById("navNews").textContent=L.navNewsText;
 document.getElementById("navMascot").textContent=L.navMascotText;
 document.getElementById("navPapercraft").textContent=L.navPapercraftText;
+document.getElementById("navChibi").textContent=L.navChibiText;
   document.getElementById("navWallpapers").textContent=L.navWallpapersText;
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
-["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews"].forEach(function(k){
+["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews","fbChibi"].forEach(function(k){
 var el=document.getElementById(k);if(el)el.textContent=L[k+"Text"];});
 document.getElementById("ideaFallback").textContent=L.fbIdeaText;
 if(window.__deskRelabel)window.__deskRelabel();
@@ -1243,7 +1247,7 @@ function initDeskScene(){
   mascot.group.rotation.y=0.9;
   deskGroup.add(mascot.group);
   var mascotShadow=addShadow(startPos.x,startPos.z+4,26);
-  var waveState=null;
+  var waveState=null,mascotLeaving=false;
   var wander={
     pos:{x:startPos.x,z:startPos.z},
     path:[],
@@ -1329,7 +1333,9 @@ function initDeskScene(){
         angVel=delta*0.006;
       }
     }else{
-      setHover(hitTest(e.clientX,e.clientY));
+      var hov=hitTest(e.clientX,e.clientY);
+      setHover(hov);
+      canvas.style.cursor=(hov||hitTestMascot(e.clientX,e.clientY))?"pointer":"";
     }
   });
   function endDrag(e){
@@ -1337,7 +1343,12 @@ function initDeskScene(){
       var hit=hitTest(e.clientX,e.clientY);
       if(hit){goTo(hit);}
       else if(hitTestMascot(e.clientX,e.clientY)){
+        // 歩いているチビロボをタップ：手を振る演出を見せてから着せ替えビュワーへ
         waveState={t0:Date.now()};
+        if(!mascotLeaving){
+          mascotLeaving=true;
+          setTimeout(function(){location.href="chibi/";},1150);
+        }
       }
     }
     dragging=false;
