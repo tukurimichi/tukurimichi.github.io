@@ -132,7 +132,7 @@ a{color:inherit;}
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
-<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>・<a href="chibi/" id="fbChibi">着せ替え</a>
+<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>・<a href="chibi/" id="fbChibi">着せ替え</a>・<a href="tools.html" id="fbTools">道具箱</a>
 </div>
 
 <div class="footer">
@@ -173,7 +173,7 @@ navChibiText:"チビロボを着せ替える",
 navToolsText:"道具箱",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
-fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",fbChibiText:"着せ替え",
+fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",fbChibiText:"着せ替え",fbToolsText:"道具箱",
 toggleTo:"English"
 },
 en:{
@@ -203,7 +203,7 @@ navChibiText:"Dress Up Chibi Robo",
 navToolsText:"Toolbox",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
-fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",fbChibiText:"Dress Up",
+fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",fbChibiText:"Dress Up",fbToolsText:"Toolbox",
 toggleTo:"日本語"
 }
 };
@@ -234,7 +234,7 @@ document.getElementById("navChibi").textContent=L.navChibiText;
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
-["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews","fbChibi"].forEach(function(k){
+["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews","fbChibi","fbTools"].forEach(function(k){
 var el=document.getElementById(k);if(el)el.textContent=L[k+"Text"];});
 document.getElementById("ideaFallback").textContent=L.fbIdeaText;
 if(window.__deskRelabel)window.__deskRelabel();
@@ -372,6 +372,30 @@ function buildDeskBlocks(){
   var c2=new THREE.Mesh(cubeGeo,new THREE.MeshStandardMaterial({color:0xF7EEE1}));c2.position.set(3.8,3.5,1.2);c2.rotation.y=-0.18;
   var c3=new THREE.Mesh(cubeGeo,new THREE.MeshStandardMaterial({color:0x3A2A22}));c3.position.set(0.1,10.3,0.6);c3.rotation.set(0.12,0.4,0.08);
   g.add(c1,c2,c3);
+  return g;
+}
+function buildDeskToolbox(){
+  var g=new THREE.Group();
+  var red=new THREE.MeshStandardMaterial({color:0xE31E24});
+  var cream=new THREE.MeshStandardMaterial({color:0xEADFC9});
+  var dark=new THREE.MeshStandardMaterial({color:0x5A4632});
+  var body=new THREE.Mesh(new THREE.BoxGeometry(17,8,11),red);
+  body.position.y=4;
+  g.add(body);
+  var lid=new THREE.Mesh(new THREE.BoxGeometry(17.6,2.4,11.6),dark);
+  lid.position.y=8.8;
+  g.add(lid);
+  for(var s=-1;s<=1;s+=2){
+    var post=new THREE.Mesh(new THREE.BoxGeometry(1.3,3.6,1.3),cream);
+    post.position.set(s*3.8,11.4,0);
+    g.add(post);
+  }
+  var bar=new THREE.Mesh(new THREE.BoxGeometry(9,1.3,1.3),cream);
+  bar.position.y=13;
+  g.add(bar);
+  var latch=new THREE.Mesh(new THREE.BoxGeometry(2.6,2.6,0.9),cream);
+  latch.position.set(0,5.6,5.8);
+  g.add(latch);
   return g;
 }
 function buildDeskGear(){
@@ -1042,6 +1066,7 @@ function initDeskScene(){
     {key:"play",ja:"遊ぶ",en:"PLAY",href:"play.html",build:buildDeskDice,pos:[-15,0,25],rot:0.6,shadowR:24,labelFront:20},
     {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[78,0,38],rot:-0.28,shadowR:22,labelFront:16},
     {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[25,0,68],rot:0.9,shadowR:22,labelFront:8},
+    {key:"tools",ja:"道具箱",en:"TOOLS",href:"tools.html",build:buildDeskToolbox,pos:[-46,0,-6],rot:0.28,shadowR:24,labelFront:16},
     {key:"news",ja:"ニュース",en:"NEWS",href:"claude-code-news.html",build:buildDeskNewspaper,pos:[42,0,-12],rot:0.4,shadowR:23,labelFront:16}
   ];
 
