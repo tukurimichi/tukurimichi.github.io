@@ -72,6 +72,12 @@
     cursor: grab;
     user-select: none;
   }
+  .item.holding {
+    border-color: var(--accent);
+    box-shadow: 0 6px 18px rgba(43,35,24,0.16);
+    transform: scale(1.015);
+  }
+  .item { -webkit-touch-callout: none; }
   .item.dragging {
     position: fixed;
     z-index: 50;
@@ -264,7 +270,7 @@
       rangePh: "全ページ",
       rangeTip: "例: 1-3, 7, 10-　空欄なら全ページ",
       rotTip: "押すたびに90°ずつ回ります",
-      upTip: "上へ", downTip: "下へ", delTip: "削除", gripTip: "ドラッグで並べ替え",
+      upTip: "上へ", downTip: "下へ", delTip: "削除", gripTip: "ドラッグで並べ替え（行を長押ししても掴めます）",
       loading: "読み込み中...",
       encrypted: "パスワード保護のため読み込めません",
       broken: "読み込めませんでした（壊れているか、PDFではない可能性）",
@@ -283,7 +289,8 @@
       doneMsg: function (f, p, name) { return f + "ファイル・" + p + "ページを結合しました（" + name + "）"; },
       failed: function (e) { return "結合に失敗しました：" + e; },
       defaultName: "結合.pdf",
-      notes: "・<b>⟳</b> を押すとそのファイルが90°ずつ回ります（スキャンの向き直しに）<br>"
+      notes: "・並べ替えは行をドラッグ。スマホでは<b>行を少し長押し</b>すると掴めます（⠿ は長押しなしで掴めます）<br>"
+        + "・<b>⟳</b> を押すとそのファイルが90°ずつ回ります（スキャンの向き直しに）<br>"
         + "・「使うページ」を空欄にすると全ページ。<code>1-3, 7, 10-</code> のように指定できます（<code>10-</code> は10ページ目から最後まで）<br>"
         + "・読み込めないファイルやページ指定の誤りが1件でもあると、結合できません（一部だけ結合された書類ができるのを防ぐため）<br>"
         + "・パスワード保護されたPDFは読み込めません（解除してから追加してください）<br>"
@@ -305,7 +312,7 @@
       rangePh: "all pages",
       rangeTip: "e.g. 1-3, 7, 10-　leave empty for every page",
       rotTip: "Each press turns this file 90°",
-      upTip: "Move up", downTip: "Move down", delTip: "Remove", gripTip: "Drag to reorder",
+      upTip: "Move up", downTip: "Move down", delTip: "Remove", gripTip: "Drag to reorder (or press and hold a row)",
       loading: "Reading...",
       encrypted: "Password-protected, so it cannot be read",
       broken: "Could not be read (damaged, or not a PDF)",
@@ -324,7 +331,8 @@
       doneMsg: function (f, p, name) { return "Merged " + f + " file(s), " + p + " page(s) → " + name; },
       failed: function (e) { return "The merge failed: " + e; },
       defaultName: "merged.pdf",
-      notes: "・Press <b>⟳</b> to turn a file 90° at a time (handy for sideways scans)<br>"
+      notes: "・Drag a row to reorder. On a phone, <b>press and hold a row</b> to pick it up (the ⠿ handle needs no hold)<br>"
+        + "・Press <b>⟳</b> to turn a file 90° at a time (handy for sideways scans)<br>"
         + "・Leave \"Pages to use\" empty for every page, or write <code>1-3, 7, 10-</code> (<code>10-</code> means page 10 to the end)<br>"
         + "・If any file is unreadable or has a wrong page number, merging is blocked — so you never get a document that is quietly missing a part<br>"
         + "・Password-protected PDFs cannot be read (please unlock them first)<br>"
@@ -572,24 +580,66 @@
   }
 
   // ---- ドラッグで並べ替え ----
-  // タッチは誤操作（スクロールとの取り合い）を避けるため、掴む所（⠿）からのみ開始する
+  // マウスは掴んですぐ動かせる。指の場合は、行のどこを押しても掴めるが
+  // 「少し長押ししてから」に限る。そうしないと画面スクロールと取り合いになる。
+  // 掴み手（⠿）だけは指でも長押し不要で即座に掴める。
   var DRAG_START_PX = 5;
+  var LONG_PRESS_MS = 420;
   var drag = null;
+
+  // 指で掴んでいる間だけ、ページのスクロールを止める。
+  // touch-action だけでは掴んだ後から抑えられないので touchmove を塞ぐ
+  function blockScroll(ev) { ev.preventDefault(); }
+  function holdScroll(on) {
+    if (on) document.addEventListener("touchmove", blockScroll, { passive: false });
+    else document.removeEventListener("touchmove", blockScroll, { passive: false });
+  }
 
   function startPointer(e, li) {
     if (e.button != null && e.button !== 0) return;
     if (e.target.closest("button")) return;
     if (e.target.closest("input, textarea, label")) return;
-    if (e.pointerType !== "mouse" && !e.target.closest(".grip")) return;
 
+    var isTouch = e.pointerType !== "mouse";
+    var onGrip = !!e.target.closest(".grip");
     var startX = e.clientX, startY = e.clientY;
     var started = false;
+    // マウスと掴み手は最初から掴める。指で本体を押した時だけ長押しを待つ
+    var armed = !isTouch || onGrip;
+    var holdTimer = null;
+
     try { li.setPointerCapture(e.pointerId); } catch (err) {}
 
+    if (!armed) {
+      holdTimer = setTimeout(function () {
+        armed = true;
+        li.classList.add("holding");
+        holdScroll(true);
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (err) {} }
+      }, LONG_PRESS_MS);
+    } else if (isTouch) {
+      holdScroll(true);
+    }
+
+    function finish() {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      li.classList.remove("holding");
+      holdScroll(false);
+      li.removeEventListener("pointermove", onMove);
+      li.removeEventListener("pointerup", onUp);
+      li.removeEventListener("pointercancel", onUp);
+    }
+
     function onMove(ev) {
+      var moved = Math.abs(ev.clientX - startX) >= DRAG_START_PX ||
+                  Math.abs(ev.clientY - startY) >= DRAG_START_PX;
+      if (!armed) {
+        // 長押しが成立する前に動いた＝スクロールしたいのだと解釈して、掴むのをやめる
+        if (moved) finish();
+        return;
+      }
       if (!started) {
-        if (Math.abs(ev.clientX - startX) < DRAG_START_PX &&
-            Math.abs(ev.clientY - startY) < DRAG_START_PX) return;
+        if (!moved) return;
         started = true;
         beginDrag(li, ev);
       }
@@ -597,10 +647,9 @@
       moveDrag(ev);
     }
     function onUp() {
-      li.removeEventListener("pointermove", onMove);
-      li.removeEventListener("pointerup", onUp);
-      li.removeEventListener("pointercancel", onUp);
-      if (started) endDrag();
+      var wasStarted = started;
+      finish();
+      if (wasStarted) endDrag();
     }
     li.addEventListener("pointermove", onMove);
     li.addEventListener("pointerup", onUp);
