@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>チビロボ 着せ替え・ロケーション</title>
+<meta name="description" content="オレンジと白のチビロボを、17種の着せ替えと8つのロケーション（海の中・夜の街・宇宙ほか）で自由に組み合わせて回せる3Dビュワー。">
+<meta property="og:title" content="チビロボ 着せ替え・ロケーション">
+<meta property="og:description" content="オレンジと白のチビロボを、17種の着せ替えと8つのロケーション（海の中・夜の街・宇宙ほか）で自由に組み合わせて回せる3Dビュワー。">
+<meta property="og:url" content="https://tukurimichi.com/chibi/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/chibi/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="チビロボ 着せ替え・ロケーション">
+<meta name="twitter:description" content="着せ替え17種、ロケーション8か所。ブラウザで回せる3Dビュワー。">
+<meta name="twitter:image" content="https://tukurimichi.com/chibi/ogp.png">
 <style>
   :root { --pad: 10px; }
   * { box-sizing: border-box; }
@@ -31,6 +42,13 @@
   #views { position:fixed; top:var(--pad); right:var(--pad); z-index:5; gap:5px; }
   #err { position:fixed; bottom:4px; left:var(--pad); color:#a01414; font-size:11px;
     z-index:6; }
+  #fallback { display:none; position:fixed; inset:0; z-index:20; align-items:center;
+    justify-content:center; padding:28px; text-align:center;
+    background:#f2efe9; color:#4a423a; }
+  #fallback .box { max-width:460px; }
+  #fallback h2 { font-size:17px; color:#7a3600; margin:0 0 10px; }
+  #fallback p { font-size:14px; line-height:1.8; margin:0 0 6px; }
+  #fallback .en { color:#8a8177; font-size:13px; }
 
   #ctrl { position:fixed; z-index:4; }
   #sheetHead { display:none; }
@@ -91,9 +109,10 @@
     #clear { padding:9px; }
   }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- three.js r128 (MIT) はリポジトリに同梱。外部CDNに依存すると、そこが落ちた時に真っ白になる -->
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script src="lib/GLTFLoader.js"></script>
 </head>
 <body>
 <button id="menuBtn" onclick="toggleMenu()">場所</button>
@@ -130,7 +149,51 @@
 <div id="chars" class="panel"></div>
 <div id="err"></div>
 
+<div id="fallback"><div class="box">
+  <h2>チビロボを表示できませんでした</h2>
+  <p>お使いのブラウザが3D表示（WebGL）に対応していないか、読み込みに失敗しました。<br>
+     別のブラウザか、少し時間をおいて開き直してみてください。</p>
+  <p class="en">Couldn't display the 3D viewer. Your browser may not support WebGL,
+     or loading failed. Please try another browser or reload later.</p>
+</div></div>
+
+<noscript>
+  <div style="position:fixed;inset:0;z-index:30;display:flex;align-items:center;
+              justify-content:center;padding:28px;text-align:center;background:#f2efe9;
+              color:#4a423a;font-family:system-ui,sans-serif">
+    <div style="max-width:460px">
+      <h2 style="font-size:17px;color:#7a3600;margin:0 0 10px">JavaScriptを有効にしてください</h2>
+      <p style="font-size:14px;line-height:1.8;margin:0">
+        このページは3D表示にJavaScriptを使います。<br>
+        <span style="color:#8a8177;font-size:13px">This 3D viewer requires JavaScript.</span>
+      </p>
+    </div>
+  </div>
+</noscript>
+
 <script>
+// three.js が読めなかった / WebGL が使えない場合はここで止めて案内を出す
+(function () {
+  var ok = (typeof THREE !== 'undefined' && typeof THREE.WebGLRenderer === 'function' &&
+            typeof THREE.OrbitControls === 'function' && typeof THREE.GLTFLoader === 'function');
+  if (ok) {
+    try {
+      var c = document.createElement('canvas');
+      ok = !!(window.WebGLRenderingContext &&
+              (c.getContext('webgl') || c.getContext('experimental-webgl')));
+    } catch (e) { ok = false; }
+  }
+  if (!ok) {
+    document.getElementById('fallback').style.display = 'flex';
+    ['hud', 'views', 'ctrl', 'chars', 'menuBtn', 'locMenu'].forEach(function (id) {
+      var e = document.getElementById(id);
+      if (e) e.style.display = 'none';
+    });
+  }
+  window.__CAN_RUN = ok;
+})();
+if (!window.__CAN_RUN) { throw new Error('viewer: WebGL or three.js unavailable'); }
+
 // ---------------------------------------------------------------- scene
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.05, 100);
