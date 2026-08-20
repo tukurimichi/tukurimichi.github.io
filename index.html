@@ -37,14 +37,9 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 a{color:inherit;}
 
 .hero{position:relative;overflow:hidden;height:34vh;min-height:220px;max-height:320px;}
-.heroImgs{position:absolute;inset:0;}
-.heroImgs img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:brightness(.88) contrast(1.05);opacity:0;transform:scale(1.05);transition:opacity 2.2s ease,transform 6.5s ease-out;}
-.heroImgs img.active{opacity:1;transform:scale(1.14);}
-.heroImgs img.zoomOut{transform:scale(1.14);}
-.heroImgs img.zoomOut.active{transform:scale(1.05);}
 .hero canvas{position:absolute;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,11,.05) 0%,rgba(10,10,11,.3) 40%,rgba(10,10,11,.97) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 20px 14px;}
-.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
+.hero-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,11,.05) 0%,rgba(10,10,11,.45) 40%,rgba(10,10,11,.97) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 20px 14px;}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);z-index:5;}
 .menuBtn{position:absolute;top:12px;left:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:34px;height:34px;font-size:1em;cursor:pointer;backdrop-filter:blur(2px);z-index:5;}
 .navOverlay{position:fixed;inset:0;background:rgba(8,8,9,.98);z-index:50;display:none;flex-direction:column;padding:24px;overflow-y:auto;}
 .navOverlay.open{display:flex;}
@@ -70,7 +65,7 @@ a{color:inherit;}
 .budgetBarFill{height:100%;width:86%;background:linear-gradient(90deg,var(--red-dark),var(--red));border-radius:2px;}
 .budgetSub{display:block;font-size:.66em;color:var(--muted);}
 
-#heroMascotCanvas{position:absolute;top:10%;right:4%;left:auto;bottom:auto;width:96px;height:120px;pointer-events:none;}
+#heroMascotCanvas{position:absolute;top:10%;right:4%;left:auto;bottom:auto;width:96px;height:120px;pointer-events:none;z-index:3;}
 
 .deskWrap{position:relative;width:100%;height:50vh;max-height:560px;min-height:240px;margin-top:2px;background:radial-gradient(ellipse at 50% 15%,#241a14 0%,#120d0a 75%);overflow:hidden;touch-action:pan-y;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
 #deskCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;}
@@ -91,12 +86,6 @@ a{color:inherit;}
 <div class="wrap">
 
 <div class="hero">
-<div class="heroImgs" id="heroImgs">
-<img class="active" src="story1.jpg" alt="story1">
-<img class="zoomOut" src="story2.jpg" alt="story2">
-<img src="story3.jpg" alt="story3">
-<img class="zoomOut" src="story4.jpg" alt="story4">
-</div>
 <canvas id="heroCanvas"></canvas>
 <div class="hero-overlay">
 <span class="badge" id="heroBadge"></span>
@@ -262,18 +251,6 @@ document.getElementById("menuBtn").onclick=function(){document.getElementById("n
 document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
 render(currentLang);
 
-(function(){
-  var heroReduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(heroReduceMotion)return;
-  var imgs=document.querySelectorAll("#heroImgs img");
-  if(imgs.length<2)return;
-  var idx=0;
-  setInterval(function(){
-    imgs[idx].classList.remove("active");
-    idx=(idx+1)%imgs.length;
-    imgs[idx].classList.add("active");
-  },5200);
-})();
 </script>
 
 <script src="https://unpkg.com/three@0.128.0/build/three.min.js" defer></script>
@@ -471,91 +448,267 @@ function initHeroFX(){
   if(w<10||h<10)return;
   var reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.setSize(w,h,false);
+  if("outputEncoding" in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
 
   var scene=new THREE.Scene();
-  var camera=new THREE.PerspectiveCamera(50,w/h,1,1000);
-  camera.position.z=260;
+  scene.background=new THREE.Color(0x0A0A0B);
+  scene.fog=new THREE.Fog(0x0A0A0B,260,900);
 
-  var COUNT=42;
-  var bounds={x:170,y:210,z:110};
-  var positions=new Float32Array(COUNT*3);
-  var velocities=[];
-  for(var i=0;i<COUNT;i++){
-    positions[i*3]=(Math.random()*2-1)*bounds.x;
-    positions[i*3+1]=(Math.random()*2-1)*bounds.y;
-    positions[i*3+2]=(Math.random()*2-1)*bounds.z;
-    velocities.push({x:(Math.random()*2-1)*0.14,y:(Math.random()*2-1)*0.14,z:(Math.random()*2-1)*0.09});
-  }
-  var geo=new THREE.BufferGeometry();
-  geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
+  // the hero is a short, wide band, so the camera sits closer than a full-page
+  // scene would: the near gears need to stay large enough to read at ~480px
+  var camera=new THREE.PerspectiveCamera(50,w/h,1,1400);
+  camera.position.set(0,0,400);
+  camera.lookAt(0,0,0);
 
-  function dotTexture(){
-    var c=document.createElement("canvas");c.width=64;c.height=64;
-    var ctx=c.getContext("2d");
-    var g=ctx.createRadialGradient(32,32,0,32,32,32);
-    g.addColorStop(0,"rgba(255,255,255,1)");
-    g.addColorStop(0.4,"rgba(255,138,128,0.85)");
-    g.addColorStop(1,"rgba(227,30,36,0)");
-    ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
-    return new THREE.CanvasTexture(c);
-  }
-  var pts=new THREE.Points(geo,new THREE.PointsMaterial({size:9,map:dotTexture(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0.8}));
-  scene.add(pts);
+  scene.add(new THREE.AmbientLight(0x2A2620,0.9));
+  var key=new THREE.DirectionalLight(0xFFC98A,1.2);
+  key.position.set(-180,220,320);
+  scene.add(key);
+  var rim=new THREE.DirectionalLight(0xE31E24,0.8);
+  rim.position.set(240,-90,-220);
+  scene.add(rim);
 
-  var maxLines=COUNT*COUNT;
-  var lineGeo=new THREE.BufferGeometry();
-  var linePositions=new Float32Array(maxLines*3*2);
-  lineGeo.setAttribute("position",new THREE.BufferAttribute(linePositions,3));
-  var lineMat=new THREE.LineBasicMaterial({color:0xE31E24,transparent:true,opacity:0.16,blending:THREE.AdditiveBlending});
-  var lines=new THREE.LineSegments(lineGeo,lineMat);
-  scene.add(lines);
-  var LINK_DIST=92;
+  var brass=new THREE.MeshStandardMaterial({color:0xB9832F,roughness:0.42,metalness:0.88});
+  var brassDark=new THREE.MeshStandardMaterial({color:0x7A5520,roughness:0.55,metalness:0.85});
+  var steel=new THREE.MeshStandardMaterial({color:0x2C2C31,roughness:0.55,metalness:0.75});
+  var steelLight=new THREE.MeshStandardMaterial({color:0x4A4A52,roughness:0.4,metalness:0.85});
+  var copper=new THREE.MeshStandardMaterial({color:0x8C4A2A,roughness:0.5,metalness:0.8});
+  var METALS=[brass,brassDark,steel,steelLight,copper];
 
-  function updateLines(){
-    var idx=0;
-    var arr=lineGeo.attributes.position.array;
-    for(var i=0;i<COUNT;i++){
-      for(var j=i+1;j<COUNT;j++){
-        var dx=positions[i*3]-positions[j*3];
-        var dy=positions[i*3+1]-positions[j*3+1];
-        var dz=positions[i*3+2]-positions[j*3+2];
-        var d=Math.sqrt(dx*dx+dy*dy+dz*dz);
-        if(d<LINK_DIST&&idx<maxLines){
-          arr[idx*6]=positions[i*3];arr[idx*6+1]=positions[i*3+1];arr[idx*6+2]=positions[i*3+2];
-          arr[idx*6+3]=positions[j*3];arr[idx*6+4]=positions[j*3+1];arr[idx*6+5]=positions[j*3+2];
-          idx++;
-        }
+  // fixed seed: dense, but the same arrangement on every visit
+  var seed=20260820;
+  function rnd(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296;}
+  function pick(a){return a[Math.floor(rnd()*a.length)];}
+  function range(a,b){return a+rnd()*(b-a);}
+
+  // gear geometry is cached per size, so dozens on screen cost only a handful
+  // of distinct meshes
+  var gearCache={};
+  function gearGeo(rOuter,teeth,thick){
+    var k=rOuter+"_"+teeth+"_"+thick;
+    if(gearCache[k])return gearCache[k];
+    var rRoot=rOuter*0.84,holeR=rOuter*0.17;
+    var shape=new THREE.Shape();
+    var step=Math.PI*2/teeth,first=true;
+    for(var i=0;i<teeth;i++){
+      var a=i*step;
+      var pts=[[rRoot,a],[rOuter,a+step*0.13],[rOuter,a+step*0.37],[rRoot,a+step*0.50],[rRoot,a+step*0.78]];
+      for(var n=0;n<pts.length;n++){
+        var x=Math.cos(pts[n][1])*pts[n][0],y=Math.sin(pts[n][1])*pts[n][0];
+        if(first){shape.moveTo(x,y);first=false;}else{shape.lineTo(x,y);}
       }
     }
-    lineGeo.setDrawRange(0,idx*2);
-    lineGeo.attributes.position.needsUpdate=true;
+    shape.closePath();
+    var hole=new THREE.Path();
+    hole.absarc(0,0,holeR,0,Math.PI*2,true);
+    shape.holes.push(hole);
+    var g=new THREE.ExtrudeGeometry(shape,{depth:thick,bevelEnabled:true,bevelThickness:thick*0.16,bevelSize:rOuter*0.012,bevelSegments:1,curveSegments:3});
+    g.center();
+    gearCache[k]={geo:g,holeR:holeR};
+    return gearCache[k];
   }
 
-  function step(){
-    for(var i=0;i<COUNT;i++){
-      positions[i*3]+=velocities[i].x;
-      positions[i*3+1]+=velocities[i].y;
-      positions[i*3+2]+=velocities[i].z;
-      if(positions[i*3]>bounds.x||positions[i*3]<-bounds.x)velocities[i].x*=-1;
-      if(positions[i*3+1]>bounds.y||positions[i*3+1]<-bounds.y)velocities[i].y*=-1;
-      if(positions[i*3+2]>bounds.z||positions[i*3+2]<-bounds.z)velocities[i].z*=-1;
+  var gears=[];
+  function addGear(r,teeth,thick,x,y,z,mat,dir,phase){
+    var c=gearGeo(r,teeth,thick);
+    var mesh=new THREE.Mesh(c.geo,mat);
+    var hub=new THREE.Mesh(new THREE.CylinderGeometry(c.holeR*1.45,c.holeR*1.45,thick*2.1,14),brassDark);
+    hub.rotation.x=Math.PI/2;
+    mesh.add(hub);
+    var boss=new THREE.Mesh(new THREE.TorusGeometry(c.holeR*1.9,thick*0.16,6,18),mat);
+    boss.position.z=thick*0.62;mesh.add(boss);
+    var boss2=boss.clone();boss2.position.z=-thick*0.62;mesh.add(boss2);
+    mesh.position.set(x,y,z);
+    mesh.rotation.z=phase||0;
+    scene.add(mesh);
+    gears.push({mesh:mesh,speed:dir*(46/r)});
+    return mesh;
+  }
+  // a second gear placed tangent to the first, driven so the pair visibly meshes
+  function meshWith(x,y,z,r0,r1,teeth,thick,ang,mat,dir){
+    var d=r0+r1-r1*0.16;
+    return addGear(r1,teeth,thick,x+Math.cos(ang)*d,y+Math.sin(ang)*d,z+range(-3,3),mat,dir,rnd()*1.5);
+  }
+
+  function addPipe(len,rad,x,y,z,rotZ,rotY,mat){
+    var p=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,len,12),mat);
+    p.position.set(x,y,z);
+    p.rotation.z=rotZ;p.rotation.y=rotY||0;
+    scene.add(p);
+    for(var e=-1;e<=1;e+=2){
+      var f=new THREE.Mesh(new THREE.CylinderGeometry(rad*1.5,rad*1.5,rad*0.9,12),brassDark);
+      f.position.y=e*len*0.42;p.add(f);
     }
-    geo.attributes.position.needsUpdate=true;
-    updateLines();
+    return p;
   }
 
-  step();
+  var rams=[];
+  function addRam(x,y,z,scale,phase,rotZ,mat){
+    var grp=new THREE.Group();
+    grp.position.set(x,y,z);
+    grp.rotation.z=rotZ||0;
+    grp.scale.setScalar(scale);
+    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(9,9,44,14),mat||steel));
+    var capA=new THREE.Mesh(new THREE.CylinderGeometry(10.5,10.5,5,14),brassDark);
+    capA.position.y=22;grp.add(capA);
+    var capB=capA.clone();capB.position.y=-22;grp.add(capB);
+    var rod=new THREE.Mesh(new THREE.CylinderGeometry(4,4,46,10),steelLight);
+    rod.position.y=34;grp.add(rod);
+    var head=new THREE.Mesh(new THREE.BoxGeometry(20,7,14),brass);
+    head.position.y=57;rod.add(head);
+    scene.add(grp);
+    rams.push({rod:rod,phase:phase||0,base:34});
+    return grp;
+  }
+
+  var valves=[];
+  function addValve(r,x,y,z,mat,dir){
+    var g=new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.TorusGeometry(r,r*0.13,6,20),mat));
+    var stem=new THREE.Mesh(new THREE.CylinderGeometry(r*0.18,r*0.18,r*0.5,12),brassDark);
+    stem.rotation.x=Math.PI/2;g.add(stem);
+    for(var i=0;i<5;i++){
+      var sp=new THREE.Mesh(new THREE.BoxGeometry(r*1.7,r*0.1,r*0.1),mat);
+      sp.rotation.z=i/5*Math.PI;g.add(sp);
+    }
+    g.position.set(x,y,z);
+    scene.add(g);
+    valves.push({mesh:g,speed:dir*range(0.10,0.26)});
+    return g;
+  }
+
+  function addPlate(pw,ph,x,y,z,rotZ,mat){
+    var g=new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(pw,ph,5),mat));
+    var cols=Math.max(2,Math.round(pw/26)),rows=Math.max(2,Math.round(ph/26));
+    var rivet=new THREE.SphereGeometry(2.1,6,5);
+    for(var i=0;i<cols;i++)for(var j=0;j<rows;j++){
+      if(i>0&&i<cols-1&&j>0&&j<rows-1)continue;
+      var rv=new THREE.Mesh(rivet,brassDark);
+      rv.position.set(-pw/2+8+i*((pw-16)/(cols-1)),-ph/2+8+j*((ph-16)/(rows-1)),3);
+      g.add(rv);
+    }
+    g.position.set(x,y,z);g.rotation.z=rotZ||0;
+    scene.add(g);
+    return g;
+  }
+
+  var lamps=[];
+  function addLamp(r,x,y,z){
+    var m=new THREE.MeshStandardMaterial({color:0xE31E24,emissive:0xE31E24,emissiveIntensity:1.5,roughness:0.3});
+    var l=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);
+    l.position.set(x,y,z);scene.add(l);
+    var ring=new THREE.Mesh(new THREE.TorusGeometry(r*1.28,r*0.3,6,18),brassDark);
+    ring.position.copy(l.position);scene.add(ring);
+    lamps.push({mat:m,phase:rnd()*6.28});
+  }
+  var lampLight=new THREE.PointLight(0xE31E24,1.5,420);
+  lampLight.position.set(120,-90,60);
+  scene.add(lampLight);
+
+  // near: large, crisp gears anchoring the corners of the band
+  addGear(96,38,15,-250,90,10,brass,1,0);
+  meshWith(-250,90,10,96,44,18,13,-0.55,steel,-1);
+  addGear(82,32,14,240,-150,0,brassDark,-1,0.3);
+  meshWith(240,-150,0,82,38,16,12,2.2,copper,1);
+  addGear(70,28,13,-60,-230,-20,steel,1,0.8);
+
+  // mid: the working body of the machine
+  var midSpots=[[-140,-40],[10,60],[130,140],[-300,-120],[60,-120],[280,60],[-190,190],[190,-60],[-30,180],[330,-190],[-350,40],[110,-210]];
+  for(var i=0;i<midSpots.length;i++){
+    var r=range(26,58),teeth=Math.round(r*0.42);
+    var x=midSpots[i][0],y=midSpots[i][1],z=range(-260,-110);
+    addGear(r,teeth,range(8,12),x,y,z,pick(METALS),rnd()<0.5?1:-1,rnd()*2);
+    if(rnd()<0.55)meshWith(x,y,z,r,range(16,26),12,rnd()*6.28,pick(METALS),-1);
+  }
+
+  // far: small silhouettes dissolving into the fog
+  for(var f=0;f<14;f++){
+    var rf=range(14,40);
+    addGear(rf,Math.round(rf*0.44),range(6,9),range(-520,520),range(-330,330),range(-780,-320),pick(METALS),rnd()<0.5?1:-1,rnd()*2);
+  }
+
+  addPipe(1000,9,0,-260,-140,Math.PI/2,0,steel);
+  addPipe(820,7,-20,250,-330,Math.PI/2,0.25,copper);
+  addPipe(700,6,300,20,-200,0.22,0,steel);
+  addPipe(640,6,-330,-60,-250,0.35,0,brassDark);
+  addPipe(900,7,10,150,-560,Math.PI/2,0.1,steel);
+  addPipe(520,5.5,220,190,-300,1.2,0,brassDark);
+
+  addRam(190,-130,40,1.45,0,0.12,steel);
+  addRam(-330,120,-90,1.15,1.9,-0.25,steel);
+  addRam(40,240,-160,1.0,3.4,0.5,brassDark);
+  addRam(-90,-260,-60,1.25,2.6,-0.08,steel);
+  addRam(340,110,-210,0.95,0.9,0.32,copper);
+  addRam(-420,-140,-260,0.85,4.2,-0.4,steel);
+
+  addValve(34,300,-40,-60,brass,1);
+  addValve(26,-380,180,-160,copper,-1);
+  addValve(40,80,-300,-120,brassDark,1);
+  addValve(30,420,220,-330,copper,1);
+
+  addPlate(220,150,-380,-250,-520,0.1,steel);
+  addPlate(180,260,380,-60,-560,-0.15,steel);
+  addPlate(300,120,-60,330,-600,0.05,steel);
+
+  addLamp(8,120,-90,60);
+  addLamp(6,-260,-30,-140);
+  addLamp(5,60,200,-260);
+  addLamp(6.5,330,-230,-180);
+
+  var puffTex=(function(){
+    var c=document.createElement("canvas");c.width=c.height=64;
+    var ctx=c.getContext("2d");
+    var g=ctx.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,"rgba(255,235,215,0.85)");
+    g.addColorStop(0.45,"rgba(255,220,190,0.22)");
+    g.addColorStop(1,"rgba(255,210,180,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
+  })();
+  var PUFFS=170;
+  var sgeo=new THREE.BufferGeometry();
+  var sarr=new Float32Array(PUFFS*3),srise=new Float32Array(PUFFS);
+  function seedPuff(j,fresh){
+    sarr[j*3]=range(-560,560);
+    sarr[j*3+1]=fresh?-380:range(-380,380);
+    sarr[j*3+2]=range(-620,80);
+    srise[j]=range(0.3,0.95);
+  }
+  for(var j=0;j<PUFFS;j++)seedPuff(j,false);
+  sgeo.setAttribute("position",new THREE.BufferAttribute(sarr,3));
+  scene.add(new THREE.Points(sgeo,new THREE.PointsMaterial({map:puffTex,color:0xFFE0C0,size:46,transparent:true,opacity:0.13,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true})));
+
+  var t0=null;
+  function step(t){
+    if(t0===null)t0=t;
+    var e=((t||0)-t0)/1000;
+    for(var i=0;i<gears.length;i++)gears[i].mesh.rotation.z+=gears[i].speed*0.0032;
+    for(var v=0;v<valves.length;v++)valves[v].mesh.rotation.z+=valves[v].speed*0.01;
+    for(var k=0;k<rams.length;k++)rams[k].rod.position.y=rams[k].base+Math.sin(e*0.9+rams[k].phase)*11;
+    for(var l=0;l<lamps.length;l++)lamps[l].mat.emissiveIntensity=1.2+Math.sin(e*2.1+lamps[l].phase)*0.5;
+    lampLight.intensity=1.2+Math.sin(e*2.1)*0.45;
+    var pa=sgeo.attributes.position.array;
+    for(var j2=0;j2<PUFFS;j2++){
+      pa[j2*3+1]+=srise[j2];
+      if(pa[j2*3+1]>390)seedPuff(j2,true);
+    }
+    sgeo.attributes.position.needsUpdate=true;
+    camera.position.x=Math.sin(e*0.13)*18;
+    camera.position.y=Math.sin(e*0.09)*10;
+    camera.lookAt(0,0,0);
+  }
+
+  step(0);
   renderer.render(scene,camera);
 
   if(!reduceMotion){
     (function loop(t){
       if(!document.hidden){
-        step();
-        camera.position.x=Math.sin((t||0)*0.00012)*22;
-        camera.lookAt(0,0,0);
+        step(t);
         renderer.render(scene,camera);
       }
       requestAnimationFrame(loop);
