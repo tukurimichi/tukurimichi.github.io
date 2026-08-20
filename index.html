@@ -73,6 +73,9 @@ a{color:inherit;}
 .deskLabel{position:absolute;transform:translate(-50%,4px);pointer-events:none;font-size:.56em;font-weight:700;color:#fff;background:rgba(10,10,11,.5);padding:2px 7px;border-radius:9px;white-space:nowrap;opacity:.5;transition:opacity .15s ease,transform .15s ease,background .15s ease;}
 .deskLabel .en{display:block;font-size:.7em;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.65);margin-top:1px;}
 .deskLabel.hover{opacity:1;background:rgba(227,30,36,.92);transform:translate(-50%,10px) scale(1.06);}
+.deskPromo{position:absolute;transform:translate(0,-100%);pointer-events:none;font-size:.56em;font-weight:800;letter-spacing:.02em;color:#3A2A22;background:#F7EEE1;border:1px solid rgba(58,42,34,.28);border-radius:9px;padding:5px 10px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:4;}
+.deskPromo:after{content:"";position:absolute;left:9px;bottom:-7px;border:6px solid transparent;border-top-color:#F7EEE1;border-bottom:0;}
+.deskPromo b{color:#E31E24;}
 .mascotBubble{position:absolute;transform:translate(-50%,-100%) scale(.92);pointer-events:none;font-size:.56em;font-weight:700;color:#3A2A22;background:#F7EEE1;padding:5px 11px;border-radius:12px;white-space:nowrap;opacity:0;transition:opacity .4s ease,transform .4s ease;box-shadow:0 3px 12px rgba(0,0,0,.3);}
 .mascotBubble:after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-5px;border:5px solid transparent;border-top-color:#F7EEE1;border-bottom:0;}
 .mascotBubble.show{opacity:1;transform:translate(-50%,-118%) scale(1);}
@@ -1000,6 +1003,7 @@ function initDeskScene(){
   window.__deskRelabel=function(){
     deskLabelRefs.forEach(function(r){r.el.innerHTML=deskLabelHtml(r.cfg);});
     if(bubbleEl)bubbleEl.textContent=bubbleText();
+    if(promoEl)promoEl.innerHTML=promoText();
   };
   var wrap=document.getElementById("deskWrap");
   var canvas=document.getElementById("deskCanvas");
@@ -1058,6 +1062,7 @@ function initDeskScene(){
   // hand-picked "scattered" positions/rotations (fixed, not Math.random, so it's
   // stable across reloads) instead of a grid: each item nudged off-axis so it
   // reads as naturally placed rather than lined up
+  var promoItem=null;
   var OBJS=[
     {key:"story",ja:"物語",en:"STORY",href:"story.html",build:buildDeskBook,pos:[-78,0,-55],rot:0.35,shadowR:29,labelFront:14},
     {key:"diary",ja:"日記",en:"DIARY",href:"diary.html",build:buildDeskDiaryBook,pos:[-8,0,-60],rot:-0.22,shadowR:27,labelFront:14,padExtra:4},
@@ -1105,6 +1110,7 @@ function initDeskScene(){
     deskGroup.add(glow);
 
     items.push({cfg:cfg,group:group,label:label,glow:glow,hover:0,hoverTarget:0,bounceT:0});
+    if(cfg.key==="tools")promoItem=items[items.length-1];
   });
 
   var mascot=buildMascotBody(0.8);
@@ -1118,6 +1124,11 @@ function initDeskScene(){
 
   // たまに「僕をタッチしてみて」と言わせて、押せることに気づいてもらう。
   // 一度でもタップされたら、その人にはもう出さない。
+  var promoEl=document.createElement("div");
+  promoEl.className="deskPromo";
+  labelsRoot.appendChild(promoEl);
+  function promoText(){return window.currentLang==="en"?"New: <b>PDF merger</b>!":"<b>PDF結合ツール</b>追加！";}
+  promoEl.innerHTML=promoText();
   var bubbleEl=document.createElement("div");
   bubbleEl.className="mascotBubble";
   labelsRoot.appendChild(bubbleEl);
@@ -1421,6 +1432,15 @@ function initDeskScene(){
       item.label.style.top=y+"px";
       item.label.style.display=(v3.z<1)?"block":"none";
     });
+    if(promoEl&&promoItem){
+      promoItem.group.getWorldPosition(v3);
+      v3.y+=48;
+      v3.project(camera);
+      // とげが道具箱の真上に来るよう、本体は右へ伸ばす
+      promoEl.style.left=(((v3.x*0.5+0.5)*W)-15)+"px";
+      promoEl.style.top=(((-v3.y*0.5+0.5)*H)-6)+"px";
+      promoEl.style.display=(v3.z<1)?"block":"none";
+    }
     if(bubbleEl){
       mascot.group.getWorldPosition(v3);
       v3.y+=30;
@@ -1465,6 +1485,10 @@ function initDeskScene(){
         if(item.bounceT>0){
           item.bounceT=Math.max(item.bounceT-0.045,0);
           floatY+=Math.sin(item.bounceT*Math.PI)*14;
+        }
+        // 新着を目立たせるため、道具箱だけ跳ね続ける
+        if(item.cfg.key==="tools"&&!reduceMotion){
+          floatY+=Math.abs(Math.sin(Date.now()*0.0042))*9;
         }
         item.group.position.y=item.group.userData.baseY+floatY;
         item.glow.position.y=item.group.position.y;
