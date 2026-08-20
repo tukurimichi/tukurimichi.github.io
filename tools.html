@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">道具箱 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="AIに作らせた実用ツールを置いています。全部ブラウザの中だけで動き、ファイルはどこにも送信されません。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --card3:#202024;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#ACA8A2;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.entry{padding:26px 22px;}
+.entry p{line-height:1.9;font-size:.94em;color:#D9D6D0;margin:0 0 1.1em;}
+.toolCard{display:block;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--card2);text-decoration:none;margin-bottom:14px;}
+.toolCard:active{border-color:var(--red);}
+.toolHead{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.toolIcon{flex:0 0 38px;width:38px;height:38px;border-radius:9px;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:1.15em;}
+.toolCard h2{font-size:1.02em;font-weight:800;color:#fff;margin:0;}
+.toolCard p{font-size:.85em;color:var(--muted);line-height:1.7;margin:0 0 8px;}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.tag{font-size:.68em;font-weight:700;letter-spacing:.04em;color:#D9D6D0;background:var(--card3);border:1px solid var(--line);border-radius:3px;padding:3px 8px;}
+.arrow{font-size:.82em;color:#FF8A80;font-weight:600;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">道具箱</h1>
+<p id="bannerP">AIに作らせた、実際に使っている道具。</p>
+</div>
+
+<div class="entry">
+<p id="lead">仕事で「これ手作業でやるの面倒だな」と思ったものを、AIに作らせて置いています。全部ブラウザの中だけで動くので、<b>ファイルはどこにも送信されません</b>。会員登録も要りません。</p>
+
+<a class="toolCard" href="apps/pdf/">
+  <div class="toolHead">
+    <div class="toolIcon">📄</div>
+    <h2 id="t1name">PDF結合</h2>
+  </div>
+  <p id="t1desc">複数のPDFを1つにまとめます。並び順をドラッグで入れ替えて、使うページを絞って、向きも直せます。1ページ目のサムネイルが出るので、ファイル名が「scan_001.pdf」でも中身で判断できます。</p>
+  <div class="tags">
+    <span class="tag" id="t1g1">送信なし</span>
+    <span class="tag" id="t1g2">登録不要</span>
+    <span class="tag" id="t1g3">無料</span>
+  </div>
+  <span class="arrow" id="t1go">使ってみる →</span>
+</a>
+
+<p id="outro" style="margin-top:1.6em;">増えたらここに足していきます。</p>
+</div>
+
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
+</div>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"道具箱 | tukurimichi.com",
+desc:"AIに作らせた実用ツールを置いています。全部ブラウザの中だけで動き、ファイルはどこにも送信されません。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"道具箱",
+bannerP:"AIに作らせた、実際に使っている道具。",
+lead:"仕事で「これ手作業でやるの面倒だな」と思ったものを、AIに作らせて置いています。全部ブラウザの中だけで動くので、<b>ファイルはどこにも送信されません</b>。会員登録も要りません。",
+t1name:"PDF結合",
+t1desc:"複数のPDFを1つにまとめます。並び順をドラッグで入れ替えて、使うページを絞って、向きも直せます。1ページ目のサムネイルが出るので、ファイル名が「scan_001.pdf」でも中身で判断できます。",
+t1g1:"送信なし",t1g2:"登録不要",t1g3:"無料",
+t1go:"使ってみる →",
+outro:"増えたらここに足していきます。",
+footBack:"← トップに戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Toolbox | tukurimichi.com",
+desc:"Small, practical tools built by an AI. Everything runs inside your browser — your files are never uploaded.",
+t:{
+backTop:"← Back to top",
+bannerH1:"Toolbox",
+bannerP:"Tools an AI built, that I actually use.",
+lead:"Whenever something at work looks tedious to do by hand, I have the AI build a tool for it and put it here. Everything runs inside your browser, so <b>your files are never sent anywhere</b>. No sign-up either.",
+t1name:"Merge PDFs",
+t1desc:"Joins several PDFs into one. Drag the rows to reorder, pick which pages to keep, and fix sideways scans. A thumbnail of the first page is shown, so you can tell files apart even when they are all called \"scan_001.pdf\".",
+t1g1:"No upload",t1g2:"No sign-up",t1g3:"Free",
+t1go:"Open the tool →",
+outro:"More will appear here as I build them.",
+footBack:"← Back to top"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
+</body>
+</html>
