@@ -48,6 +48,7 @@
     background:rgba(255,255,255,.86); border-color:#e0d8cc;
     box-shadow:0 2px 10px rgba(0,0,0,.12); }
   #menuBtn.on { background:#2c7a91; border-color:#2c7a91; color:#fff; }
+  #langBtn { font-weight:bold; color:#7a3600; }
   #locMenu { display:none; position:fixed; left:var(--pad); z-index:6;
     flex-direction:column; align-items:flex-start; gap:7px; }
   #locMenu.show { display:flex; }
@@ -82,8 +83,9 @@
       justify-content:space-between; padding:9px 0 7px; margin:0 0 2px;
       background:rgba(255,255,255,.97); }
     #sheetHead span { font-size:12px; color:#7a3600; font-weight:bold; }
+    #sheetHead .right { display:flex; gap:6px; align-items:center; }
     #sheetHead button { padding:5px 12px; font-size:12px; }
-    body.collapsed #ctrl { max-height:44px; overflow:hidden; }
+    body.collapsed #ctrl { max-height:58px; overflow:hidden; }
     .row { gap:7px; }
     #ctrl button { padding:9px 13px; font-size:13px; }
     #clear { padding:9px; }
@@ -99,28 +101,30 @@
 
 <div id="hud" class="panel">
   <h1 id="title">チビロボ</h1>
-  <p>ドラッグで回転 / ホイールで拡大縮小</p>
+  <p data-ja="ドラッグで回転 / ホイールで拡大縮小"
+     data-en="Drag to rotate / scroll to zoom"></p>
 </div>
 <div class="panel row" id="views">
-  <button onclick="setView('front')">正面</button>
-  <button onclick="setView('iso')">斜め</button>
-  <button onclick="setView('side')">横</button>
-  <button onclick="setView('back')">背面</button>
-  <button onclick="spin=!spin">回転</button>
+  <button onclick="setView('front')" data-ja="正面" data-en="Front"></button>
+  <button onclick="setView('iso')" data-ja="斜め" data-en="Angle"></button>
+  <button onclick="setView('side')" data-ja="横" data-en="Side"></button>
+  <button onclick="setView('back')" data-ja="背面" data-en="Back"></button>
+  <button onclick="spin=!spin" data-ja="回転" data-en="Spin"></button>
+  <button id="langBtn" onclick="toggleLang()"></button>
 </div>
 
 <div id="ctrl" class="panel">
   <div id="sheetHead">
-    <span>ロケーション・着せ替え</span>
-    <button id="toggleSheet" onclick="toggleSheet()">閉じる</button>
+    <span data-ja="ロケーション・着せ替え" data-en="Location &amp; Outfit"></span>
+    <span class="right"><button id="toggleSheet" onclick="toggleSheet()">閉じる</button></span>
   </div>
-  <h2 class="locH">ロケーション</h2>
+  <h2 class="locH" data-ja="ロケーション" data-en="Location"></h2>
   <div id="locRow" class="row"></div>
-  <h2 style="margin-top:13px">背景</h2>
+  <h2 style="margin-top:13px" data-ja="背景" data-en="Background"></h2>
   <div id="bgRow" class="row"></div>
-  <h2 style="margin-top:13px">着せ替え</h2>
+  <h2 style="margin-top:13px" data-ja="着せ替え" data-en="Outfit"></h2>
   <div id="wearGroups"></div>
-  <button id="clear" onclick="clearParts()">全部はずす</button>
+  <button id="clear" onclick="clearParts()" data-ja="全部はずす" data-en="Remove all"></button>
 </div>
 
 <div id="chars" class="panel"></div>
@@ -158,17 +162,72 @@ var floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
   new THREE.ShadowMaterial({ opacity: 0.16 }));
 floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
 
+// ---------------------------------------------------------------- 言語
+// サイト本体（tukurimichi.com のトップ）と同じ localStorage キー "lang" を使う。
+// 要素に data-ja / data-en を持たせ、applyLang() が textContent を差し替える。
+var lang = localStorage.getItem('lang') ||
+  ((navigator.language && navigator.language.indexOf('en') === 0) ? 'en' : 'ja');
+
+var UI = {
+  ja: { title:'チビロボ', place:'場所', open:'開く', close:'閉じる', toggleTo:'English',
+        errBody:'本体の読み込み失敗: ', errPart:'パーツの読み込み失敗: ',
+        errLoc:'ロケーション読み込み失敗: ' },
+  en: { title:'Chibi Robo', place:'Place', open:'Open', close:'Close', toggleTo:'日本語',
+        errBody:'Failed to load model: ', errPart:'Failed to load part: ',
+        errLoc:'Failed to load location: ' }
+};
+function T() { return UI[lang]; }
+function lab(v) { return Array.isArray(v) ? (lang === 'en' ? v[1] : v[0]) : v; }
+
+function applyLang() {
+  placeLangBtn();
+  document.documentElement.lang = lang;
+  each('[data-ja]', function (e) {
+    e.textContent = (lang === 'en' ? e.getAttribute('data-en') : e.getAttribute('data-ja'));
+  });
+  document.getElementById('langBtn').textContent = T().toggleTo;
+  document.getElementById('toggleSheet').textContent =
+    document.body.classList.contains('collapsed') ? T().open : T().close;
+  if (current !== null) {
+    document.getElementById('title').textContent = T().title + ' ' + lab(CHARS[current].label);
+  } else {
+    document.getElementById('title').textContent = T().title;
+  }
+  var L = LOCS[curLoc];
+  document.getElementById('menuBtn').textContent =
+    (curLoc === 0) ? T().place : lab(L.label);
+}
+
+// 言語ボタンの置き場所：広い画面は視点ボタンの行、狭い画面はシートのヘッダー
+// （視点ボタンの行に入れたままだと、左上の「場所」ボタンと重なる）
+function placeLangBtn() {
+  var b = document.getElementById('langBtn');
+  var target = (innerWidth < 760)
+    ? document.querySelector('#sheetHead .right')
+    : document.getElementById('views');
+  if (b.parentNode !== target) {
+    if (innerWidth < 760) target.insertBefore(b, target.firstChild);
+    else target.appendChild(b);
+  }
+}
+
+function toggleLang() {
+  lang = (lang === 'en') ? 'ja' : 'en';
+  localStorage.setItem('lang', lang);
+  applyLang();
+}
+
 function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
 function err(t) { document.getElementById('err').textContent = t || ''; }
 
 // ---------------------------------------------------------------- 背景
 var BGS = [
-  { label:'スタジオ', css:'radial-gradient(circle at 50% 35%, #f2efe9 0%, #d9d4cb 100%)', shadow:0.16 },
-  { label:'白',       css:'#ffffff', shadow:0.10 },
-  { label:'ダーク',   css:'radial-gradient(circle at 50% 35%, #322c27 0%, #17130f 100%)', shadow:0.34 },
-  { label:'オレンジ', css:'radial-gradient(circle at 50% 42%, #ffdcb6 0%, #f7973a 100%)', shadow:0.20 },
-  { label:'空',       css:'linear-gradient(#bfe4f2 0%, #eaf6fb 58%, #f7efe2 100%)', shadow:0.16 },
-  { label:'市松',     css:'repeating-conic-gradient(#e6e2da 0% 25%, #f8f6f2 0% 50%) 0 0 / 30px 30px', shadow:0.13 }
+  { label:['スタジオ','Studio'], css:'radial-gradient(circle at 50% 35%, #f2efe9 0%, #d9d4cb 100%)', shadow:0.16 },
+  { label:['白','White'],       css:'#ffffff', shadow:0.10 },
+  { label:['ダーク','Dark'],   css:'radial-gradient(circle at 50% 35%, #322c27 0%, #17130f 100%)', shadow:0.34 },
+  { label:['オレンジ','Orange'], css:'radial-gradient(circle at 50% 42%, #ffdcb6 0%, #f7973a 100%)', shadow:0.20 },
+  { label:['空','Sky'],       css:'linear-gradient(#bfe4f2 0%, #eaf6fb 58%, #f7efe2 100%)', shadow:0.16 },
+  { label:['市松','Checker'],     css:'repeating-conic-gradient(#e6e2da 0% 25%, #f8f6f2 0% 50%) 0 0 / 30px 30px', shadow:0.13 }
 ];
 function setBg(i) {
   document.body.style.background = BGS[i].css;
@@ -178,44 +237,44 @@ function setBg(i) {
 
 // ---------------------------------------------------------------- ロケーション
 var LOCS = [
-  { id:'none', label:'なし', glb:null, bg:null, fog:null, flow:null,
+  { id:'none', label:['なし','None'], glb:null, bg:null, fog:null, flow:null,
     hemi:[0xffffff,0xbdb7ad,0.75], keyLight:[0xffffff,1.5], fill:0.55, rim:0.85, shadowPlane:true },
-  { id:'sea', label:'海の中', glb:'sea',
+  { id:'sea', label:['海の中','Underwater'], glb:'sea',
     bg:'linear-gradient(#2f86ad 0%, #12546f 58%, #08324a 100%)',
     fog:{color:0x14607f, near:3.0, far:20.0},
     flow:{mode:'rise', count:260, color:0xdff4ff, size:0.09, opacity:0.55, speed:0.55, top:6.4, spread:15},
     hemi:[0x9fd8f0,0x0d3346,1.05], keyLight:[0xcdefff,1.7], fill:0.30, rim:0.55, shadowPlane:false },
-  { id:'river', label:'川の中', glb:'river',
+  { id:'river', label:['川の中','In the River'], glb:'river',
     bg:'linear-gradient(#8fd2e0 0%, #418593 52%, #2a5c68 100%)',
     fog:{color:0x3d8391, near:2.6, far:16.0},
     flow:{mode:'flow', count:340, color:0xf0fbff, size:0.075, opacity:0.5, speed:3.6, top:3.6, spread:15},
     hemi:[0xbfe9f2,0x1d4a52,1.10], keyLight:[0xe4fbff,1.9], fill:0.34, rim:0.60, shadowPlane:false },
-  { id:'forest', label:'森の中', glb:'forest',
+  { id:'forest', label:['森の中','In the Forest'], glb:'forest',
     bg:'linear-gradient(#8fb46a 0%, #4c6b3c 55%, #2c3f24 100%)',
     fog:{color:0x405a34, near:5.0, far:26.0},
     flow:{mode:'rise', count:150, color:0xfff3cf, size:0.055, opacity:0.42, speed:0.18, top:5.5, spread:16},
     hemi:[0xcfe6a8,0x27331d,0.95], keyLight:[0xfff2d2,1.9], fill:0.42, rim:0.55, shadowPlane:false },
-  { id:'city_night', label:'夜の街', glb:'city_night',
+  { id:'city_night', label:['夜の街','Night City'], glb:'city_night',
     bg:'linear-gradient(#1c2742 0%, #131b2e 55%, #0b1020 100%)',
     fog:{color:0x141d33, near:8.0, far:42.0},
     flow:{mode:'rise', count:120, color:0xffe6b0, size:0.05, opacity:0.35, speed:0.12, top:9.0, spread:22},
     hemi:[0x8fa6d8,0x0d1020,0.55], keyLight:[0x9fb6ff,0.55], fill:0.20, rim:0.35, shadowPlane:false },
-  { id:'space', label:'宇宙', glb:'space',
+  { id:'space', label:['宇宙','Space'], glb:'space',
     bg:'radial-gradient(circle at 62% 28%, #1b2340 0%, #080b16 55%, #03040a 100%)',
     fog:null,
     flow:{mode:'rise', count:420, color:0xffffff, size:0.055, opacity:0.85, speed:0.04, top:16.0, spread:34},
     hemi:[0x5f6f9a,0x05060c,0.35], keyLight:[0xffffff,2.4], fill:0.10, rim:0.25, shadowPlane:false },
-  { id:'construction', label:'工事現場', glb:'construction',
+  { id:'construction', label:['工事現場','Construction'], glb:'construction',
     bg:'linear-gradient(#bcd2e2 0%, #93a9bb 58%, #7b8b98 100%)',
     fog:{color:0xa8bccb, near:9.0, far:38.0},
     flow:{mode:'rise', count:130, color:0xe8d9b8, size:0.05, opacity:0.30, speed:0.14, top:4.0, spread:18},
     hemi:[0xdcebf7,0x6b5f4a,0.95], keyLight:[0xfff0d6,2.0], fill:0.55, rim:0.60, shadowPlane:false },
-  { id:'snow', label:'雪原', glb:'snow',
+  { id:'snow', label:['雪原','Snowfield'], glb:'snow',
     bg:'linear-gradient(#cfe2f2 0%, #e6eef6 52%, #f4f8fb 100%)',
     fog:{color:0xdae8f4, near:5.0, far:28.0},
     flow:{mode:'fall', count:400, color:0xffffff, size:0.075, opacity:0.85, speed:0.75, top:9.0, spread:18},
     hemi:[0xeaf4ff,0xb8c8d8,1.15], keyLight:[0xffffff,1.7], fill:0.60, rim:0.55, shadowPlane:false },
-  { id:'lab', label:'ラボ', glb:'lab',
+  { id:'lab', label:['ラボ','Lab'], glb:'lab',
     bg:'linear-gradient(#eef1f5 0%, #dfe4ea 60%, #ccd3db 100%)',
     fog:{color:0xe4e8ee, near:10.0, far:34.0}, flow:null,
     hemi:[0xffffff,0xc8cdd4,1.05], keyLight:[0xfffdf8,1.5], fill:0.55, rim:0.55, shadowPlane:false }
@@ -281,7 +340,7 @@ function setLoc(i) {
     b.className = (+b.getAttribute('data-loc') === i) ? 'on' : '';
   });
   var mb = document.getElementById('menuBtn');
-  mb.textContent = L.label === 'なし' ? '場所' : L.label;
+  mb.textContent = (i === 0) ? T().place : lab(L.label);
   if (menuOpen) mb.classList.add('on');
   if (locObj) { scene.remove(locObj); locObj = null; }
   if (flow) { scene.remove(flow); flow = null; }
@@ -302,7 +361,7 @@ function setLoc(i) {
     locObj = g.scene;
     locObj.traverse(function (o) { if (o.isMesh) { o.receiveShadow = true; o.castShadow = false; } });
     scene.add(locObj); err();
-  }, undefined, function (e) { err('ロケーション読み込み失敗: ' + L.glb + ' / ' + e); });
+  }, undefined, function (e) { err(T().errLoc + L.glb + ' / ' + e); });
 }
 
 // ---------------------------------------------------------------- 視点
@@ -315,18 +374,18 @@ function setView(k) {
 
 // ---------------------------------------------------------------- キャラ・着せ替え
 var CHARS = [
-  { file:'tsukuru',  label:'本人',     scale:1 },
-  { file:'worker',   label:'作業着',   scale:1 },
-  { file:'sleepy',   label:'眠そう',   scale:1 },
-  { file:'traveler', label:'旅',       scale:1 },
-  { file:'chibi',    label:'ちびちび', scale:0.72 }
+  { file:'tsukuru',  label:['本人','Tsukuru'],     scale:1 },
+  { file:'worker',   label:['作業着','Worker'],   scale:1 },
+  { file:'sleepy',   label:['眠そう','Sleepy'],   scale:1 },
+  { file:'traveler', label:['旅','Traveler'],       scale:1 },
+  { file:'chibi',    label:['ちびちび','Chibi'], scale:0.72 }
 ];
 var GROUPS = [
-  { title:'頭', items:[['helmet','ヘルメット'],['cap','キャップ'],['beanie','ニット帽'],['crown','王冠']] },
-  { title:'顔', items:[['goggles','ゴーグル'],['glasses','メガネ']] },
-  { title:'首・胴', items:[['scarf','マフラー'],['bowtie','蝶ネクタイ'],['apron','エプロン'],['tool_belt','工具ベルト']] },
-  { title:'背中', items:[['cape','マント'],['backpack','リュック'],['map','地図'],['jetpack','ジェットパック']] },
-  { title:'持ち物', items:[['cup','カップ'],['extinguisher','消火器'],['clipboard','バインダー']] }
+  { title:['頭','Head'], items:[['helmet','ヘルメット','Helmet'],['cap','キャップ','Cap'],['beanie','ニット帽','Beanie'],['crown','王冠','Crown']] },
+  { title:['顔','Face'], items:[['goggles','ゴーグル','Goggles'],['glasses','メガネ','Glasses']] },
+  { title:['首・胴','Neck & Body'], items:[['scarf','マフラー','Scarf'],['bowtie','蝶ネクタイ','Bow Tie'],['apron','エプロン','Apron'],['tool_belt','工具ベルト','Tool Belt']] },
+  { title:['背中','Back'], items:[['cape','マント','Cape'],['backpack','リュック','Backpack'],['map','地図','Map'],['jetpack','ジェットパック','Jetpack']] },
+  { title:['持ち物','Held'], items:[['cup','カップ','Mug'],['extinguisher','消火器','Extinguisher'],['clipboard','バインダー','Clipboard']] }
 ];
 
 var loader = new THREE.GLTFLoader();
@@ -342,14 +401,14 @@ function loadChar(idx) {
   var c = CHARS[idx];
   if (current === idx) return;
   current = idx; currentScale = c.scale;
-  document.getElementById('title').textContent = 'チビロボ ' + c.label;
+  document.getElementById('title').textContent = T().title + ' ' + lab(c.label);
   each('#chars button', function (b, i) { b.className = (i === idx) ? 'on' : ''; });
   loader.load(c.file + '.glb', function (g) {
     if (body) scene.remove(body);
     body = prep(g.scene); body.scale.setScalar(c.scale); scene.add(body);
     Object.keys(worn).forEach(function (n) { worn[n].scale.setScalar(c.scale); });
     err();
-  }, undefined, function (e) { err('本体の読み込み失敗: ' + c.file + ' / ' + e); });
+  }, undefined, function (e) { err(T().errBody + c.file + ' / ' + e); });
 }
 
 function togglePart(name) {
@@ -362,7 +421,7 @@ function togglePart(name) {
     if (!worn[name]) return;
     worn[name].add(prep(g.scene));
     err();
-  }, undefined, function (e) { err('パーツの読み込み失敗: ' + name + ' / ' + e); });
+  }, undefined, function (e) { err(T().errPart + name + ' / ' + e); });
 }
 
 function clearParts() {
@@ -378,7 +437,11 @@ function syncPartButtons() {
 // ---------------------------------------------------------------- UI 生成
 function mkBtn(parent, label, onclick, attrs) {
   var b = document.createElement('button');
-  b.textContent = label; b.onclick = onclick;
+  if (Array.isArray(label)) {
+    b.setAttribute('data-ja', label[0]);
+    b.setAttribute('data-en', label[1]);
+  }
+  b.textContent = lab(label); b.onclick = onclick;
   if (attrs) Object.keys(attrs).forEach(function (k) { b.setAttribute(k, attrs[k]); });
   parent.appendChild(b); return b;
 }
@@ -394,11 +457,13 @@ BGS.forEach(function (bg, i) {
 });
 var wg = document.getElementById('wearGroups');
 GROUPS.forEach(function (grp) {
-  var h = document.createElement('div'); h.className = 'grp'; h.textContent = grp.title;
+  var h = document.createElement('div'); h.className = 'grp';
+  h.setAttribute('data-ja', grp.title[0]); h.setAttribute('data-en', grp.title[1]);
+  h.textContent = lab(grp.title);
   wg.appendChild(h);
   var row = document.createElement('div'); row.className = 'row';
   grp.items.forEach(function (it) {
-    mkBtn(row, it[1], function () { togglePart(it[0]); }, { 'data-part': it[0] });
+    mkBtn(row, [it[1], it[2]], function () { togglePart(it[0]); }, { 'data-part': it[0] });
   });
   wg.appendChild(row);
 });
@@ -446,12 +511,13 @@ function toggleMenu() {
 function toggleSheet() {
   document.body.classList.toggle('collapsed');
   document.getElementById('toggleSheet').textContent =
-    document.body.classList.contains('collapsed') ? '開く' : '閉じる';
+    document.body.classList.contains('collapsed') ? T().open : T().close;
 }
 
 setBg(0); setLoc(0); setView('iso'); loadChar(0);
-if (innerWidth < 760) document.body.classList.add('collapsed'),
-  document.getElementById('toggleSheet').textContent = '開く';
+if (innerWidth < 760) document.body.classList.add('collapsed');
+placeLangBtn();
+applyLang();
 
 // ---------------------------------------------------------------- ループ
 var clock = new THREE.Clock();
@@ -472,7 +538,13 @@ addEventListener('resize', function () {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   applyMenuFraming();
+  placeLangBtn();
 });
+
+// resize が取りこぼされる環境があるので、ブレークポイントの跨ぎ自体も監視する
+var mq = matchMedia('(max-width: 759px)');
+(mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(
+  function () { placeLangBtn(); applyMenuFraming(); });
 </script>
 </body>
 </html>
