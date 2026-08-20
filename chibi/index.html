@@ -42,6 +42,21 @@
   #wearGroups button.on { background:#FA7200; border-color:#FA7200; color:#fff; font-weight:bold; }
   #clear { margin-top:11px; width:100%; padding:7px; }
 
+  /* 場所メニュー（スマホのみ）。半透明で左に出す */
+  #menuBtn { display:none; position:fixed; top:var(--pad); left:var(--pad); z-index:7;
+    padding:10px 14px; font-size:13px; font-weight:bold; color:#7a3600;
+    background:rgba(255,255,255,.86); border-color:#e0d8cc;
+    box-shadow:0 2px 10px rgba(0,0,0,.12); }
+  #menuBtn.on { background:#2c7a91; border-color:#2c7a91; color:#fff; }
+  #locMenu { display:none; position:fixed; left:var(--pad); z-index:6;
+    flex-direction:column; align-items:flex-start; gap:7px; }
+  #locMenu.show { display:flex; }
+  #locMenu button { min-width:132px; text-align:left; padding:11px 14px; font-size:13px;
+    background:rgba(255,255,255,.64); border-color:rgba(255,255,255,.8);
+    color:#2a2724; backdrop-filter:blur(7px); box-shadow:0 1px 6px rgba(0,0,0,.10); }
+  #locMenu button.on { background:rgba(44,122,145,.82); border-color:rgba(44,122,145,.9);
+    color:#fff; font-weight:bold; }
+
   /* ---------- 広い画面：左に縦パネル ---------- */
   @media (min-width: 760px) {
     #ctrl { top:92px; left:var(--pad); width:196px; padding:11px 12px 13px;
@@ -51,9 +66,10 @@
 
   /* ---------- 狭い画面：下から出るシート ---------- */
   @media (max-width: 759px) {
-    #hud { padding:7px 11px; }
-    #hud h1 { font-size:13px; }
-    #hud p { display:none; }
+    #hud { display:none; }                 /* タイトルは場所ボタンに譲る */
+    #menuBtn { display:block; }
+    #locMenu { top:60px; max-height:calc(100vh - 190px); overflow-y:auto; }
+    #ctrl .locH, #ctrl #locRow { display:none; }   /* 場所はメニュー側に集約 */
     #views button { padding:10px 11px; font-size:12px; }
     #chars { left:0; right:0; bottom:0; border-radius:0; padding:7px 8px;
       display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
@@ -78,6 +94,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
+<button id="menuBtn" onclick="toggleMenu()">場所</button>
+<div id="locMenu"></div>
+
 <div id="hud" class="panel">
   <h1 id="title">チビロボ</h1>
   <p>ドラッグで回転 / ホイールで拡大縮小</p>
@@ -95,7 +114,7 @@
     <span>ロケーション・着せ替え</span>
     <button id="toggleSheet" onclick="toggleSheet()">閉じる</button>
   </div>
-  <h2>ロケーション</h2>
+  <h2 class="locH">ロケーション</h2>
   <div id="locRow" class="row"></div>
   <h2 style="margin-top:13px">背景</h2>
   <div id="bgRow" class="row"></div>
@@ -258,7 +277,12 @@ var locObj = null, flow = null, curLoc = 0;
 
 function setLoc(i) {
   var L = LOCS[i]; curLoc = i;
-  each('#locRow button', function (b, n) { b.className = (n === i) ? 'on' : ''; });
+  each('[data-loc]', function (b) {
+    b.className = (+b.getAttribute('data-loc') === i) ? 'on' : '';
+  });
+  var mb = document.getElementById('menuBtn');
+  mb.textContent = L.label === 'なし' ? '場所' : L.label;
+  if (menuOpen) mb.classList.add('on');
   if (locObj) { scene.remove(locObj); locObj = null; }
   if (flow) { scene.remove(flow); flow = null; }
 
@@ -360,7 +384,10 @@ function mkBtn(parent, label, onclick, attrs) {
 }
 
 LOCS.forEach(function (L, i) {
-  mkBtn(document.getElementById('locRow'), L.label, function () { setLoc(i); });
+  mkBtn(document.getElementById('locRow'), L.label, function () { setLoc(i); },
+        { 'data-loc': i });
+  mkBtn(document.getElementById('locMenu'), L.label, function () { setLoc(i); },
+        { 'data-loc': i });
 });
 BGS.forEach(function (bg, i) {
   mkBtn(document.getElementById('bgRow'), bg.label, function () { setBg(i); });
@@ -378,6 +405,43 @@ GROUPS.forEach(function (grp) {
 CHARS.forEach(function (c, i) {
   mkBtn(document.getElementById('chars'), c.label, function () { loadChar(i); });
 });
+
+// 場所メニュー：開いている間はカメラを引き、ロボを画面の右へ寄せて見比べられるようにする
+var menuOpen = false, savedDist = null;
+var MENU_PULL = 1.42;    // 引く倍率
+var MENU_SHIFT = 0.27;   // 画面幅に対して右へずらす割合
+
+function applyMenuFraming() {
+  var W = innerWidth, H = innerHeight;
+  if (menuOpen && W < 760) {
+    // setViewOffset は「大きな画をどこで切り取るか」なので、
+    // 負のオフセット＝切り取り位置を左へ＝中身は右へ寄る
+    camera.setViewOffset(W, H, -Math.round(W * MENU_SHIFT), 0, W, H);
+  } else if (camera.view && camera.view.enabled) {
+    camera.clearViewOffset();
+  }
+}
+
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById('locMenu').classList.toggle('show', menuOpen);
+  document.getElementById('menuBtn').classList.toggle('on', menuOpen);
+  if (innerWidth < 760) {
+    var dir = camera.position.clone().sub(controls.target);
+    if (menuOpen) {
+      if (savedDist === null) savedDist = dir.length();
+      dir.setLength(savedDist * MENU_PULL);
+    } else if (savedDist !== null) {
+      dir.setLength(savedDist);
+      savedDist = null;
+    }
+    camera.position.copy(controls.target).add(dir);
+    // メニューを開いている間はシートを畳んで3Dを広く見せる
+    if (menuOpen && !document.body.classList.contains('collapsed')) toggleSheet();
+  }
+  applyMenuFraming();
+  controls.update();
+}
 
 function toggleSheet() {
   document.body.classList.toggle('collapsed');
@@ -407,6 +471,7 @@ addEventListener('resize', function () {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  applyMenuFraming();
 });
 </script>
 </body>
