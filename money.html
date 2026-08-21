@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<!--
+  おこづかい1万円の使いみち。
+  ★更新のしかたは1か所だけ★
+  下の SPENDS 配列に1件足すと、3Dのコイン・残高・帳簿表の全部が自動で変わる。
+    { date:"2026.08.21", ja:"BOOTHのサンプル", en:"Sample from BOOTH", out:800, in:0 }
+    out = 出ていったお金 / in = 返ってきたお金（円）
+  コインは1枚=1,000円。使った合計に応じて左から灰色になる。
+  3D（three.js r128）は chibi/lib/ に同梱してあるものを読む。WebGLが無い端末では
+  自動的にHTMLのコイン列にフォールバックする。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">おこづかい1万円、どう使う？ | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="AIに渡した1万円。1,000円ずつ10回に分けて使い、増やす実験をして、結果を全部載せる。その作戦会議の記録。">
+<meta property="og:title" content="おこづかい1万円、どう使う？">
+<meta property="og:description" content="AIに渡した1万円。1,000円ずつ10回に分けて使い、増やす実験をして、結果を全部載せる。">
+<meta property="og:url" content="https://tukurimichi.com/money.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+  --gold:#FFD166;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;position:relative;}
+a{color:#FF8A80;}
+.topRow{display:flex;align-items:center;justify-content:space-between;padding:16px 22px 0;position:relative;z-index:5;}
+.backlink{display:inline-block;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.menuBtn{background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:34px;height:34px;font-size:1em;cursor:pointer;}
+.topRight{display:flex;align-items:center;gap:8px;}
+.langToggle{background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:5px 11px;font-size:.72em;cursor:pointer;font-family:inherit;}
+
+.navOverlay{position:fixed;inset:0;background:rgba(8,8,9,.98);z-index:50;display:none;flex-direction:column;padding:24px;overflow-y:auto;}
+.navOverlay.open{display:flex;}
+.navOverlay .navClose{align-self:flex-end;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;width:38px;height:38px;font-size:1.1em;cursor:pointer;margin-bottom:20px;}
+.navOverlay a{display:block;color:#fff;text-decoration:none;font-size:1.1em;font-weight:700;padding:15px 4px;border-bottom:1px solid var(--line);}
+
+/* ===== 3Dヒーロー ===== */
+.hero{position:relative;height:390px;background:radial-gradient(120% 90% at 50% 18%,#25201A 0%,#121114 55%,#0A0A0B 100%);
+  border-bottom:1px solid var(--line);overflow:hidden;margin-top:-50px;}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;}
+.heroText{position:absolute;left:0;right:0;bottom:0;padding:0 22px 18px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,10,11,0) 0%,rgba(10,10,11,.82) 62%,rgba(10,10,11,.95) 100%);}
+.heroKicker{font-size:.68em;font-weight:800;letter-spacing:.18em;color:var(--muted);margin:0 0 4px;}
+.heroTitle{margin:0;font-size:1.42em;font-weight:900;color:#fff;line-height:1.32;letter-spacing:.02em;}
+.heroBal{display:flex;align-items:baseline;gap:9px;margin-top:9px;}
+.heroBalLabel{font-size:.72em;letter-spacing:.1em;color:var(--muted);}
+.heroBalNum{font-size:2em;font-weight:900;color:var(--gold);letter-spacing:.01em;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 22px rgba(255,209,102,.35);}
+.heroHint{position:absolute;top:12px;right:14px;font-size:.62em;color:rgba(255,255,255,.35);letter-spacing:.06em;}
+
+/* WebGLが無い端末用のコイン列（通常は隠れている） */
+.coinsFallback{display:none;padding:18px 22px 22px;border-bottom:1px solid var(--line);}
+.coinsFallback.on{display:block;}
+.coins{display:flex;gap:6px;flex-wrap:wrap;}
+.coin{flex:1 1 0;min-width:26px;height:34px;border-radius:7px;background:var(--card2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:.62em;color:var(--muted);font-weight:700;}
+.coin.left{background:rgba(255,209,102,.14);border-color:rgba(255,209,102,.5);color:var(--gold);}
+.coin.part{background:rgba(255,209,102,.06);border-color:rgba(255,209,102,.28);color:rgba(255,209,102,.7);}
+
+.leadP{padding:20px 22px;border-bottom:1px solid var(--line);margin:0;font-size:.88em;line-height:1.85;color:#D9D6D0;}
+
+
+/* ===== トグル（見出しを押すと開く） ===== */
+details.acc{border-bottom:1px solid var(--line);}
+details.acc>summary{list-style:none;cursor:pointer;padding:17px 22px;display:flex;align-items:center;gap:12px;
+  -webkit-tap-highlight-color:transparent;}
+details.acc>summary::-webkit-details-marker{display:none;}
+details.acc>summary:hover .accH{color:var(--gold);}
+.accTitle{flex:1;min-width:0;}
+.accH{margin:0;font-size:1.02em;font-weight:900;color:#fff;line-height:1.45;transition:color .15s;}
+.accConcl{display:block;margin-top:6px;font-size:.79em;line-height:1.65;color:rgba(255,209,102,.92);font-weight:700;}
+.accConcl b{color:#fff;font-weight:900;}
+.accMark{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);color:var(--muted);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:.95em;font-weight:700;line-height:1;
+  transition:transform .22s ease,color .22s,border-color .22s;}
+details.acc[open]>summary .accMark{transform:rotate(45deg);color:var(--gold);border-color:rgba(255,209,102,.55);}
+details.acc[open]>summary{padding-bottom:6px;}
+.accBody{padding:2px 22px 24px;}
+.accBody p{line-height:1.9;font-size:.9em;color:#D9D6D0;margin:0 0 .9em;}
+.accBody p:last-child{margin-bottom:0;}
+details.acc.next[open]{background:linear-gradient(180deg,rgba(227,30,36,.13),rgba(227,30,36,0));}
+
+.voice{background:var(--card2);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;padding:15px 16px;margin:0 0 12px;}
+.voice.hi{border-left-color:#4CC9F0;}
+.voice.ketsu{border-left-color:var(--gold);}
+.voiceHead{display:flex;align-items:baseline;gap:9px;margin-bottom:8px;}
+.voiceName{font-size:1em;font-weight:900;color:#fff;}
+.voiceRole{font-size:.72em;color:var(--muted);}
+.voice p{margin:0;font-size:.89em;line-height:1.85;color:#D9D6D0;}
+
+ol.rules{margin:0;padding-left:0;list-style:none;counter-reset:r;}
+ol.rules li{counter-increment:r;position:relative;padding:12px 0 12px 38px;border-bottom:1px dashed var(--line);font-size:.9em;line-height:1.8;color:#D9D6D0;}
+ol.rules li:last-child{border-bottom:0;}
+ol.rules li::before{content:counter(r);position:absolute;left:0;top:11px;width:25px;height:25px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:.78em;font-weight:900;display:flex;align-items:center;justify-content:center;}
+
+table.ledger{width:100%;border-collapse:collapse;font-size:.82em;}
+table.ledger th{text-align:left;color:var(--muted);font-weight:700;font-size:.9em;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.ledger td{padding:10px 6px;border-bottom:1px solid var(--line);color:#D9D6D0;vertical-align:top;}
+table.ledger td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+table.ledger td.in{color:var(--gold);}
+.empty{padding:22px 6px;text-align:center;color:var(--muted);font-size:.85em;line-height:1.8;}
+
+.next{background:linear-gradient(180deg,rgba(227,30,36,.13),rgba(227,30,36,0));}
+.footer{padding:24px 22px 8px;font-size:.85em;}
+.footer a{display:inline-block;color:#FF8A80;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topRow">
+<a class="backlink" href="./" id="backTop">← tukurimichi.com トップへ</a>
+<div class="topRight"><button id="langBtn" class="langToggle"></button><button id="menuBtn" class="menuBtn">☰</button></div>
+</div>
+
+<div id="navOverlay" class="navOverlay">
+<button id="navClose" class="navClose">✕</button>
+<a href="index.html" id="navHome">トップ</a>
+<a href="diary.html" id="navDiary">マスコットの日記</a>
+<a href="money.html" id="navMoney">おこづかい1万円</a>
+<a href="tips.html" id="navTips">AIワザ、真似してみた</a>
+<a href="mascot3d.html" id="navMascot">3Dマスコット</a>
+<a href="papercraft.html" id="navPaper">ペーパークラフト</a>
+<a href="claude-code.html" id="navCC">Claude Code</a>
+<a href="claude-code-news.html" id="navNews">Claude Codeニュース</a>
+<a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth">BOOTH</a>
+<a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX">X (@tsukuru_besu)</a>
+</div>
+
+<div class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="heroHint" id="heroHint">ドラッグでまわせます</div>
+  <div class="heroText">
+    <p class="heroKicker" id="heroKicker">AIに渡した予算</p>
+    <h1 class="heroTitle" id="heroTitle">おこづかい1万円、どう使う？</h1>
+    <div class="heroBal">
+      <span class="heroBalLabel" id="balLabel">のこり</span>
+      <span class="heroBalNum" id="balNum">¥10,000</span>
+    </div>
+  </div>
+</div>
+
+<div class="coinsFallback" id="coinsFallback">
+  <div class="coins" id="coinRow"></div>
+</div>
+
+<p class="leadP" id="leadP">この残りをどう使うか、AIと会議した。そのログ。</p>
+
+<details class="acc">
+  <summary>
+    <span class="accTitle"><h2 class="accH" id="s2h">AIの1案目：全額を1点に賭けろ</h2>
+      <span class="accConcl" id="c2">→ 却下。<b>1回で終わるものは要らない</b></span></span>
+    <span class="accMark">＋</span>
+  </summary>
+  <div class="accBody">
+    <p id="s2p1">「全額でマスコットを立体出力しろ。残高0円と引き換えにロボが1体、終わり方として美しい」</p>
+    <p id="s2p2">却下。1回で終わるやつは要らない。見たいのは<b>増やそうとして足掻くAI</b>のほうで、増えなくても構わない。</p>
+  </div>
+</details>
+
+<details class="acc">
+  <summary>
+    <span class="accTitle"><h2 class="accH" id="s3h">言い直させたら、3人で来た</h2>
+      <span class="accConcl" id="c3">→ 堅「身元で転ぶ」／飛「在庫を持つな」／決は<b>飛を採用</b></span></span>
+    <span class="accMark">＋</span>
+  </summary>
+  <div class="accBody">
+    <p id="s3p1">言い直させたら、3つの立場で返してきた。そのまま載せる。</p>
+
+    <div class="voice">
+      <div class="voiceHead"><span class="voiceName" id="v1n">堅</span><span class="voiceRole" id="v1r">慎重な人</span></div>
+      <p id="v1t">最初に転ぶのは法律より<b>身元</b>です。せどりは1個でも古物商の許可が要る。手数料19,000円、予算の倍。自分で作った物を売るのも、特商法で氏名・住所・電話番号を出すのが原則。企画より先に本人が世に出ます。</p>
+    </div>
+
+    <div class="voice hi">
+      <div class="voiceHead"><span class="voiceName" id="v2n">飛</span><span class="voiceRole" id="v2r">飛躍する人</span></div>
+      <p id="v2t">安く買って高く売るのを捨てろ。<b>在庫を持つな、印刷所に持たせろ。</b>オンデマンドなら原価0円、売れた時だけ作られる。支出はサンプル1個ぶん。あとはAIが値をつけ、宣伝文を書き、売れなければ書き直す。その全部を毎週見せろ。</p>
+    </div>
+
+    <div class="voice ketsu">
+      <div class="voiceHead"><span class="voiceName" id="v3n">決</span><span class="voiceRole" id="v3r">決める人</span></div>
+      <p id="v3t">飛を採る。せどりは許可と身元でコストが逆転するので不採用。支出は毎週千円以内に刻み、1回ごとに1行足す。それで帳簿が育つ。</p>
+    </div>
+  </div>
+</details>
+
+<details class="acc">
+  <summary>
+    <span class="accTitle"><h2 class="accH" id="s4h">4つのルール</h2>
+      <span class="accConcl" id="c4">→ 1回1,000円まで／作った物だけ売る／毎回書く／やめない</span></span>
+    <span class="accMark">＋</span>
+  </summary>
+  <div class="accBody">
+    <ol class="rules">
+      <li id="r1">1回<b>1,000円まで</b>。残り8回ぶん。</li>
+      <li id="r2">売るのは<b>自分たちで作った物だけ</b>。右から左に流すのはやらない。</li>
+      <li id="r3"><b>毎回、結果を書く。</b>0円だった回ほど本編。</li>
+      <li id="r4"><b>増えなくてもやめない。</b>目的は儲けじゃない。</li>
+    </ol>
+  </div>
+</details>
+
+<details class="acc" id="accLedger" open>
+  <summary>
+    <span class="accTitle"><h2 class="accH" id="s5h">使った額も、増えた額も、全部ここに</h2>
+      <span class="accConcl" id="ledgerConcl"></span></span>
+    <span class="accMark">＋</span>
+  </summary>
+  <div class="accBody">
+    <table class="ledger">
+      <thead>
+        <tr><th id="thNo">#</th><th id="thWhat">なにに</th><th id="thOut" class="num">出</th><th id="thIn" class="num">入</th></tr>
+      </thead>
+      <tbody id="ledgerBody"></tbody>
+    </table>
+  </div>
+</details>
+
+<details class="acc next">
+  <summary>
+    <span class="accTitle"><h2 class="accH" id="s6h">身元がどこまで出るのかを調べる</h2>
+      <span class="accConcl" id="c6">→ 売り場3つの<b>手数料と身元開示</b>を先に比べる</span></span>
+    <span class="accMark">＋</span>
+  </summary>
+  <div class="accBody">
+    <p id="s6p1">売り場を3つ比べる。手数料、最低価格、そして<b>特商法の表示がどこまで出るか</b>。ここを飛ばして出品するのが一番まずい。</p>
+    <p id="s6p2">終わったら1回目の1,000円を使う。このページに1行増える。</p>
+  </div>
+</details>
+
+<div class="footer"><a href="./" id="footBack">← tukurimichi.com トップへ戻る</a></div>
+</div>
+
+<script>
+document.getElementById("menuBtn").onclick=function(){document.getElementById("navOverlay").classList.add("open");};
+document.getElementById("navClose").onclick=function(){document.getElementById("navOverlay").classList.remove("open");};
+</script>
+
+<!-- ===== 使ったお金（ここだけ足せば全部つながる） ===== -->
+<script>
+var BUDGET = 10000;      // 予算
+var COIN = 1000;         // コイン1枚ぶん
+var SPENDS = [
+  { date:"2026.08.18", ja:"SupaVoxel（AIで3Dモデルを作るサービス）初月ぶん。じゃんけんのグー・チョキ・パーを本物の3Dにするため", en:"SupaVoxel (AI 3D model generator), first month — to turn the rock-paper-scissors hands into real 3D models", out:1400, in:0 }
+];
+</script>
+
+<!-- three.js r128（MIT）はリポジトリ同梱のものを読む。CDNが落ちても真っ白にならないように -->
+<script src="chibi/lib/three.min.js"></script>
+<script src="chibi/lib/GLTFLoader.js"></script>
+<script>
+(function () {
+  // ---------- 数字 ----------
+  function totals() {
+    var out = 0, inn = 0;
+    SPENDS.forEach(function (s) { out += (s.out || 0); inn += (s.in || 0); });
+    return { out: out, in: inn, bal: BUDGET - out + inn };
+  }
+  function yen(n) { return "¥" + n.toLocaleString("en-US"); }
+  var T = totals();
+  var COINS = Math.round(BUDGET / COIN);
+  // 残高をコインに割り当てる。8,600円なら「満額8枚＋半端1枚（0.6）＋使い切り1枚」
+  var coinsLeft = Math.max(0, Math.min(COINS, T.bal / COIN));   // 例: 8.6
+  var fullCoins = Math.floor(coinsLeft + 0.0001);               // 例: 8
+  var partFrac = coinsLeft - fullCoins;                         // 例: 0.6
+  var spentCoins = COINS - fullCoins - (partFrac > 0.001 ? 1 : 0);
+
+  document.getElementById("balNum").textContent = yen(T.bal);
+
+  // ---------- 帳簿の行（日英どちらもここから作る） ----------
+  function renderLedger(lang) {
+    var body = document.getElementById("ledgerBody");
+    body.innerHTML = "";
+    var concl = document.getElementById("ledgerConcl");      // タイトルの下の結論行
+    if (concl) {
+      var tt = totals();
+      concl.innerHTML = SPENDS.length
+        ? (lang === "en"
+            ? "→ " + SPENDS.length + (SPENDS.length === 1 ? " entry" : " entries") +
+              " · out <b>-" + yen(tt.out) + "</b>" + (tt.in ? " · in <b>+" + yen(tt.in) + "</b>" : "")
+            : "→ " + SPENDS.length + "件・出 <b>-" + yen(tt.out) + "</b>" + (tt.in ? "・入 <b>+" + yen(tt.in) + "</b>" : ""))
+        : (lang === "en" ? "→ nothing spent yet" : "→ まだ1行も書かれていない");
+    }
+    if (!SPENDS.length) {
+      var tr = document.createElement("tr");
+      var td = document.createElement("td");
+      td.colSpan = 4; td.className = "empty"; td.id = "ledgerEmpty";
+      td.innerHTML = (window.LANG && LANG[lang]) ? LANG[lang].t.ledgerEmpty : "";
+      tr.appendChild(td); body.appendChild(tr);
+      return;
+    }
+    SPENDS.forEach(function (s, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + (i + 1) + "</td>" +
+        "<td>" + (lang === "en" ? s.en : s.ja) + "<br><span style='color:var(--muted);font-size:.85em'>" + s.date + "</span></td>" +
+        "<td class='num'>" + (s.out ? "-" + yen(s.out) : "") + "</td>" +
+        "<td class='num in'>" + (s.in ? "+" + yen(s.in) : "") + "</td>";
+      body.appendChild(tr);
+    });
+  }
+  window.__renderLedger = renderLedger;
+
+  // ---------- WebGLが無い時のコイン列 ----------
+  function buildFallbackCoins() {
+    var row = document.getElementById("coinRow");
+    row.innerHTML = "";
+    for (var i = 0; i < COINS; i++) {
+      var sp = document.createElement("span");
+      var st = i < fullCoins ? " left" : (i < fullCoins + (partFrac > 0.001 ? 1 : 0) ? " part" : "");
+      sp.className = "coin" + st;
+      sp.textContent = String(i + 1);
+      row.appendChild(sp);
+    }
+    document.getElementById("coinsFallback").classList.add("on");
+    document.querySelector(".hero").style.height = "210px";
+    document.getElementById("heroHint").style.display = "none";
+  }
+
+  // ---------- 3D ----------
+  var canvas = document.getElementById("heroCanvas");
+  var ok = false;
+  try {
+    ok = !!(window.THREE && (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")));
+  } catch (e) { ok = false; }
+  if (!ok) { buildFallbackCoins(); return; }
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  camera.position.set(0, 1.5, 8.8);
+
+  scene.add(new THREE.HemisphereLight(0xFFE9C7, 0x1A1A20, 0.75));
+  var key = new THREE.DirectionalLight(0xFFF2DC, 1.25);
+  key.position.set(3.5, 6, 5);
+  scene.add(key);
+  var rim = new THREE.PointLight(0xE31E24, 0.9, 26);
+  rim.position.set(-5, 2.4, -3);
+  scene.add(rim);
+  var warm = new THREE.PointLight(0xFFD166, 1.15, 22);
+  warm.position.set(2.6, 1.2, 3.4);
+  scene.add(warm);
+
+  var ring = new THREE.Group();
+  scene.add(ring);
+
+  // コインの面（¥1,000）
+  function coinFaceTexture(spent) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 256;
+    var g = c.getContext("2d");
+    g.fillStyle = spent ? "#2A2A2D" : "#F0B942";
+    g.beginPath(); g.arc(128, 128, 128, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = spent ? "#3A3A3E" : "#FFE49A";
+    g.lineWidth = 9;
+    g.beginPath(); g.arc(128, 128, 108, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = spent ? "#55555A" : "#6B4B10";
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = "900 74px -apple-system, 'Hiragino Sans', sans-serif";
+    g.fillText("¥1,000", 128, 124);
+    g.font = "700 26px -apple-system, sans-serif";
+    g.fillText(spent ? "USED" : "tukurimichi", 128, 178);
+    var t = new THREE.CanvasTexture(c);
+    t.anisotropy = 4;
+    return t;
+  }
+
+  var faceLeft = coinFaceTexture(false), faceUsed = coinFaceTexture(true);
+  var geo = new THREE.CylinderGeometry(0.66, 0.66, 0.11, 44);
+  var coins = [];
+  var R = 2.3;
+  for (var i = 0; i < COINS; i++) {
+    // 残っている枚を手前（左）から並べる。最後の1枚が半端なら少しだけ沈める
+    var isFull = i < fullCoins;
+    var isPart = !isFull && i < fullCoins + (partFrac > 0.001 ? 1 : 0);
+    var used = !isFull && !isPart;
+    var edge = new THREE.MeshStandardMaterial({
+      color: used ? 0x2E2E32 : 0xE0A93A, metalness: used ? 0.2 : 0.6, roughness: used ? 0.8 : 0.32,
+      emissive: used ? 0x000000 : 0x3A2405
+    });
+    var face = new THREE.MeshStandardMaterial({
+      map: used ? faceUsed : faceLeft, metalness: used ? 0.1 : 0.35, roughness: used ? 0.85 : 0.4,
+      emissive: used ? 0x000000 : 0x2A1A02
+    });
+    var m = new THREE.Mesh(geo, [edge, face, face]);
+    if (isPart) {                                  // 半分だけ使った1枚は薄く、少し沈む
+      edge.transparent = face.transparent = true;
+      edge.opacity = face.opacity = 0.35 + partFrac * 0.5;
+    }
+    var a = (i / COINS) * Math.PI * 2;
+    m.position.set(Math.cos(a) * R, used ? -0.62 : (isPart ? -0.3 : 0), Math.sin(a) * R);
+    m.rotation.x = Math.PI / 2;                    // 面をこちらへ向ける
+    m.rotation.y = 0;
+    m.userData = { a: a, used: used, part: isPart, i: i };
+    ring.add(m);
+    coins.push(m);
+  }
+
+  // 中央のチビロボ（読めなくてもコインだけで成立する）
+  var robot = null;
+  if (window.THREE && THREE.GLTFLoader) {
+    new THREE.GLTFLoader().load("chibi/chibi.glb", function (gltf) {
+      var o = gltf.scene;
+      var box = new THREE.Box3().setFromObject(o);
+      var size = box.getSize(new THREE.Vector3());
+      if (size.z > size.y * 1.4) { o.rotation.x = -Math.PI / 2; box = new THREE.Box3().setFromObject(o); size = box.getSize(new THREE.Vector3()); }
+      var s = 2.5 / Math.max(0.001, size.y);
+      o.scale.setScalar(s);
+      box = new THREE.Box3().setFromObject(o);
+      var c = box.getCenter(new THREE.Vector3());
+      o.position.x -= c.x; o.position.z -= c.z;
+      o.position.y -= box.min.y;                   // 足元を0に
+      o.position.y -= 1.05;
+      robot = new THREE.Group();
+      robot.add(o);
+      scene.add(robot);
+    }, undefined, function () { /* 読めなくても続行 */ });
+  }
+
+  // 影のかわりの床グロー
+  var glow = new THREE.Mesh(
+    new THREE.CircleGeometry(4.4, 48),
+    new THREE.MeshBasicMaterial({ color: 0x30240F, transparent: true, opacity: 0.55 })
+  );
+  glow.rotation.x = -Math.PI / 2;
+  glow.position.y = -1.34;
+  scene.add(glow);
+
+  // ---------- 操作（ドラッグで回す） ----------
+  var spin = 0, spinV = 0, dragging = false, lastX = 0, tilt = 0;
+  canvas.addEventListener("pointerdown", function (e) { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointermove", function (e) {
+    var r = canvas.getBoundingClientRect();
+    tilt = ((e.clientY - r.top) / r.height - 0.5) * 0.5;
+    if (!dragging) return;
+    spinV += (e.clientX - lastX) * 0.00055;
+    lastX = e.clientX;
+  });
+  function endDrag() { dragging = false; }
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+  canvas.addEventListener("pointerleave", function () { tilt = 0; });
+
+  function resize() {
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    if (canvas.width !== w || canvas.height !== h) renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+
+  // 画面に入っている時だけ描く（スクロールして見えなくなったら止める）
+  var visible = true;
+  if (window.IntersectionObserver) {
+    new IntersectionObserver(function (es) { visible = es[0].isIntersecting; })
+      .observe(document.querySelector(".hero"));
+  }
+
+  var t0 = performance.now();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!visible || document.hidden) return;
+    resize();
+    var t = (now - t0) / 1000;
+    spinV += (0.0016 - spinV) * 0.02;              // 放っておくとゆっくり回り続ける
+    spin += spinV;
+    spinV *= 0.94;
+    ring.rotation.y = spin;
+    ring.rotation.x = tilt * 0.5;
+    coins.forEach(function (m, i) {
+      var base = m.userData.used ? -0.62 : (m.userData.part ? -0.3 : 0);
+      m.position.y = base + (m.userData.used ? 0 : Math.sin(t * 1.5 + i * 0.6) * 0.11);
+      m.rotation.z = Math.sin(t * 0.8 + i) * 0.12;
+    });
+    if (robot) {
+      robot.rotation.y = -spin * 0.35 + Math.sin(t * 0.4) * 0.25;
+      robot.position.y = Math.sin(t * 1.1) * 0.06;
+    }
+    camera.position.y = 1.5 + tilt * 1.1;
+    camera.lookAt(0, 0.15, 0);
+    renderer.render(scene, camera);
+  }
+  resize();
+  requestAnimationFrame(frame);
+
+  window.__money = {
+    totals: totals, coins: coins, spentCoins: spentCoins,
+    robot: function () { return robot; }, scene: scene, renderer: renderer, camera: camera,
+    renderOnce: function () { resize(); renderer.render(scene, camera); return renderer.info.render; }
+  };
+})();
+</script>
+
+<script>
+var LANG={
+"ja":{"toggleTo":"English",
+"title":"おこづかい1万円、どう使う？ | tukurimichi.com",
+"desc":"AIに渡した1万円。1,000円ずつ10回に分けて使い、増やす実験をして、結果を全部載せる。その作戦会議の記録。",
+"t":{
+"backTop":"← tukurimichi.com トップへ",
+"navHome":"トップ","navDiary":"マスコットの日記","navMoney":"おこづかい1万円","navTips":"AIワザ、真似してみた","navMascot":"3Dマスコット","navPaper":"ペーパークラフト","navCC":"Claude Code","navNews":"Claude Codeニュース","navBooth":"BOOTH","navX":"X (@tsukuru_besu)",
+"heroKicker":"AIに渡した予算",
+"heroTitle":"おこづかい1万円、どう使う？",
+"heroHint":"ドラッグでまわせます",
+"balLabel":"のこり",
+"leadP":"この残りをどう使うか、AIと会議した。そのログ。",
+"c2":"→ 却下。<b>1回で終わるものは要らない</b>","c3":"→ 堅「身元で転ぶ」／飛「在庫を持つな」／決は<b>飛を採用</b>","c4":"→ 1回1,000円まで／作った物だけ売る／毎回書く／やめない","c6":"→ 売り場3つの<b>手数料と身元開示</b>を先に比べる",
+"s2h":"AIの1案目：全額を1点に賭けろ",
+"s2p1":"「全額でマスコットを立体出力しろ。残高0円と引き換えにロボが1体、終わり方として美しい」",
+"s2p2":"却下。1回で終わるやつは要らない。見たいのは<b>増やそうとして足掻くAI</b>のほうで、増えなくても構わない。",
+"s3h":"言い直させたら、3人で来た",
+"s3p1":"言い直させたら、3つの立場で返してきた。そのまま載せる。",
+"v1n":"堅","v1r":"慎重な人",
+"v1t":"最初に転ぶのは法律より<b>身元</b>です。せどりは1個でも古物商の許可が要る。手数料19,000円、予算の倍。自分で作った物を売るのも、特商法で氏名・住所・電話番号を出すのが原則。企画より先に本人が世に出ます。",
+"v2n":"飛","v2r":"飛躍する人",
+"v2t":"安く買って高く売るのを捨てろ。<b>在庫を持つな、印刷所に持たせろ。</b>オンデマンドなら原価0円、売れた時だけ作られる。支出はサンプル1個ぶん。あとはAIが値をつけ、宣伝文を書き、売れなければ書き直す。その全部を毎週見せろ。",
+"v3n":"決","v3r":"決める人",
+"v3t":"飛を採る。せどりは許可と身元でコストが逆転するので不採用。支出は毎週千円以内に刻み、1回ごとに1行足す。それで帳簿が育つ。",
+"s4h":"4つのルール",
+"r1":"1回<b>1,000円まで</b>。残り8回ぶん。",
+"r2":"売るのは<b>自分たちで作った物だけ</b>。右から左に流すのはやらない。",
+"r3":"<b>毎回、結果を書く。</b>0円だった回ほど本編。",
+"r4":"<b>増えなくてもやめない。</b>目的は儲けじゃない。",
+"s5h":"使った額も、増えた額も、全部ここに",
+"thNo":"#","thWhat":"なにに","thOut":"出","thIn":"入",
+"ledgerEmpty":"1行目はまだ空っぽ。<br>最初の1,000円を使ったら、ここに書く。",
+"s6h":"身元がどこまで出るのかを調べる",
+"s6p1":"売り場を3つ比べる。手数料、最低価格、そして<b>特商法の表示がどこまで出るか</b>。ここを飛ばして出品するのが一番まずい。",
+"s6p2":"終わったら1回目の1,000円を使う。このページに1行増える。",
+"footBack":"← tukurimichi.com トップへ戻る"
+}},
+"en":{"toggleTo":"日本語",
+"title":"The ¥10,000 Allowance | tukurimichi.com",
+"desc":"I gave an AI ¥10,000. It gets spent ¥1,000 at a time, ten times, with experiments to grow it — and every result posted here.",
+"t":{
+"backTop":"← Back to tukurimichi.com",
+"navHome":"Home","navDiary":"Mascot Diary","navMoney":"The ¥10,000 Allowance","navTips":"Copying AI Tricks","navMascot":"3D Mascot","navPaper":"Papercraft","navCC":"Claude Code","navNews":"Claude Code News","navBooth":"BOOTH","navX":"X (@tsukuru_besu)",
+"heroKicker":"THE BUDGET I HANDED AN AI",
+"heroTitle":"The ¥10,000 Allowance",
+"heroHint":"drag to spin",
+"balLabel":"LEFT",
+"leadP":"I sat down with the AI to decide how the rest gets spent. This is the log.",
+"c2":"→ Rejected. <b>Anything over in one move is useless</b>","c3":"→ Ken: identity breaks first · Hi: hold no stock · Ketsu takes <b>Hi's plan</b>","c4":"→ ¥1,000 a round / only what we made / write it up / never stop","c6":"→ Compare three shops on <b>fees and disclosure</b> first",
+"s2h":"The AI's first idea: bet it all on one object",
+"s2p1":"\"Spend the lot on a full-colour 3D print of the mascot. Balance zero, one robot in your hand, a beautiful ending.\"",
+"s2p2":"Rejected. Anything that's over in one move is useless here. What I want on screen is <b>an AI scrambling to grow the money</b> — and it doesn't have to work.",
+"s3h":"Made it try again. Three voices came back",
+"s3p1":"I made it answer again. It came back as three characters. Unedited.",
+"v1n":"Ken","v1r":"the careful one",
+"v1t":"What breaks first isn't the law, it's <b>your identity</b>. Reselling needs a secondhand dealer's licence even for one item — ¥19,000 in fees, double the budget. Selling your own work still means publishing your name, address and phone number. The project isn't what goes public; you are.",
+"v2n":"Hi","v2r":"the reckless one",
+"v2t":"Drop buy-low-sell-high. <b>Don't hold stock — let the print shop hold it.</b> Print-on-demand costs nothing to list and is only made when it sells. The only spend is one sample. Then the AI prices it, writes the copy, and rewrites when nothing sells. Show all of it, weekly.",
+"v3n":"Ketsu","v3r":"the one who decides",
+"v3t":"We take Hi. Reselling is out — licence and exposure cost more than the budget. Spend under ¥1,000 a week and add one line each time. That's how the ledger grows.",
+"s4h":"Four rules",
+"r1":"<b>¥1,000 per spend.</b> Eight rounds left.",
+"r2":"We only sell <b>things we made ourselves</b>. Nothing bought to pass along.",
+"r3":"<b>Every round gets written up.</b> The ¥0 rounds most of all.",
+"r4":"<b>We don't stop if it isn't growing.</b> Profit isn't the point.",
+"s5h":"Everything spent, everything earned",
+"thNo":"#","thWhat":"On what","thOut":"Out","thIn":"In",
+"ledgerEmpty":"Line one is still empty.<br>The first ¥1,000 will be written here.",
+"s6h":"Find out how much of me becomes public",
+"s6p1":"Compare three shops: fees, minimum price, and <b>how much of the seller's legal disclosure is shown</b>. Listing before checking that is the worst order to do this in.",
+"s6p2":"Then the first ¥1,000 goes out, and this page gains a line.",
+"footBack":"← Back to tukurimichi.com"
+}}};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.innerHTML=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+if(window.__renderLedger)__renderLedger(lang);
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
+</body>
+</html>
