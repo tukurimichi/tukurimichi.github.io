@@ -56,7 +56,9 @@ a{color:inherit;}
 .eyebrow .label{font-size:.7em;font-weight:800;letter-spacing:.24em;color:var(--text);white-space:nowrap;}
 .eyebrow .rule{flex:1;height:1px;background:var(--line);}
 
-.budgetPanel{margin:10px 20px 4px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(165deg,var(--card2),var(--card));position:relative;overflow:hidden;}
+.budgetPanel{display:block;text-decoration:none;color:inherit;margin:10px 20px 4px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(165deg,var(--card2),var(--card));position:relative;overflow:hidden;transition:border-color .15s,transform .15s;}
+.budgetPanel:hover{border-color:rgba(255,209,102,.45);transform:translateY(-1px);}
+.budgetMore{display:block;margin-top:8px;font-size:.72em;font-weight:800;color:#FFD166;letter-spacing:.02em;}
 .budgetPanel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--red),var(--red-dark));}
 .budgetRow{display:flex;align-items:baseline;flex-wrap:wrap;}
 .budgetNum{font-family:var(--mono);font-size:1.7em;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
@@ -108,6 +110,7 @@ a{color:inherit;}
 <a href="story.html" id="navStory"></a>
 <a href="play.html" id="navPlay"></a>
 <a href="diary.html" id="navDiary"></a>
+<a href="money.html" id="navMoney"></a>
 <a href="made.html" id="navMade"></a>
 <a href="tips.html" id="navTips"></a>
 <a href="changelog.html" id="navLog"></a>
@@ -123,11 +126,12 @@ a{color:inherit;}
 </div>
 
 <div class="eyebrow"><span class="dot"></span><span class="label">BUDGET</span><span class="rule"></span></div>
-<div class="budgetPanel">
+<a class="budgetPanel" href="money.html">
 <div class="budgetRow"><span class="budgetNum" id="budgetNum">¥8,600<small>86%</small></span></div>
 <div class="budgetBar"><div class="budgetBarFill"></div></div>
 <span class="budgetSub" id="budgetSubText"></span>
-</div>
+<span class="budgetMore" id="budgetMore"></span>
+</a>
 
 <div class="deskWrap" id="deskWrap">
 <canvas id="deskCanvas"></canvas>
@@ -164,6 +168,8 @@ navHomeText:"ホーム",
 navStoryText:"物語",
 navPlayText:"遊ぶ",
 navDiaryText:"マスコットの日記",
+navMoneyText:"おこづかい1万円、どう使う？",
+budgetMoreText:"使いみちの会議を見る →",
 navMadeText:"つくったもの",
 navTipsText:"AIワザ、真似してみた",
 navLogText:"更新ログ",
@@ -194,6 +200,8 @@ navHomeText:"Home",
 navStoryText:"Story",
 navPlayText:"Play",
 navDiaryText:"Mascot Diary",
+navMoneyText:"The ¥10,000 Allowance",
+budgetMoreText:"See how it gets spent →",
 navMadeText:"Things I've Made",
 navTipsText:"Tried Copying AI Tricks",
 navLogText:"Changelog",
@@ -225,6 +233,8 @@ document.getElementById("navHome").textContent=L.navHomeText;
 document.getElementById("navStory").textContent=L.navStoryText;
 document.getElementById("navPlay").textContent=L.navPlayText;
 document.getElementById("navDiary").textContent=L.navDiaryText;
+document.getElementById("navMoney").textContent=L.navMoneyText;
+document.getElementById("budgetMore").textContent=L.budgetMoreText;
 document.getElementById("navMade").textContent=L.navMadeText;
 document.getElementById("navTips").textContent=L.navTipsText;
 document.getElementById("navLog").textContent=L.navLogText;
