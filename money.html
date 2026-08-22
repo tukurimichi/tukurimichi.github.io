@@ -258,7 +258,8 @@ document.getElementById("navClose").onclick=function(){document.getElementById("
 var BUDGET = 10000;      // 予算
 var COIN = 1000;         // コイン1枚ぶん
 var SPENDS = [
-  { date:"2026.08.18", ja:"SupaVoxel（AIで3Dモデルを作るサービス）初月ぶん。じゃんけんのグー・チョキ・パーを本物の3Dにするため", en:"SupaVoxel (AI 3D model generator), first month — to turn the rock-paper-scissors hands into real 3D models", out:1400, in:0 }
+  { date:"2026.08.18", ja:"SupaVoxel（AIで3Dモデルを作るサービス）初月ぶん。じゃんけんのグー・チョキ・パーを本物の3Dにするため", en:"SupaVoxel (AI 3D model generator), first month — to turn the rock-paper-scissors hands into real 3D models", out:1400, in:0 },
+  { date:"2026.08.22", ja:"マスコットのスクイーズASMR動画をAIで生成。元から入っていたGoogle AI Proの範囲で作れたので、追加の支払いはなし", en:"Generated the mascot squishy ASMR clips with AI — covered by a Google AI Pro plan I already had, so nothing extra was paid", out:0, in:0 }
 ];
 </script>
 
@@ -310,7 +311,7 @@ var SPENDS = [
       var tr = document.createElement("tr");
       tr.innerHTML = "<td>" + (i + 1) + "</td>" +
         "<td>" + (lang === "en" ? s.en : s.ja) + "<br><span style='color:var(--muted);font-size:.85em'>" + s.date + "</span></td>" +
-        "<td class='num'>" + (s.out ? "-" + yen(s.out) : "") + "</td>" +
+        "<td class='num'>" + (s.out ? "-" + yen(s.out) : (s.in ? "" : "¥0")) + "</td>" +
         "<td class='num in'>" + (s.in ? "+" + yen(s.in) : "") + "</td>";
       body.appendChild(tr);
     });
