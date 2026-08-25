@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">動画をコマにする | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはブラウザの中だけで処理され、どこにも送信されません。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎞️</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B; --card:#141416; --card2:#1C1C1F;
+  --red:#E31E24; --red-dark:#A8151A;
+  --text:#F2F0EC; --muted:#ACA8A2; --line:#2A2A2D;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:560px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:48px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.5em;font-weight:900;letter-spacing:.05em;color:#fff;padding-right:78px;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:22px;right:20px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72em;font-weight:700;padding:6px 12px;border-radius:14px;cursor:pointer;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.entry{padding:24px 22px;}
+.entry p{line-height:1.85;font-size:.92em;color:#D9D6D0;margin:0 0 1em;}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:34px 18px;text-align:center;background:var(--card2);cursor:pointer;transition:border-color .15s,background .15s;}
+.drop:hover,.drop.over{border-color:var(--red);background:#201618;}
+.dropIcon{font-size:2em;display:block;margin-bottom:8px;}
+.dropText{font-size:.9em;font-weight:700;color:#fff;}
+.dropSub{font-size:.75em;color:var(--muted);margin-top:6px;display:block;}
+.row{display:flex;align-items:center;gap:12px;margin:18px 0 6px;flex-wrap:wrap;}
+.row label{font-size:.82em;color:var(--muted);font-weight:700;}
+input[type=range]{flex:1;min-width:150px;accent-color:var(--red);}
+.count{font-family:var(--mono);font-size:1.1em;font-weight:800;color:#fff;min-width:2.4em;text-align:right;}
+.btn{display:inline-block;border:0;border-radius:8px;padding:11px 20px;font-size:.88em;font-weight:800;cursor:pointer;background:linear-gradient(180deg,var(--red),var(--red-dark));color:#fff;}
+.btn:disabled{opacity:.4;cursor:default;}
+.btnSub{background:none;border:1px solid var(--line);color:var(--text);}
+.meta{font-size:.76em;color:var(--muted);font-family:var(--mono);margin-top:10px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:18px;}
+.cell{background:var(--card2);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.cell img{width:100%;display:block;background:#000;}
+.cellBar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;gap:6px;}
+.cellT{font-family:var(--mono);font-size:.7em;color:var(--muted);}
+.cellDl{font-size:.72em;color:#FF8A80;text-decoration:none;font-weight:800;}
+.note{margin-top:26px;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--card2);}
+.note h3{margin:0 0 8px;font-size:.92em;color:#fff;}
+.note p{font-size:.84em;margin:0 0 .7em;}
+.copyBox{position:relative;}
+textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--line);border-radius:8px;color:#D9D6D0;font-family:var(--mono);font-size:.74em;line-height:1.65;padding:11px;resize:vertical;}
+.copyBtn{margin-top:8px;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+.hide{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="../../tools.html" id="backTop">← 道具箱に戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">動画をコマにする</h1>
+<p id="bannerP">動画を等間隔で切り出して、画像にします。</p>
+</div>
+
+<div class="entry">
+<p id="lead">AIは、あなたが作った動画の中身を見られません。だから「この動画のここが変」と伝えるのが難しい。この道具は、動画を等間隔で切り出して画像にします。その画像をAIに渡せば、話が通じるようになります。</p>
+<p id="lead2"><b>ファイルはどこにも送信されません。</b>すべてブラウザの中だけで処理されます。会員登録も要りません。</p>
+
+<div class="drop" id="drop">
+  <span class="dropIcon">🎞️</span>
+  <span class="dropText" id="dropText">動画をドラッグ、またはタップして選ぶ</span>
+  <span class="dropSub" id="dropSub">mp4 / mov / webm など</span>
+</div>
+<input type="file" id="file" accept="video/*" class="hide">
+
+<div id="panel" class="hide">
+  <div class="row">
+    <label id="lblCount">切り出す枚数</label>
+    <input type="range" id="count" min="2" max="30" value="5">
+    <span class="count" id="countVal">5</span>
+  </div>
+  <div class="row">
+    <button class="btn" id="run" disabled>切り出す</button>
+    <button class="btn btnSub hide" id="saveAll">すべて保存</button>
+  </div>
+  <div class="meta" id="meta"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="note hide" id="aiNote">
+  <h3 id="aiTitle">AIに渡すとき</h3>
+  <p id="aiDesc">切り出した画像といっしょに、この文章を貼ってください。何を見てほしいかが伝わります。</p>
+  <div class="copyBox">
+    <textarea class="tpl" id="tpl" readonly></textarea>
+    <button class="btn btnSub copyBtn" id="copy">文章をコピー</button>
+  </div>
+</div>
+
+<div class="note">
+  <h3 id="cliTitle">コマンドで使いたい人へ</h3>
+  <p id="cliDesc">同じことをする Python のスクリプトも置いてあります。ffmpeg を使うので、長い動画や大量の書き出しはこちらが速いです。AIエージェントに使わせることもできます。</p>
+  <p><a href="video_frames.py" download id="cliDl" style="color:#FF8A80;font-weight:800;text-decoration:none;font-size:.86em;">video_frames.py をダウンロード →</a></p>
+</div>
+
+<p id="outro" style="margin-top:1.6em;font-size:.84em;color:var(--muted);">この道具は、AIで動画を作っているときに「AIが自分の作った動画を見られない」という問題にぶつかって作ったものです。<a href="../../video.html" style="color:#FF8A80;">そのときの話</a></p>
+</div>
+
+<div class="footer"><a href="../../tools.html" id="footBack">← 道具箱に戻る</a></div>
+</div>
+
+<video id="v" class="hide" playsinline muted></video>
+<canvas id="c" class="hide"></canvas>
+
+<script>
+var LANG={
+ja:{toggleTo:"English",
+title:"動画をコマにする | tukurimichi.com",
+desc:"動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはどこにも送信されません。",
+t:{
+backTop:"← 道具箱に戻る",
+bannerH1:"動画をコマにする",
+bannerP:"動画を等間隔で切り出して、画像にします。",
+lead:"AIは、あなたが作った動画の中身を見られません。だから「この動画のここが変」と伝えるのが難しい。この道具は、動画を等間隔で切り出して画像にします。その画像をAIに渡せば、話が通じるようになります。",
+lead2:"ファイルはどこにも送信されません。すべてブラウザの中だけで処理されます。会員登録も要りません。",
+dropText:"動画をドラッグ、またはタップして選ぶ",
+dropSub:"mp4 / mov / webm など",
+lblCount:"切り出す枚数",
+run:"切り出す",
+saveAll:"すべて保存",
+aiTitle:"AIに渡すとき",
+aiDesc:"切り出した画像といっしょに、この文章を貼ってください。何を見てほしいかが伝わります。",
+copy:"文章をコピー",
+cliTitle:"コマンドで使いたい人へ",
+cliDesc:"同じことをする Python のスクリプトも置いてあります。ffmpeg を使うので、長い動画や大量の書き出しはこちらが速いです。AIエージェントに使わせることもできます。",
+cliDl:"video_frames.py をダウンロード →",
+footBack:"← 道具箱に戻る"
+}},
+en:{toggleTo:"日本語",
+title:"Video to Frames | tukurimichi.com",
+desc:"Free tool that slices a video into evenly spaced still images, so you can show an AI what is actually in your video. Nothing is uploaded.",
+t:{
+backTop:"← Back to the toolbox",
+bannerH1:"Video to Frames",
+bannerP:"Slice a video into evenly spaced stills.",
+lead:"An AI cannot watch the video you just made. That makes it hard to say \"something is wrong right here.\" This tool slices your video into evenly spaced stills. Hand those to the AI and you can finally talk about it.",
+lead2:"Nothing is uploaded. Everything runs inside your browser. No account needed.",
+dropText:"Drop a video here, or tap to choose one",
+dropSub:"mp4 / mov / webm and others",
+lblCount:"Number of frames",
+run:"Slice it",
+saveAll:"Save all",
+aiTitle:"Handing them to an AI",
+aiDesc:"Paste this along with the images. It tells the AI what to look at.",
+copy:"Copy the text",
+cliTitle:"If you would rather use a command line",
+cliDesc:"There is a Python version that does the same thing. It uses ffmpeg, so it is faster for long videos or lots of frames. You can also let an AI agent run it.",
+cliDl:"Download video_frames.py →",
+footBack:"← Back to the toolbox"
+}}
+};
+
+var TPL={
+ja:function(name,dur,n){
+return "この画像は、1本の動画を頭から順に" + n + "枚に切り出したものです。\n"
++ "ファイル名: " + name + "\n"
++ "動画の長さ: " + dur.toFixed(2) + "秒\n"
++ "各画像のファイル名の末尾が、その画像の時刻（秒）です。\n\n"
++ "この" + n + "枚を、時間の流れとして順番に見てください。そのうえで、\n"
++ "・何が起きている動画か\n"
++ "・不自然なところ（形が変わる、物が消える、手や指の数がおかしい、など）\n"
++ "・良くなりそうな直し方\n"
++ "を教えてください。";
+},
+en:function(name,dur,n){
+return "These images are " + n + " frames sliced from a single video, in order from the start.\n"
++ "File name: " + name + "\n"
++ "Duration: " + dur.toFixed(2) + " seconds\n"
++ "The number at the end of each file name is that frame's timestamp in seconds.\n\n"
++ "Please read the " + n + " frames as a sequence in time, then tell me:\n"
++ "- what is happening in this video\n"
++ "- anything that looks wrong (shapes changing, objects vanishing, wrong number of hands or fingers, and so on)\n"
++ "- how you would fix it";
+}};
+
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+if(shots.length)updateTpl();
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+
+var drop=document.getElementById("drop"),fileEl=document.getElementById("file"),
+    v=document.getElementById("v"),c=document.getElementById("c"),
+    panel=document.getElementById("panel"),runBtn=document.getElementById("run"),
+    countEl=document.getElementById("count"),countVal=document.getElementById("countVal"),
+    grid=document.getElementById("grid"),metaEl=document.getElementById("meta"),
+    saveAll=document.getElementById("saveAll"),aiNote=document.getElementById("aiNote"),
+    tplEl=document.getElementById("tpl");
+var shots=[],fileName="",baseName="";
+
+drop.onclick=function(){fileEl.click();};
+drop.ondragover=function(e){e.preventDefault();drop.classList.add("over");};
+drop.ondragleave=function(){drop.classList.remove("over");};
+drop.ondrop=function(e){e.preventDefault();drop.classList.remove("over");
+  if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);};
+fileEl.onchange=function(){if(fileEl.files[0])load(fileEl.files[0]);};
+countEl.oninput=function(){countVal.textContent=countEl.value;};
+
+function load(f){
+  if(!f.type.startsWith("video/")){alert("動画ファイルを選んでください");return;}
+  fileName=f.name;
+  baseName=f.name.replace(/\.[^.]+$/,"");
+  grid.innerHTML="";shots=[];aiNote.classList.add("hide");saveAll.classList.add("hide");
+  v.src=URL.createObjectURL(f);
+  v.onloadedmetadata=function(){
+    panel.classList.remove("hide");
+    runBtn.disabled=false;
+    metaEl.textContent=v.videoWidth+"×"+v.videoHeight+" / "+v.duration.toFixed(2)+"s / "+fileName;
+  };
+}
+
+function seekTo(t){
+  return new Promise(function(res){
+    var done=false;
+    function ok(){if(done)return;done=true;v.removeEventListener("seeked",ok);res();}
+    v.addEventListener("seeked",ok);
+    v.currentTime=t;
+    setTimeout(ok,1200); // seeked が来ない環境の保険
+  });
+}
+
+runBtn.onclick=async function(){
+  var n=parseInt(countEl.value,10);
+  runBtn.disabled=true;
+  grid.innerHTML="";shots=[];
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  var ctx=c.getContext("2d");
+  var dur=v.duration;
+  // 端は真っ暗になることがあるので、少し内側を取る
+  var margin=Math.min(0.08,dur*0.02);
+  var step=(dur-2*margin)/(n-1);
+  for(var i=0;i<n;i++){
+    var t=margin+step*i;
+    await seekTo(t);
+    ctx.drawImage(v,0,0,c.width,c.height);
+    var url=c.toDataURL("image/jpeg",0.92);
+    var name=baseName+"_"+String(i+1).padStart(2,"0")+"_"+t.toFixed(2)+"s.jpg";
+    shots.push({url:url,name:name,t:t});
+    addCell(url,name,t);
+  }
+  runBtn.disabled=false;
+  saveAll.classList.remove("hide");
+  aiNote.classList.remove("hide");
+  updateTpl();
+  gtag("event","frames_extracted",{count:n});
+};
+
+function addCell(url,name,t){
+  var d=document.createElement("div");d.className="cell";
+  var img=document.createElement("img");img.src=url;img.alt="";
+  var bar=document.createElement("div");bar.className="cellBar";
+  var s=document.createElement("span");s.className="cellT";s.textContent=t.toFixed(2)+"s";
+  var a=document.createElement("a");a.className="cellDl";a.href=url;a.download=name;a.textContent="保存";
+  bar.appendChild(s);bar.appendChild(a);
+  d.appendChild(img);d.appendChild(bar);grid.appendChild(d);
+}
+
+saveAll.onclick=function(){
+  shots.forEach(function(s,i){
+    setTimeout(function(){
+      var a=document.createElement("a");a.href=s.url;a.download=s.name;
+      document.body.appendChild(a);a.click();a.remove();
+    },i*260); // まとめてだとブラウザに止められるので、少しずつ
+  });
+};
+
+function updateTpl(){
+  tplEl.value=TPL[currentLang](fileName,v.duration||0,shots.length);
+}
+document.getElementById("copy").onclick=function(){
+  tplEl.select();
+  navigator.clipboard.writeText(tplEl.value).then(function(){
+    var b=document.getElementById("copy");var o=b.textContent;
+    b.textContent=currentLang==="en"?"Copied":"コピーしました";
+    setTimeout(function(){b.textContent=o;},1400);
+  });
+};
+
+render(currentLang);
+</script>
+</body>
+</html>
