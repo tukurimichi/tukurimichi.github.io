@@ -59,6 +59,19 @@ a{color:inherit;}
 .budgetPanel{display:block;text-decoration:none;color:inherit;margin:10px 20px 4px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(165deg,var(--card2),var(--card));position:relative;overflow:hidden;transition:border-color .15s,transform .15s;}
 .budgetPanel:hover{border-color:rgba(255,209,102,.45);transform:translateY(-1px);}
 .budgetMore{display:block;margin-top:8px;font-size:.72em;font-weight:800;color:#FFD166;letter-spacing:.02em;}
+.ticker{position:relative;margin:14px 20px 4px;height:34px;border:1px solid #2A2A2D;border-radius:8px;background:#08080A;overflow:hidden;box-shadow:inset 0 0 14px rgba(0,0,0,.9);}
+.ticker::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 1px,transparent 1px 3px);}
+.ticker::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(90deg,#08080A 0%,rgba(8,8,10,0) 7%,rgba(8,8,10,0) 93%,#08080A 100%);}
+.tickerTrack{display:flex;align-items:center;height:100%;width:max-content;animation:tickerScroll 34s linear infinite;}
+.ticker:hover .tickerTrack{animation-play-state:paused;}
+.tickerItem{display:inline-flex;align-items:center;gap:9px;padding:0 26px;white-space:nowrap;text-decoration:none;font-size:.78em;font-weight:700;letter-spacing:.04em;color:#FFB13B;text-shadow:0 0 7px rgba(255,140,40,.55);}
+.tickerItem:hover{color:#FFD166;}
+.tickerNew{font-size:.86em;font-weight:900;color:#0A0A0B;background:#FF4B4B;padding:2px 6px;border-radius:3px;letter-spacing:.08em;text-shadow:none;}
+.tickerDate{color:#9A6A38;text-shadow:none;font-variant-numeric:tabular-nums;}
+.tickerSep{color:#4A3520;padding:0 2px;text-shadow:none;}
+@keyframes tickerScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+@media (prefers-reduced-motion:reduce){.tickerTrack{animation:none;}}
+
 .budgetPanel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--red),var(--red-dark));}
 .budgetRow{display:flex;align-items:baseline;flex-wrap:wrap;}
 .budgetNum{font-family:var(--mono);font-size:1.7em;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
@@ -134,6 +147,8 @@ a{color:inherit;}
 <span class="budgetSub" id="budgetSubText"></span>
 <span class="budgetMore" id="budgetMore"></span>
 </a>
+
+<div class="ticker"><div class="tickerTrack" id="tickerTrack"></div></div>
 
 <div class="deskWrap" id="deskWrap">
 <canvas id="deskCanvas"></canvas>
@@ -224,6 +239,28 @@ fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTi
 toggleTo:"日本語"
 }
 };
+var TICKER={
+ja:[
+ {d:"2026.08.25",t:"動画のつくりかたのページを作りました",u:"video.html"},
+ {d:"2026.08.25",t:"石鹸の壁紙8枚、BOOTHで無料配布中",u:"soap.html"}
+],
+en:[
+ {d:"2026.08.25",t:"New page: how the videos get made",u:"video.html"},
+ {d:"2026.08.25",t:"Eight soap wallpapers, free on BOOTH",u:"soap.html"}
+]
+};
+function buildTicker(lang){
+var items=TICKER[lang]||TICKER.ja;
+var one="";
+for(var i=0;i<items.length;i++){
+var it=items[i];
+one+='<a class="tickerItem" href="'+it.u+'"><span class="tickerNew">NEW</span>'
+   +'<span class="tickerDate">'+it.d+'</span><span class="tickerSep">|</span>'
+   +'<span>'+it.t+'</span></a>';
+}
+// 途切れずに回すため、同じ並びを2回ぶん敷く
+document.getElementById("tickerTrack").innerHTML=one+one;
+}
 var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
 function render(lang){
 var L=LANG[lang];
@@ -252,6 +289,7 @@ document.getElementById("navChibi").textContent=L.navChibiText;
   document.getElementById("navWallpapers").textContent=L.navWallpapersText;
 document.getElementById("navSoap").textContent=L.navSoapText;
 document.getElementById("navVideo").textContent=L.navVideoText;
+buildTicker(lang);
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
