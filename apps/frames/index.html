@@ -72,7 +72,7 @@ textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--l
 <div class="drop" id="drop">
   <span class="dropIcon">🎞️</span>
   <span class="dropText" id="dropText">動画をドラッグ、またはタップして選ぶ</span>
-  <span class="dropSub" id="dropSub">mp4 / mov / webm など</span>
+  <span class="dropSub" id="dropSub">mp4 / mov / webm など ／ 40MB・60秒まで</span>
 </div>
 <input type="file" id="file" accept="video/*" class="hide">
 
@@ -127,7 +127,7 @@ bannerP:"動画を等間隔で切り出して、画像にします。",
 lead:"AIは、あなたが作った動画の中身を見られません。だから「この動画のここが変」と伝えるのが難しい。この道具は、動画を等間隔で切り出して画像にします。その画像をAIに渡せば、話が通じるようになります。",
 lead2:"ファイルはどこにも送信されません。すべてブラウザの中だけで処理されます。会員登録も要りません。",
 dropText:"動画をドラッグ、またはタップして選ぶ",
-dropSub:"mp4 / mov / webm など",
+dropSub:"mp4 / mov / webm など ／ 40MB・60秒まで",
 lblCount:"切り出す枚数",
 run:"切り出す",
 saveAll:"すべて保存",
@@ -149,7 +149,7 @@ bannerP:"Slice a video into evenly spaced stills.",
 lead:"An AI cannot watch the video you just made. That makes it hard to say \"something is wrong right here.\" This tool slices your video into evenly spaced stills. Hand those to the AI and you can finally talk about it.",
 lead2:"Nothing is uploaded. Everything runs inside your browser. No account needed.",
 dropText:"Drop a video here, or tap to choose one",
-dropSub:"mp4 / mov / webm and others",
+dropSub:"mp4 / mov / webm ／ up to 40 MB and 60 seconds",
 lblCount:"Number of frames",
 run:"Slice it",
 saveAll:"Save all",
@@ -211,6 +211,27 @@ var drop=document.getElementById("drop"),fileEl=document.getElementById("file"),
     tplEl=document.getElementById("tpl");
 var shots=[],fileName="",baseName="";
 
+// ---- 受け付ける上限。ブラウザのメモリを守るための線引き ----
+// 実測: 1080p縦の動画はおよそ 1.5MB/秒。40MB は 1080p で約25秒ぶん。
+// 4K を入れられると1枚あたり32MBのキャンバスを使うので、出力側も頭打ちにする。
+var MAX_BYTES = 40 * 1024 * 1024;   // 40MB
+var MAX_SEC   = 60;                 // 60秒
+var MAX_EDGE  = 1920;               // 書き出しの長辺。これを超える動画は縮小して出す
+
+function msg(key, a){
+  var ja = {
+    type:"動画ファイルを選んでください。",
+    size:"この動画は"+a+"MBです。ここで扱えるのは40MBまでです。\n\nもっと大きい動画は、下にあるPython版（video_frames.py）を使ってください。ffmpegで処理するので大きさの制限がありません。",
+    dur:"この動画は"+a+"秒です。ここで扱えるのは60秒までです。\n\nもっと長い動画は、下にあるPython版（video_frames.py）を使ってください。"
+  };
+  var en = {
+    type:"Please choose a video file.",
+    size:"This video is "+a+" MB. This tool handles up to 40 MB.\n\nFor bigger files, use the Python version (video_frames.py) below — it runs through ffmpeg and has no size limit.",
+    dur:"This video is "+a+" seconds long. This tool handles up to 60 seconds.\n\nFor longer videos, use the Python version (video_frames.py) below."
+  };
+  return (currentLang==="en"?en:ja)[key];
+}
+
 drop.onclick=function(){fileEl.click();};
 drop.ondragover=function(e){e.preventDefault();drop.classList.add("over");};
 drop.ondragleave=function(){drop.classList.remove("over");};
@@ -220,12 +241,18 @@ fileEl.onchange=function(){if(fileEl.files[0])load(fileEl.files[0]);};
 countEl.oninput=function(){countVal.textContent=countEl.value;};
 
 function load(f){
-  if(!f.type.startsWith("video/")){alert("動画ファイルを選んでください");return;}
+  if(!f.type.startsWith("video/")){alert(msg("type"));return;}
+  if(f.size>MAX_BYTES){alert(msg("size",(f.size/1024/1024).toFixed(1)));fileEl.value="";return;}
   fileName=f.name;
   baseName=f.name.replace(/\.[^.]+$/,"");
   grid.innerHTML="";shots=[];aiNote.classList.add("hide");saveAll.classList.add("hide");
   v.src=URL.createObjectURL(f);
   v.onloadedmetadata=function(){
+    if(v.duration>MAX_SEC){
+      alert(msg("dur",v.duration.toFixed(1)));
+      URL.revokeObjectURL(v.src);v.removeAttribute("src");
+      panel.classList.add("hide");fileEl.value="";return;
+    }
     panel.classList.remove("hide");
     runBtn.disabled=false;
     metaEl.textContent=v.videoWidth+"×"+v.videoHeight+" / "+v.duration.toFixed(2)+"s / "+fileName;
@@ -246,7 +273,9 @@ runBtn.onclick=async function(){
   var n=parseInt(countEl.value,10);
   runBtn.disabled=true;
   grid.innerHTML="";shots=[];
-  c.width=v.videoWidth;c.height=v.videoHeight;
+  // 4Kなどが来ても、書き出しは長辺1920までに抑える（メモリを一定に保つため）
+  var sc=Math.min(1,MAX_EDGE/Math.max(v.videoWidth,v.videoHeight));
+  c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);
   var ctx=c.getContext("2d");
   var dur=v.duration;
   // 端は真っ暗になることがあるので、少し内側を取る
