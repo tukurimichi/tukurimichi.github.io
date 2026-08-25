@@ -34,6 +34,9 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 .row{display:flex;align-items:center;gap:12px;margin:18px 0 6px;flex-wrap:wrap;}
 .row label{font-size:.82em;color:var(--muted);font-weight:700;}
 input[type=range]{flex:1;min-width:150px;accent-color:var(--red);}
+.seg{border:1px solid var(--line);background:var(--card2);color:var(--muted);border-radius:7px;padding:7px 13px;font-size:.78em;font-weight:800;cursor:pointer;}
+.seg.segOn{background:var(--red);border-color:var(--red);color:#fff;}
+.plan{font-size:.78em;color:#FFB13B;font-weight:800;margin-top:4px;}
 .count{font-family:var(--mono);font-size:1.1em;font-weight:800;color:#fff;min-width:2.4em;text-align:right;}
 .btn{display:inline-block;border:0;border-radius:8px;padding:11px 20px;font-size:.88em;font-weight:800;cursor:pointer;background:linear-gradient(180deg,var(--red),var(--red-dark));color:#fff;}
 .btn:disabled{opacity:.4;cursor:default;}
@@ -78,10 +81,20 @@ textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--l
 
 <div id="panel" class="hide">
   <div class="row">
+    <button class="seg segOn" id="modeCount">枚数で決める</button>
+    <button class="seg" id="modeInterval">間隔で決める</button>
+  </div>
+  <div class="row" id="rowCount">
     <label id="lblCount">切り出す枚数</label>
     <input type="range" id="count" min="2" max="30" value="5">
     <span class="count" id="countVal">5</span>
   </div>
+  <div class="row hide" id="rowInterval">
+    <label id="lblInterval">何秒ごと</label>
+    <input type="range" id="interval" min="2" max="100" value="10">
+    <span class="count" id="intervalVal">1.0s</span>
+  </div>
+  <div class="plan" id="plan"></div>
   <div class="row">
     <button class="btn" id="run" disabled>切り出す</button>
     <button class="btn btnSub hide" id="saveAll">すべて保存</button>
@@ -129,6 +142,9 @@ lead2:"ファイルはどこにも送信されません。すべてブラウザ�
 dropText:"動画をドラッグ、またはタップして選ぶ",
 dropSub:"mp4 / mov / webm など ／ 40MB・60秒まで",
 lblCount:"切り出す枚数",
+modeCount:"枚数で決める",
+modeInterval:"間隔で決める",
+lblInterval:"何秒ごと",
 run:"切り出す",
 saveAll:"すべて保存",
 aiTitle:"AIに渡すとき",
@@ -151,6 +167,9 @@ lead2:"Nothing is uploaded. Everything runs inside your browser. No account need
 dropText:"Drop a video here, or tap to choose one",
 dropSub:"mp4 / mov / webm ／ up to 40 MB and 60 seconds",
 lblCount:"Number of frames",
+modeCount:"By count",
+modeInterval:"By interval",
+lblInterval:"Every",
 run:"Slice it",
 saveAll:"Save all",
 aiTitle:"Handing them to an AI",
@@ -195,6 +214,7 @@ document.getElementById("metaDesc").setAttribute("content",L.desc);
 for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
 document.getElementById("langBtn").textContent=L.toggleTo;
 if(shots.length)updateTpl();
+if(typeof updatePlan==="function")updatePlan();
 }
 document.getElementById("langBtn").onclick=function(){
 currentLang=currentLang==="ja"?"en":"ja";
@@ -210,6 +230,13 @@ var drop=document.getElementById("drop"),fileEl=document.getElementById("file"),
     saveAll=document.getElementById("saveAll"),aiNote=document.getElementById("aiNote"),
     tplEl=document.getElementById("tpl");
 var shots=[],fileName="",baseName="";
+var mode="count";
+var MAX_FRAMES=60;   // 間隔指定でも、これ以上は切り出さない（メモリを守るため）
+
+var PLAN={
+ ja:function(n,iv){return "→ "+n+"枚（"+iv.toFixed(2)+"秒ごと）";},
+ en:function(n,iv){return "→ "+n+" frames, one every "+iv.toFixed(2)+"s";}
+};
 
 // ---- 受け付ける上限。ブラウザのメモリを守るための線引き ----
 // 実測: 1080p縦の動画はおよそ 1.5MB/秒。40MB は 1080p で約25秒ぶん。
@@ -238,7 +265,45 @@ drop.ondragleave=function(){drop.classList.remove("over");};
 drop.ondrop=function(e){e.preventDefault();drop.classList.remove("over");
   if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);};
 fileEl.onchange=function(){if(fileEl.files[0])load(fileEl.files[0]);};
-countEl.oninput=function(){countVal.textContent=countEl.value;};
+var intervalEl=document.getElementById("interval"),intervalVal=document.getElementById("intervalVal"),
+    rowCount=document.getElementById("rowCount"),rowInterval=document.getElementById("rowInterval"),
+    planEl=document.getElementById("plan"),
+    modeCountBtn=document.getElementById("modeCount"),modeIntervalBtn=document.getElementById("modeInterval");
+
+function setMode(m){
+  mode=m;
+  modeCountBtn.classList.toggle("segOn",m==="count");
+  modeIntervalBtn.classList.toggle("segOn",m==="interval");
+  rowCount.classList.toggle("hide",m!=="count");
+  rowInterval.classList.toggle("hide",m!=="interval");
+  updatePlan();
+}
+modeCountBtn.onclick=function(){setMode("count");};
+modeIntervalBtn.onclick=function(){setMode("interval");};
+
+countEl.oninput=function(){countVal.textContent=countEl.value;updatePlan();};
+intervalEl.oninput=function(){intervalVal.textContent=(intervalEl.value/10).toFixed(1)+"s";updatePlan();};
+
+// いま何枚・何秒ごとになるかを決める。表示にも切り出しにも同じ答えを使う
+function plan(){
+  var dur=v.duration||0;
+  var margin=Math.min(0.08,dur*0.02);
+  var span=Math.max(0,dur-2*margin);
+  if(mode==="count"){
+    var n=parseInt(countEl.value,10);
+    return {n:n,step:n>1?span/(n-1):0,margin:margin};
+  }
+  var iv=intervalEl.value/10;
+  var n2=Math.floor(span/iv)+1;
+  if(n2>MAX_FRAMES)n2=MAX_FRAMES;
+  if(n2<1)n2=1;
+  return {n:n2,step:iv,margin:margin};
+}
+function updatePlan(){
+  if(!v.duration){planEl.textContent="";return;}
+  var p=plan();
+  planEl.textContent=PLAN[currentLang](p.n,p.n>1?p.step:v.duration);
+}
 
 function load(f){
   if(!f.type.startsWith("video/")){alert(msg("type"));return;}
@@ -256,6 +321,7 @@ function load(f){
     panel.classList.remove("hide");
     runBtn.disabled=false;
     metaEl.textContent=v.videoWidth+"×"+v.videoHeight+" / "+v.duration.toFixed(2)+"s / "+fileName;
+    updatePlan();
   };
 }
 
@@ -270,19 +336,17 @@ function seekTo(t){
 }
 
 runBtn.onclick=async function(){
-  var n=parseInt(countEl.value,10);
+  var pl=plan();
+  var n=pl.n;
   runBtn.disabled=true;
   grid.innerHTML="";shots=[];
   // 4Kなどが来ても、書き出しは長辺1920までに抑える（メモリを一定に保つため）
   var sc=Math.min(1,MAX_EDGE/Math.max(v.videoWidth,v.videoHeight));
   c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);
   var ctx=c.getContext("2d");
-  var dur=v.duration;
   // 端は真っ暗になることがあるので、少し内側を取る
-  var margin=Math.min(0.08,dur*0.02);
-  var step=(dur-2*margin)/(n-1);
   for(var i=0;i<n;i++){
-    var t=margin+step*i;
+    var t=Math.min(v.duration-0.02,pl.margin+pl.step*i);
     await seekTo(t);
     ctx.drawImage(v,0,0,c.width,c.height);
     var url=c.toDataURL("image/jpeg",0.92);
