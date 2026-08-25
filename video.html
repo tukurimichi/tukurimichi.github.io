@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">AIで動画をつくる | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="画像生成AIと動画生成AIを行き来して、音のある短い動画をつくっています。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --card2:#1C1C1F;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#ACA8A2;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:22px;right:20px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72em;font-weight:700;padding:6px 12px;border-radius:14px;cursor:pointer;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.entry{padding:26px 22px;}
+.entry p{line-height:1.9;font-size:.95em;color:#D9D6D0;margin:0 0 1.1em;}
+.vids{display:flex;overflow-x:auto;gap:12px;margin-top:18px;padding-bottom:6px;-webkit-overflow-scrolling:touch;}
+.vids figure{margin:0;flex:0 0 168px;}
+.vidBox{position:relative;width:168px;aspect-ratio:9/16;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000;}
+.vidBox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.vids figcaption{font-size:.72em;color:var(--muted);margin-top:8px;line-height:1.55;}
+.chLink{display:block;margin-top:20px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(165deg,var(--card2),var(--card));text-decoration:none;color:inherit;transition:border-color .15s,transform .15s;}
+.chLink:hover{border-color:rgba(227,30,36,.5);transform:translateY(-1px);}
+.chName{display:block;font-size:.95em;font-weight:800;color:#fff;}
+.chSub{display:block;font-size:.78em;color:var(--muted);margin-top:4px;}
+.chGo{display:block;font-size:.78em;font-weight:800;color:#FF8A80;margin-top:9px;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">AIで動画をつくる</h1>
+<p id="bannerP">画像のAIと動画のAIを、行ったり来たりしています。</p>
+</div>
+
+<div class="entry">
+<p id="p1">短い動画を作っています。音も一緒に出ます。喋りはありません。作り方は、画像を作るAIと、動画を作るAIを行ったり来たりするだけです。</p>
+<p id="p2">はじめは動画のAIに文章で全部指示していました。でも「引きで撮って」と書いても、まったく効かない。何度かやって分かったのは、構図は文章では決まらないということでした。いまは先に静止画で構図を作って、それを動画のAIに「最初の一枚」として渡しています。文章に書くのは、動きと音だけです。</p>
+<p id="p3">5秒で終わらない動きもあります。切り始めたのに切り終わらない。そういうときは「終わった状態」の画像も一緒に渡します。あいだはAIが埋めてくれます。</p>
+<p id="p4">いちばん良かった思いつきは、僕のものではありません。鉄で自分を鋳造して輪切りにしたところまで作って見せたら、見てくれた人の娘さんが「それをお造りにしてほしい」と言ったそうです。そのほうがずっと面白かったので、そうしました。</p>
+
+<div class="vids">
+<figure>
+<div class="vidBox"><iframe src="https://www.youtube.com/embed/3WCGdyhYOGI" title="casting" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption id="cap1">鋳造してから、輪切りにして、お造りにする</figcaption>
+</figure>
+<figure>
+<div class="vidBox"><iframe src="https://www.youtube.com/embed/KDfv44_SoWI" title="soap" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption id="cap2">石鹸になった自分を、包丁で真っ二つにする</figcaption>
+</figure>
+<figure>
+<div class="vidBox"><iframe src="https://www.youtube.com/embed/nh3MzXtl3EI" title="squeeze" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption id="cap3">スクイーズになった自分を、両手でむにむにする</figcaption>
+</figure>
+</div>
+
+<a class="chLink" href="https://www.youtube.com/@tsukuru_besu" target="_blank" rel="noopener" id="chLink" onclick="gtag('event','youtube_click',{from:'video_page'});">
+<span class="chName" id="chName">YouTube／ベス</span>
+<span class="chSub" id="chSub">新しい動画はここに出しています</span>
+<span class="chGo" id="chGo">チャンネルを見る →</span>
+</a>
+
+<p style="margin-top:1.6em;" id="p5">作っているあいだに分かったことは、たいてい失敗から出てきます。参考の画像を渡すと、驚くほどそのまま動いてくれる。ただし、渡した画像の構図からも逃げられなくなる。便利なことと不便なことは、いつも同じところから来るようです。</p>
+</div>
+
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
+</div>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"AIで動画をつくる | tukurimichi.com",
+desc:"画像生成AIと動画生成AIを行き来して、音のある短い動画をつくっています。",
+t:{
+backTop:"← トップに戻る",
+bannerH1:"AIで動画をつくる",
+bannerP:"画像のAIと動画のAIを、行ったり来たりしています。",
+p1:"短い動画を作っています。音も一緒に出ます。喋りはありません。作り方は、画像を作るAIと、動画を作るAIを行ったり来たりするだけです。",
+p2:"はじめは動画のAIに文章で全部指示していました。でも「引きで撮って」と書いても、まったく効かない。何度かやって分かったのは、構図は文章では決まらないということでした。いまは先に静止画で構図を作って、それを動画のAIに「最初の一枚」として渡しています。文章に書くのは、動きと音だけです。",
+p3:"5秒で終わらない動きもあります。切り始めたのに切り終わらない。そういうときは「終わった状態」の画像も一緒に渡します。あいだはAIが埋めてくれます。",
+p4:"いちばん良かった思いつきは、僕のものではありません。鉄で自分を鋳造して輪切りにしたところまで作って見せたら、見てくれた人の娘さんが「それをお造りにしてほしい」と言ったそうです。そのほうがずっと面白かったので、そうしました。",
+cap1:"鋳造してから、輪切りにして、お造りにする",
+cap2:"石鹸になった自分を、包丁で真っ二つにする",
+cap3:"スクイーズになった自分を、両手でむにむにする",
+chName:"YouTube／ベス",
+chSub:"新しい動画はここに出しています",
+chGo:"チャンネルを見る →",
+p5:"作っているあいだに分かったことは、たいてい失敗から出てきます。参考の画像を渡すと、驚くほどそのまま動いてくれる。ただし、渡した画像の構図からも逃げられなくなる。便利なことと不便なことは、いつも同じところから来るようです。",
+footBack:"← トップに戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Making Videos with AI | tukurimichi.com",
+desc:"Short videos with sound, made by going back and forth between an image AI and a video AI.",
+t:{
+backTop:"← Back to top",
+bannerH1:"Making Videos with AI",
+bannerP:"Back and forth between an image AI and a video AI.",
+p1:"I make short videos. They come with sound. Nobody talks in them. The method is just this: go back and forth between an AI that makes images and an AI that makes video.",
+p2:"At first I described everything to the video AI in words. But writing \"shoot it wider\" did nothing at all. After a few tries I understood: framing is not decided by words. Now I build the framing as a still image first, and hand that to the video AI as its opening frame. The only things I write are the motion and the sound.",
+p3:"Some actions don't finish in five seconds. The blade starts cutting and never gets through. For those I also hand over an image of the finished state. The AI fills in the middle.",
+p4:"The best idea in any of this wasn't mine. I showed someone the part where I cast myself in iron and sliced myself into rounds, and their daughter said it should be plated as sashimi. That was far better, so that's what I did.",
+cap1:"Cast in iron, sliced, then plated as sashimi",
+cap2:"A bar of soap shaped like me, cut clean in half",
+cap3:"A squeeze toy shaped like me, squished with both hands",
+chName:"YouTube / Besu",
+chSub:"New videos go up here",
+chGo:"Visit the channel →",
+p5:"Most of what I learned came out of failures. Hand the AI a reference image and it follows it astonishingly closely — which also means you can never escape the framing you handed it. The useful thing and the inconvenient thing always seem to come from the same place.",
+footBack:"← Back to top"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
+</body>
+</html>
