@@ -77,7 +77,7 @@ a{color:inherit;}
 .budgetNum{font-family:var(--mono);font-size:1.7em;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
 .budgetNum small{font-size:.42em;background:var(--red);color:#fff;border-radius:4px;padding:2px 6px;margin-left:.5em;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,sans-serif;vertical-align:middle;}
 .budgetBar{height:3px;background:var(--line);border-radius:2px;margin:8px 0 6px;overflow:hidden;}
-.budgetBarFill{height:100%;width:86%;background:linear-gradient(90deg,var(--red-dark),var(--red));border-radius:2px;}
+.budgetBarFill{height:100%;width:0;transition:width .6s ease;background:linear-gradient(90deg,var(--red-dark),var(--red));border-radius:2px;}
 .budgetSub{display:block;font-size:.66em;color:var(--muted);}
 
 
@@ -142,8 +142,8 @@ a{color:inherit;}
 
 <div class="eyebrow"><span class="dot"></span><span class="label">BUDGET</span><span class="rule"></span></div>
 <a class="budgetPanel" href="money.html">
-<div class="budgetRow"><span class="budgetNum" id="budgetNum">¥8,600<small>86%</small></span></div>
-<div class="budgetBar"><div class="budgetBarFill"></div></div>
+<div class="budgetRow"><span class="budgetNum" id="budgetNum"></span></div>
+<div class="budgetBar"><div class="budgetBarFill" id="budgetBarFill"></div></div>
 <span class="budgetSub" id="budgetSubText"></span>
 <span class="budgetMore" id="budgetMore"></span>
 </a>
@@ -168,6 +168,7 @@ a{color:inherit;}
 </div>
 </div>
 
+<script src="budget.js"></script>
 <script>
 var LANG={
 ja:{
@@ -178,7 +179,7 @@ intro:"べす、AIと開発中の記録です。#AIに一万円渡してみた",
 heroBadge:"UPDATE 予算 残高公開中",
 shareX:"𝕏 ポスト",
 shareBooth:"📦 BOOTH",
-budgetSubBase:"元手10,000円 / 支出1,400円",
+budgetSubFmt:function(b,o){return "元手"+b+"円 / 支出"+o+"円";},
 daysFmt:function(n){return " / "+n+"日目";},
 ideaShareText:"#AIに一万円渡してみた 次はこんな機能があったら面白いかも:",
 navHomeText:"ホーム",
@@ -212,7 +213,7 @@ intro:"Notes from Bes, building things with AI. #AIに一万円渡してみた",
 heroBadge:"UPDATE Live Budget Tracker",
 shareX:"𝕏 Post",
 shareBooth:"📦 BOOTH",
-budgetSubBase:"Starting funds ¥10,000 / Spent ¥1,400",
+budgetSubFmt:function(b,o){return "\u00a5"+b+" start / \u00a5"+o+" spent";},
 daysFmt:function(n){return " / Day "+n;},
 ideaShareText:"#AIに一万円渡してみた Idea for what's next: ",
 navHomeText:"Home",
@@ -261,6 +262,21 @@ one+='<a class="tickerItem" href="'+it.u+'"><span class="tickerNew">NEW</span>'
 // 途切れずに回すため、同じ並びを2回ぶん敷く
 document.getElementById("tickerTrack").innerHTML=one+one;
 }
+function yen0(n){return n.toLocaleString("en-US");}
+function renderBudget(L,days){
+// budget.js が読めなかった場合は何もしない（数字を嘘で出さない）
+if(typeof BUDGET==="undefined"||typeof SPENDS==="undefined")return;
+var out=0,inn=0;
+SPENDS.forEach(function(s){out+=(s.out||0);inn+=(s.in||0);});
+var bal=BUDGET-out+inn;
+var pct=Math.max(0,Math.min(100,Math.round(bal/BUDGET*100)));
+var num=document.getElementById("budgetNum");
+if(num)num.innerHTML="\u00a5"+yen0(bal)+"<small>"+pct+"%</small>";
+var bar=document.getElementById("budgetBarFill");
+if(bar)bar.style.width=pct+"%";
+var sub=document.getElementById("budgetSubText");
+if(sub)sub.textContent=L.budgetSubFmt(yen0(BUDGET),yen0(out))+L.daysFmt(days);
+}
 var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
 function render(lang){
 var L=LANG[lang];
@@ -301,7 +317,7 @@ document.getElementById("langBtn").textContent=L.toggleTo;
 var start=new Date("2026-08-15T00:00:00+09:00");
 var today=new Date();
 var diff=Math.floor((today-start)/86400000)+1;
-document.getElementById("budgetSubText").textContent=L.budgetSubBase+L.daysFmt(diff);
+renderBudget(L,diff);
 }
 document.getElementById("langBtn").onclick=function(){
 currentLang=currentLang==="ja"?"en":"ja";
