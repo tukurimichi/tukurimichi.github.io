@@ -62,7 +62,7 @@ a{color:inherit;}
 .ticker{position:relative;margin:14px 20px 4px;height:34px;border:1px solid #2A2A2D;border-radius:8px;background:#08080A;overflow:hidden;box-shadow:inset 0 0 14px rgba(0,0,0,.9);}
 .ticker::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 1px,transparent 1px 3px);}
 .ticker::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(90deg,#08080A 0%,rgba(8,8,10,0) 7%,rgba(8,8,10,0) 93%,#08080A 100%);}
-.tickerTrack{display:flex;align-items:center;height:100%;width:max-content;animation:tickerScroll 34s linear infinite;}
+.tickerTrack{display:flex;align-items:center;height:100%;width:max-content;animation:tickerScroll 48s linear infinite;}
 .ticker:hover .tickerTrack{animation-play-state:paused;}
 .tickerItem{display:inline-flex;align-items:center;gap:9px;padding:0 26px;white-space:nowrap;text-decoration:none;font-size:.78em;font-weight:700;letter-spacing:.04em;color:#FFB13B;text-shadow:0 0 7px rgba(255,140,40,.55);}
 .tickerItem:hover{color:#FFD166;}
@@ -242,10 +242,12 @@ toggleTo:"日本語"
 };
 var TICKER={
 ja:[
+ {d:"2026.08.25",t:"動画をコマにする道具を作りました",u:"apps/frames/"},
  {d:"2026.08.25",t:"動画のつくりかたのページを作りました",u:"video.html"},
  {d:"2026.08.25",t:"石鹸の壁紙8枚、BOOTHで無料配布中",u:"soap.html"}
 ],
 en:[
+ {d:"2026.08.25",t:"New tool: slice a video into frames",u:"apps/frames/"},
  {d:"2026.08.25",t:"New page: how the videos get made",u:"video.html"},
  {d:"2026.08.25",t:"Eight soap wallpapers, free on BOOTH",u:"soap.html"}
 ]
