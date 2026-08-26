@@ -332,7 +332,10 @@ function screen(root){
    レールは「1本の坂道」として扱う。上り坂では重力で減速するので、
    **弱すぎた玉が天辺まで届かず戻ってくる（ファール玉）が、特別な処理なしに起きる。** */
 var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
-var GRAV=9.8, REST=0.42, FRIC=0.985;
+var GRAV=9.8;
+var REST=0.60;      // 釘に当たったときの跳ね返り。上げるほど玉が軽く見える
+var DRAG=0.30;      // 空気抵抗。**1秒あたりの割合**で効かせる（後述）
+var STUCK_S=0.5;    // これだけ止まっていたら挟まったとみなす
 // 実際の重力で動かすと、44cmの盤面を0.3秒で落ちきってしまい、目で追えない。
 // 重力だけ弱めると跳ね方の比率が変わるので、**時間そのものを遅くする**。
 // 0.40 なら実機の2.5倍かけて落ちる
@@ -406,7 +409,7 @@ function solve(dt){
   if(b.onRail){
    var p=railAt(b.s);
    b.sv+=-GRAV*p.tv*dt;            // 坂の傾きぶんだけ重力で加減速する
-   b.sv*=0.9995;
+   b.sv-=b.sv*0.05*dt;      // レール上の摩擦。これも時間で効かせる
    b.s+=b.sv*dt;
    if(b.s>=RAIL_LEN){              // 天辺を越えた。盤面へ放り出す
     var e=railAt(RAIL_LEN);
@@ -425,7 +428,10 @@ function solve(dt){
   }
   // 自由落下
   b.vv-=GRAV*dt;
-  b.vu*=FRIC;
+  // **刻みの回数ではなく、経った時間で減速させる。**
+  // 速い玉ほど細かく刻む作りなので、1コマごとに掛けると
+  // 「速い玉ほど強く減速する」という逆の挙動になってしまう
+  b.vu-=b.vu*DRAG*dt;
   b.u+=b.vu*dt; b.v+=b.vv*dt;
   // 釘
   for(var k=0;k<LAY.pegs.length;k++){
@@ -450,8 +456,8 @@ function solve(dt){
   }
   // 釘の隙間を詰めたので、まれに挟まって止まることがある。放っておくと盤面が固まる
   var spd=Math.sqrt(b.vu*b.vu+b.vv*b.vv);
-  if(spd<0.035){ b.slow=(b.slow||0)+1; } else { b.slow=0; }
-  if(b.slow>90){ b.slow=0; b.vu+=(Math.random()-0.5)*0.35; b.vv-=0.25; }
+  if(spd<0.035){ b.slow=(b.slow||0)+dt; } else { b.slow=0; }
+  if(b.slow>STUCK_S){ b.slow=0; b.vu+=(Math.random()-0.5)*0.35; b.vv-=0.25; }
   b.mesh.position.set(b.u,b.v,0.010);
   // 下まで落ちたら消す
   if(b.v<CV-R+0.012||b.life>25){scene.remove(b.mesh);balls.splice(i,1);}
