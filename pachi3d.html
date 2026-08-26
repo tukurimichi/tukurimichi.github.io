@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826k";
+var AV="?v=20260826l";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -298,6 +298,57 @@ var reels=[{p:0,v:0.42,stop:-1},{p:0,v:0.36,stop:-1},{p:0,v:0.30,stop:-1}];
 // **実機は勝手に回らない。** ヘソに玉が入った回数（保留）を消化する形でだけ回る
 var state="idle", timer=0, hold=0, win=false, flash=0, goal=[0,0,0];
 var spins=0, wins=0, payout=0, atkOpen=0, idleT=0;
+
+// 液晶に描く絵柄。マスコットの頭（口はなし）
+function head(g,x,y,r,col){
+ g.save();g.translate(x,y);g.fillStyle=col;
+ g.beginPath();
+ g.moveTo(-r,r*0.45);
+ g.quadraticCurveTo(-r,-r,0,-r);
+ g.quadraticCurveTo(r,-r,r,r*0.45);
+ g.quadraticCurveTo(r,r*0.95,0,r*0.95);
+ g.quadraticCurveTo(-r,r*0.95,-r,r*0.45);
+ g.closePath();g.fill();
+ g.fillStyle="rgba(0,0,0,.6)";
+ g.beginPath();g.arc(-r*0.34,-r*0.05,r*0.14,0,7);g.fill();
+ g.beginPath();g.arc(r*0.34,-r*0.05,r*0.14,0,7);g.fill();
+ g.restore();
+}
+
+function drawLcd(){
+ var W=lcd.width,H=lcd.height;
+ lx.fillStyle="#05070A";lx.fillRect(0,0,W,H);
+ var bg=lx.createRadialGradient(W/2,H*0.42,10,W/2,H*0.42,W*0.7);
+ bg.addColorStop(0,flash>0?"#3A1206":"#0C1119");bg.addColorStop(1,"#04060A");
+ lx.fillStyle=bg;lx.fillRect(0,0,W,H);
+ // リール3つ
+ var cw=W/3.6, gap=(W-cw*3)/4;
+ for(var i=0;i<3;i++){
+  var x=gap+(cw+gap)*i, y=H*0.10, h=H*0.60;
+  lx.fillStyle="rgba(255,255,255,.045)";
+  lx.fillRect(x,y,cw,h);
+  lx.save();lx.beginPath();lx.rect(x,y,cw,h);lx.clip();
+  var pp=reels[i].p, step=h/2.2;
+  for(var k=-2;k<4;k++){
+   var sy=y+h/2+((k+(pp%1))*step);
+   var idx=(Math.floor(pp)+k+60)%SYM.length;
+   head(lx,x+cw/2,sy,Math.min(cw,step)*0.34,SYM[idx]);
+  }
+  lx.restore();
+  lx.strokeStyle="rgba(240,145,63,.55)";lx.lineWidth=2;lx.strokeRect(x,y,cw,h);
+ }
+ // 保留（ヘソに入った回数のストック）
+ for(var j=0;j<4;j++){
+  var hx=W/2-54+j*36, hy=H*0.86;
+  lx.beginPath();lx.arc(hx,hy,9,0,7);
+  lx.fillStyle=(j<hold)?"#F0913F":"rgba(255,255,255,.10)";lx.fill();
+ }
+ if(flash>0){
+  lx.fillStyle="rgba(227,30,36,"+(0.12+0.10*Math.sin(flash*0.5))+")";
+  lx.fillRect(0,0,W,H);
+ }
+ if(tex) tex.needsUpdate=true;
+}
 
 function onChucker(){
  payout+=3;                       // ヘソは数個の払い出し
