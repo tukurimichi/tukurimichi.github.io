@@ -60,7 +60,12 @@ body{margin:0;background:var(--bg);color:var(--text);
   margin-top:9px;overflow:hidden;}
 .gaugeFill{height:100%;width:0%;background:linear-gradient(90deg,#7FCFA0,#FFB13B,#E31E24);}
 .hint{font-size:.76em;color:var(--muted);line-height:1.8;margin:10px 2px 0;}
-.loading{position:relative;top:-40vh;text-align:center;font-size:.8em;color:var(--muted);}
+.stageWrap{position:relative;}
+/* **canvasの上に重ねる。** 前は top:-40vh でずらしていて、
+   失敗の文言が画面の外や帯の裏に隠れ、「黙って真っ黒」に見えていた */
+.loading{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  text-align:center;font-size:.82em;color:var(--muted);line-height:1.7;
+  padding:0 20px;pointer-events:none;}
 .footer{padding:22px;text-align:center;font-size:.72em;color:var(--muted);}
 .footer a{color:#FF8A80;}
 </style>
@@ -74,8 +79,10 @@ body{margin:0;background:var(--bg);color:var(--text);
 <p id="bannerP">実寸の比率で組みました。</p>
 </div>
 
+<div class="stageWrap">
 <canvas id="stage"></canvas>
 <div class="loading" id="loading">読み込み中…</div>
+</div>
 
 <div class="ctrl">
 <div class="readout"><span id="stateTxt">待機</span>
@@ -149,7 +156,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826f";
+var AV="?v=20260826g";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -244,12 +251,14 @@ function loadMachine(tryN){
  },undefined,function(e){
   window.__loadErr=(window.__loadErr||[]).concat([{n:tryN,t:(e&&e.type)||"",m:(e&&e.message)||"",s:(e&&e.target&&e.target.status)||""}]);
   var box=document.getElementById("loading");
-  if(tryN<3){
-   box.textContent=(LANG[lang].t.retry||"読み込み直しています")+"…("+(tryN+1)+"/3)";
-   setTimeout(function(){loadMachine(tryN+1);},1200*(tryN+1));
+  if(tryN<5){
+   box.textContent=(LANG[lang].t.retry||"読み込み直しています")+"…("+(tryN+1)+"/5)";
+   setTimeout(function(){loadMachine(tryN+1);},900*(tryN+1));
   }else{
+   var st=(e&&e.target&&e.target.status);
    box.innerHTML=(LANG[lang].t.failed||"台を読み込めませんでした")+
-     "<br><small style='opacity:.7'>"+((e&&(e.message||e.type))||"")+"</small>";
+     "<br><small style='opacity:.7'>"+((e&&(e.message||e.type))||"")+
+     (st?(" / HTTP "+st):"")+"</small>";
   }
  });
 }
