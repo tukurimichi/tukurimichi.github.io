@@ -59,6 +59,8 @@ body{margin:0;background:var(--bg);color:var(--text);
 .gauge{height:8px;background:var(--card2);border:1px solid var(--line);border-radius:5px;
   margin-top:9px;overflow:hidden;}
 .gaugeFill{height:100%;width:0%;background:linear-gradient(90deg,#7FCFA0,#FFB13B,#E31E24);}
+.diag{font-family:var(--mono);font-size:.68em;color:#7FCFA0;line-height:1.6;
+  margin:8px 2px 0;word-break:break-all;}
 .hint{font-size:.76em;color:var(--muted);line-height:1.8;margin:10px 2px 0;}
 .stageWrap{position:relative;}
 /* **canvasの上に重ねる。** 前は top:-40vh でずらしていて、
@@ -88,6 +90,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="readout"><span id="stateTxt">待機</span>
 <span id="scoreTxt"></span><b id="ballCount">0</b></div>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
+<p class="diag" id="diag"></p>
 <p class="hint" id="hint">画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
 </div>
 
@@ -156,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826g";
+var AV="?v=20260826h";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -604,6 +607,26 @@ function draw(ts){
  resize(); renderer.render(scene,camera);
 }
 requestAnimationFrame(draw);
+
+// ---- 診断。画面が真っ黒になったときに、何が起きているかを読める形で出す
+setInterval(function(){
+ var d=document.getElementById("diag"); if(!d) return;
+ var meshes=0, vis=0;
+ scene.traverse(function(o){ if(o.isMesh){meshes++; if(o.visible)vis++;} });
+ var gl=null; try{ gl=renderer.getContext(); }catch(e){}
+ var info=renderer.info&&renderer.info.render;
+ d.textContent=
+  "model:"+(machine?"OK":"NG")+
+  " mesh:"+meshes+"/"+vis+
+  " draw:"+(info?info.calls:"-")+
+  " tri:"+(info?info.triangles:"-")+
+  " lay:"+(LAY?"OK":"NG")+
+  " env:"+(scene.environment?"OK":"NG")+
+  " gl:"+(gl?(gl.getParameter(gl.VERSION)||"").slice(0,18):"none")+
+  " lost:"+(gl&&gl.isContextLost&&gl.isContextLost()?"YES":"no")+
+  " cv:"+cv.clientWidth+"x"+cv.clientHeight+
+  " px:"+renderer.getPixelRatio();
+},700);
 })();
 </script>
 </body>
