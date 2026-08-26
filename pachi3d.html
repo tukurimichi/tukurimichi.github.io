@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title id="pageTitle">パチンコ台を3Dで作った | tukurimichi.com</title>
-<meta name="description" id="metaDesc" content="実寸の比率で組んだパチンコ台の3Dモデル。ドラッグで回せます。">
+<meta name="description" id="metaDesc" content="実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
 :root{
@@ -32,8 +32,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 #stage{width:100%;height:70vh;min-height:380px;max-height:640px;display:block;
   background:radial-gradient(120% 90% at 50% 20%,#101216 0%,#050607 70%);
   border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-  touch-action:none;cursor:grab;}
-#stage:active{cursor:grabbing;}
+  touch-action:auto;}
 .bar{display:flex;gap:8px;padding:12px 16px 0;flex-wrap:wrap;}
 .bar button{flex:1 1 88px;background:var(--card2);border:1px solid var(--line);color:var(--text);
   font-size:.78em;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer;}
@@ -58,18 +57,11 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="banner">
 <button id="langBtn" class="langToggle"></button>
 <h1 id="bannerH1">パチンコ台を3Dで作った</h1>
-<p id="bannerP">ドラッグで回せます。</p>
+<p id="bannerP">実寸の比率で組みました。</p>
 </div>
 
 <canvas id="stage"></canvas>
 <div class="loading" id="loading">読み込み中…</div>
-
-<div class="bar">
-<button id="btnFront">正面</button>
-<button id="btnBoard">盤面に寄る</button>
-<button id="btnIso">斜めから</button>
-<button id="btnSpin" class="on">回す</button>
-</div>
 
 <div class="entry">
 <p id="p1">パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。</p>
@@ -91,15 +83,13 @@ body{margin:0;background:var(--bg);color:var(--text);
 
 <!-- three.js r128 (MIT) はリポジトリに同梱。外部CDNに頼ると、そこが落ちた時に真っ白になる -->
 <script src="chibi/lib/three.min.js"></script>
-<script src="chibi/lib/OrbitControls.js"></script>
 <script src="chibi/lib/GLTFLoader.js"></script>
 <script>
 var LANG={
 ja:{toggleTo:"English",
  title:"パチンコ台を3Dで作った | tukurimichi.com",
- desc:"実寸の比率で組んだパチンコ台の3Dモデル。ドラッグで回せます。",
- t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"ドラッグで回せます。",
-  btnFront:"正面",btnBoard:"盤面に寄る",btnIso:"斜めから",btnSpin:"回す",
+ desc:"実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。",
+ t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
@@ -108,9 +98,8 @@ ja:{toggleTo:"English",
   footBack:"← トップに戻る"}},
 en:{toggleTo:"日本語",
  title:"A Pachinko Machine in 3D | tukurimichi.com",
- desc:"A pachinko machine modelled at real-world proportions. Drag to spin it.",
- t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Drag to spin it.",
-  btnFront:"Front",btnBoard:"Playfield",btnIso:"Angled",btnSpin:"Spin",
+ desc:"A pachinko machine modelled at real-world proportions. Modelled at real-world proportions.",
+ t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
@@ -138,10 +127,10 @@ renderer.toneMappingExposure=0.62;
 
 var scene=new THREE.Scene();
 var camera=new THREE.PerspectiveCamera(32,1,0.05,20);
-var controls=new THREE.OrbitControls(camera,cv);
-controls.enableDamping=true;controls.dampingFactor=0.08;
-controls.minDistance=0.55;controls.maxDistance=4.0;
-controls.target.set(0,0.45,0);
+// 触らせない。正面の1アングルに固定する
+var LOOK={pos:[0,0.42,2.05],tgt:[0,0.42,0]};
+camera.position.set(LOOK.pos[0],LOOK.pos[1],LOOK.pos[2]);
+camera.lookAt(LOOK.tgt[0],LOOK.tgt[1],LOOK.tgt[2]);
 
 // 灯り。Blenderのレンダと同じで、左上から
 scene.add(new THREE.HemisphereLight(0x4a525c,0x050506,0.16));
@@ -165,7 +154,7 @@ card.position.set(-2.2,2.4,2.0); card.lookAt(0,0,0);
 envScene.add(card);
 try{ scene.environment=pmrem.fromScene(envScene,0.04).texture; }catch(e){}
 
-var machine=null,spin=true;
+var machine=null;
 new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
  machine=g.scene;
  // 材質ごとの効き具合をそろえる。
@@ -189,28 +178,9 @@ new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
  });
  scene.add(machine);
  document.getElementById("loading").style.display="none";
- view("front");
 },undefined,function(){
  document.getElementById("loading").textContent="読み込めませんでした";
 });
-
-var VIEW={
- front:{pos:[0,0.42,2.05],tgt:[0,0.42,0]},
- board:{pos:[0,0.52,1.05],tgt:[0,0.52,0]},
- iso:  {pos:[-1.15,0.95,1.55],tgt:[0,0.46,0]}
-};
-function view(k){
- var v=VIEW[k];
- camera.position.set(v.pos[0],v.pos[1],v.pos[2]);
- controls.target.set(v.tgt[0],v.tgt[1],v.tgt[2]);
- controls.update();
-}
-document.getElementById("btnFront").onclick=function(){view("front");};
-document.getElementById("btnBoard").onclick=function(){view("board");};
-document.getElementById("btnIso").onclick=function(){view("iso");};
-var bs=document.getElementById("btnSpin");
-bs.onclick=function(){spin=!spin;bs.className=spin?"on":"";};
-controls.addEventListener("start",function(){spin=false;bs.className="";});
 
 function resize(){
  var w=cv.clientWidth,h=cv.clientHeight;
@@ -218,19 +188,17 @@ function resize(){
  if(cv.width!==w||cv.height!==h){
   renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.updateProjectionMatrix();
+  camera.lookAt(LOOK.tgt[0],LOOK.tgt[1],LOOK.tgt[2]);
  }
 }
 // 見た目を数値で確かめられるようにしておく（色が飛んでいないか等）
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
                 get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);}};
-function loop(){
- requestAnimationFrame(loop);
- resize();
- if(spin&&machine){machine.rotation.y+=0.004;}
- controls.update();
- renderer.render(scene,camera);
-}
-loop();
+// 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
+function draw(){resize();renderer.render(scene,camera);}
+window.addEventListener("resize",draw);
+setInterval(draw,500);        // 読み込み後の反映と、端末の回転などの取りこぼし用
+draw();
 })();
 </script>
 </body>
