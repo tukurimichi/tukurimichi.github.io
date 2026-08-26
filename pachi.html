@@ -115,7 +115,8 @@ var cv=document.getElementById("stage"),cx=cv.getContext("2d");
  cx.setTransform(dpr,0,0,dpr,0,0);
 })();
 
-var RAIL_X=332;              // 右のレール。ここより右には玉を入れない
+var RAIL_X=332;              // 右のレール。ここより右の盤面には玉を入れない
+var RAIL_BALL=347;           // 打ち出した玉が通る溝の中心（レールと台の縁のあいだ）
 var PEG_R=3.6, BALL_R=6.4;
 // 当たり判定は絵の輪郭を実測して決めた（pachi/mascot.png を1行ずつ走査した値）
 // 画像は172x256。中心を(86,128)として、画面上の高さ22pxに縮めた座標
@@ -244,6 +245,10 @@ function draw(){
  cx.strokeStyle="rgba(210,214,222,.55)";cx.lineWidth=1.6;
  cx.beginPath();cx.moveTo(RAIL_X,H);cx.lineTo(RAIL_X,70);
  cx.quadraticCurveTo(RAIL_X,26,RAIL_X-40,26);cx.stroke();
+ // 溝の外側の縁。ここと上の線のあいだを玉が通る
+ cx.strokeStyle="rgba(180,186,196,.38)";cx.lineWidth=1.2;
+ cx.beginPath();cx.moveTo(W-2,H);cx.lineTo(W-2,58);
+ cx.quadraticCurveTo(W-2,12,W-46,12);cx.stroke();
  // 役物
  cx.save();
  cx.fillStyle=S.flash>0?"rgba(227,30,36,"+(0.25+0.25*Math.sin(S.flash*0.4))+")":"#141416";
@@ -319,9 +324,11 @@ function step(){
   if(t>=1){b.rail=false;b.x=entryX(b.power);b.y=44;
            b.vx=(Math.random()-0.5)*TUNE.spread*2;b.vy=0.4;
            b.om=(Math.random()-0.5)*0.12;}
-  else if(t>0.72){var u=(t-0.72)/0.28;      // 上を左へ転がって、狙った位置で落ちる
-           b.x=RAIL_X-30-(RAIL_X-30-entryX(b.power))*u;b.y=30;}
-  else{b.x=RAIL_X;b.y=580-(580-30)*(t/0.72);}
+  else if(t>0.62){var u=(t-0.62)/0.38;      // 上を左へ転がって、狙った位置で落ちる
+           var sx=RAIL_BALL, ex=entryX(b.power);
+           b.x=sx+(ex-sx)*u;
+           b.y=26+Math.sin(u*Math.PI)*-6;}  // てっぺんをすこし膨らませる
+  else{b.x=RAIL_BALL;b.y=580-(580-26)*(t/0.62);}
   b.rot+=0.22;return;
  }
  b.vy+=G;
