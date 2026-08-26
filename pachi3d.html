@@ -66,7 +66,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="entry">
 <p id="p1">パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。</p>
 <p id="p2">色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。</p>
-<p id="p3">中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。</p>
+<p id="p3">中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。画面の中では、絵柄が3つ回っています。</p>
 <div class="spec">
 <table>
 <tr><td id="s1">枠</td><td>520 × 820 mm</td></tr>
@@ -93,7 +93,7 @@ ja:{toggleTo:"English",
   loading:"読み込み中…",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
-  p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。",
+  p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。画面の中では、絵柄が3つ回っています。",
   s1:"枠",s2:"遊技盤",s3:"釘",s4:"発射レール",s4v:"左（実機どおり）",s5:"ファイルの大きさ",
   footBack:"← トップに戻る"}},
 en:{toggleTo:"日本語",
@@ -103,7 +103,7 @@ en:{toggleTo:"日本語",
   loading:"Loading…",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
-  p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away.",
+  p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away. Inside it, three reels are spinning.",
   s1:"Cabinet",s2:"Playfield",s3:"Nails",s4:"Launch rail",s4v:"Left (as on a real machine)",s5:"File size",
   footBack:"← Back to top"}}
 };
@@ -183,6 +183,7 @@ new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
    }
   }
  });
+ screen(machine);
  scene.add(machine);
  document.getElementById("loading").style.display="none";
 },undefined,function(){
@@ -202,10 +203,107 @@ function resize(){
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
                 get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);}};
 // 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
+/* ===== 液晶の中身 =====
+   小さな2Dのcanvasに絵を描いて、それを3Dの画面に貼る。
+   ゲームで回しているリールと同じものを、台の中で回す。 */
+var SYM=["#F0913F","#B7DCC6","#C6BEE0","#EDE4A6","#E7B8BC","#8FB8E0"];
+var lcd=document.createElement("canvas"); lcd.width=384; lcd.height=264;
+var lx=lcd.getContext("2d");
+var tex=null;
+var reels=[{p:0,v:0.42,stop:-1},{p:0,v:0.36,stop:-1},{p:0,v:0.30,stop:-1}];
+var state="spin", timer=0, hold=2, win=false, flash=0, goal=[0,0,0];
+
+function head(g,x,y,r,col){
+ g.save();g.translate(x,y);g.fillStyle=col;
+ g.beginPath();
+ g.moveTo(-r,r*0.45);
+ g.quadraticCurveTo(-r,-r,0,-r);
+ g.quadraticCurveTo(r,-r,r,r*0.45);
+ g.quadraticCurveTo(r,r*0.95,0,r*0.95);
+ g.quadraticCurveTo(-r,r*0.95,-r,r*0.45);
+ g.closePath();g.fill();
+ g.fillStyle="rgba(0,0,0,.6)";
+ g.beginPath();g.arc(-r*0.34,-r*0.05,r*0.14,0,7);g.fill();
+ g.beginPath();g.arc(r*0.34,-r*0.05,r*0.14,0,7);g.fill();
+ g.restore();
+}
+
+function drawLcd(){
+ var W=lcd.width,H=lcd.height;
+ lx.fillStyle="#05070A";lx.fillRect(0,0,W,H);
+ // 奥行きのある背景
+ var bg=lx.createRadialGradient(W/2,H*0.42,10,W/2,H*0.42,W*0.7);
+ bg.addColorStop(0,flash>0?"#3A1206":"#0C1119");bg.addColorStop(1,"#04060A");
+ lx.fillStyle=bg;lx.fillRect(0,0,W,H);
+ // リール3つ
+ var cw=W/3.6, gap=(W-cw*3)/4;
+ for(var i=0;i<3;i++){
+  var x=gap+(cw+gap)*i, y=H*0.10, h=H*0.60;
+  lx.fillStyle="rgba(255,255,255,.045)";
+  lx.fillRect(x,y,cw,h);
+  lx.save();lx.beginPath();lx.rect(x,y,cw,h);lx.clip();
+  var p=reels[i].p, step=h/2.2;
+  for(var k=-2;k<4;k++){
+   var sy=y+h/2+((k+ (p%1))*step) - step*0.0;
+   var idx=(Math.floor(p)+k+60)%SYM.length;
+   head(lx,x+cw/2,sy,Math.min(cw,step)*0.34,SYM[idx]);
+  }
+  lx.restore();
+  lx.strokeStyle="rgba(240,145,63,.55)";lx.lineWidth=2;lx.strokeRect(x,y,cw,h);
+ }
+ // 保留（ヘソに入った回数のストック）
+ for(var j=0;j<4;j++){
+  var hx=W/2-54+j*36, hy=H*0.86;
+  lx.beginPath();lx.arc(hx,hy,9,0,7);
+  lx.fillStyle=(j<hold)?"#F0913F":"rgba(255,255,255,.10)";lx.fill();
+ }
+ if(flash>0){
+  lx.fillStyle="rgba(227,30,36,"+(0.12+0.10*Math.sin(flash*0.5))+")";
+  lx.fillRect(0,0,W,H);
+ }
+ if(tex) tex.needsUpdate=true;
+}
+
+function stepLcd(){
+ timer++;
+ if(state==="spin"){
+  for(var i=0;i<3;i++) if(reels[i].stop<0) reels[i].p+=reels[i].v;
+  if(timer===40){win=Math.random()<0.2;
+   goal[0]=Math.floor(Math.random()*SYM.length);
+   goal[1]=win?goal[0]:(goal[0]+1+Math.floor(Math.random()*4))%SYM.length;
+   goal[2]=win?goal[0]:(goal[1]+1+Math.floor(Math.random()*4))%SYM.length;}
+  if(timer===46||timer===70||timer===110){
+   var i2=(timer===46)?0:(timer===70?1:2);
+   reels[i2].stop=1; reels[i2].p=goal[i2];
+  }
+  if(timer>112){
+   state="rest"; timer=0;
+   if(win){flash=90;}
+   hold=Math.max(0,hold-1)||3;
+  }
+ }else{
+  if(timer>(win?110:26)){
+   state="spin";timer=0;win=false;
+   for(var i3=0;i3<3;i3++){reels[i3].stop=-1;}
+  }
+ }
+ if(flash>0)flash--;
+}
+
+function screen(root){
+ var m=root.getObjectByName("lcd_screen");
+ if(!m){console.warn("液晶の面が見つからない");return;}
+ tex=new THREE.CanvasTexture(lcd);
+ tex.encoding=THREE.sRGBEncoding;
+ tex.flipY=false;                       // glTFのUVは上下が逆
+ m.material=new THREE.MeshBasicMaterial({map:tex,toneMapped:false});
+}
+
 place();
-function draw(){resize();renderer.render(scene,camera);}
+function draw(){resize();stepLcd();drawLcd();renderer.render(scene,camera);}
 window.addEventListener("resize",draw);
-setInterval(draw,500);        // 読み込み後の反映と、端末の回転などの取りこぼし用
+// 台は動かないが、液晶の中は動く。毎コマではなく間引いて回す（電池のため）
+setInterval(draw,1000/16);
 draw();
 })();
 </script>
