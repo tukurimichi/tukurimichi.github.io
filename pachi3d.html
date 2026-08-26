@@ -49,6 +49,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 .ctrl{padding:14px 16px 0;}
 .readout{display:flex;justify-content:space-between;align-items:baseline;
   font-size:.78em;color:var(--muted);margin-bottom:7px;}
+#scoreTxt{font-family:var(--mono);font-size:.95em;color:#D9D6D0;}
 .readout b{font-family:var(--mono);font-size:1.5em;font-weight:900;color:var(--orange);}
 .lever{width:100%;padding:15px;border:0;border-radius:12px;cursor:pointer;
   background:linear-gradient(180deg,#C9302C,#8E1B18);color:#fff;font-size:.9em;font-weight:900;
@@ -77,7 +78,8 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="loading" id="loading">読み込み中…</div>
 
 <div class="ctrl">
-<div class="readout"><span id="stateTxt">待機</span><b id="ballCount">0</b></div>
+<div class="readout"><span id="stateTxt">待機</span>
+<span id="scoreTxt"></span><b id="ballCount">0</b></div>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
 <p class="hint" id="hint">画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
 </div>
@@ -110,7 +112,7 @@ ja:{toggleTo:"English",
  desc:"実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
-  firing:"発射中",idle:"待機",
+  firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
   hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
@@ -122,7 +124,7 @@ en:{toggleTo:"日本語",
  desc:"A pachinko machine modelled at real-world proportions. Modelled at real-world proportions.",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
-  firing:"Firing",idle:"Idle",
+  firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
   hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
@@ -209,6 +211,8 @@ new THREE.GLTFLoader().load("pachi/pachinko.glb"+AV,function(g){
  screen(machine);
  scene.add(machine);
  buildHandle(machine);
+ atkLid=machine.getObjectByName("attacker_lid");
+ if(atkLid) atkLidY=atkLid.position.y;
  document.getElementById("loading").style.display="none";
 },undefined,function(){
  document.getElementById("loading").textContent="読み込めませんでした";
@@ -227,7 +231,8 @@ function resize(){
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
                 get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);},
                 fire:function(pw){fire(pw);}, step:function(dt){stepBalls(dt);},
-                get balls(){return balls;}, get railLen(){return RAIL_LEN;}};
+                get balls(){return balls;}, get railLen(){return RAIL_LEN;},
+                get stats(){return {spins:spins,wins:wins,payout:payout,hold:hold,state:state,atk:atkOpen};}};
 // 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
 /* ===== 液晶の中身 =====
    小さな2Dのcanvasに絵を描いて、それを3Dの画面に貼る。
@@ -237,83 +242,42 @@ var lcd=document.createElement("canvas"); lcd.width=384; lcd.height=264;
 var lx=lcd.getContext("2d");
 var tex=null;
 var reels=[{p:0,v:0.42,stop:-1},{p:0,v:0.36,stop:-1},{p:0,v:0.30,stop:-1}];
-var state="spin", timer=0, hold=2, win=false, flash=0, goal=[0,0,0];
+// **実機は勝手に回らない。** ヘソに玉が入った回数（保留）を消化する形でだけ回る
+var state="idle", timer=0, hold=0, win=false, flash=0, goal=[0,0,0];
+var spins=0, wins=0, payout=0, atkOpen=0, idleT=0;
 
-function head(g,x,y,r,col){
- g.save();g.translate(x,y);g.fillStyle=col;
- g.beginPath();
- g.moveTo(-r,r*0.45);
- g.quadraticCurveTo(-r,-r,0,-r);
- g.quadraticCurveTo(r,-r,r,r*0.45);
- g.quadraticCurveTo(r,r*0.95,0,r*0.95);
- g.quadraticCurveTo(-r,r*0.95,-r,r*0.45);
- g.closePath();g.fill();
- g.fillStyle="rgba(0,0,0,.6)";
- g.beginPath();g.arc(-r*0.34,-r*0.05,r*0.14,0,7);g.fill();
- g.beginPath();g.arc(r*0.34,-r*0.05,r*0.14,0,7);g.fill();
- g.restore();
-}
-
-function drawLcd(){
- var W=lcd.width,H=lcd.height;
- lx.fillStyle="#05070A";lx.fillRect(0,0,W,H);
- // 奥行きのある背景
- var bg=lx.createRadialGradient(W/2,H*0.42,10,W/2,H*0.42,W*0.7);
- bg.addColorStop(0,flash>0?"#3A1206":"#0C1119");bg.addColorStop(1,"#04060A");
- lx.fillStyle=bg;lx.fillRect(0,0,W,H);
- // リール3つ
- var cw=W/3.6, gap=(W-cw*3)/4;
- for(var i=0;i<3;i++){
-  var x=gap+(cw+gap)*i, y=H*0.10, h=H*0.60;
-  lx.fillStyle="rgba(255,255,255,.045)";
-  lx.fillRect(x,y,cw,h);
-  lx.save();lx.beginPath();lx.rect(x,y,cw,h);lx.clip();
-  var p=reels[i].p, step=h/2.2;
-  for(var k=-2;k<4;k++){
-   var sy=y+h/2+((k+ (p%1))*step) - step*0.0;
-   var idx=(Math.floor(p)+k+60)%SYM.length;
-   head(lx,x+cw/2,sy,Math.min(cw,step)*0.34,SYM[idx]);
-  }
-  lx.restore();
-  lx.strokeStyle="rgba(240,145,63,.55)";lx.lineWidth=2;lx.strokeRect(x,y,cw,h);
- }
- // 保留（ヘソに入った回数のストック）
- for(var j=0;j<4;j++){
-  var hx=W/2-54+j*36, hy=H*0.86;
-  lx.beginPath();lx.arc(hx,hy,9,0,7);
-  lx.fillStyle=(j<hold)?"#F0913F":"rgba(255,255,255,.10)";lx.fill();
- }
- if(flash>0){
-  lx.fillStyle="rgba(227,30,36,"+(0.12+0.10*Math.sin(flash*0.5))+")";
-  lx.fillRect(0,0,W,H);
- }
- if(tex) tex.needsUpdate=true;
+function onChucker(){
+ payout+=3;                       // ヘソは数個の払い出し
+ if(hold<4) hold++;               // 保留は4つまで。溢れたぶんは捨てられる
 }
 
 var lcdTick=0;
 function stepLcd(){
- if((++lcdTick)%4) return;      // 毎コマだとリールが速すぎる
+ if((++lcdTick)%4) return;        // 毎コマだとリールが速すぎる
  timer++;
- if(state==="spin"){
+ if(state==="idle"){
+  idleT++;
+  if(hold>0){ hold--; spins++; state="spin"; timer=0; idleT=0;
+              for(var i0=0;i0<3;i0++) reels[i0].stop=-1; }
+ }else if(state==="spin"){
   for(var i=0;i<3;i++) if(reels[i].stop<0) reels[i].p+=reels[i].v;
-  if(timer===40){win=Math.random()<0.2;
+  if(timer===8){
+   win=Math.random()<0.09;        // 揃う確率。実機の「確率」にあたるところ
    goal[0]=Math.floor(Math.random()*SYM.length);
    goal[1]=win?goal[0]:(goal[0]+1+Math.floor(Math.random()*4))%SYM.length;
-   goal[2]=win?goal[0]:(goal[1]+1+Math.floor(Math.random()*4))%SYM.length;}
-  if(timer===46||timer===70||timer===110){
-   var i2=(timer===46)?0:(timer===70?1:2);
+   goal[2]=win?goal[0]:(goal[1]+1+Math.floor(Math.random()*4))%SYM.length;
+  }
+  if(timer===26||timer===50||timer===86){
+   var i2=(timer===26)?0:(timer===50?1:2);
    reels[i2].stop=1; reels[i2].p=goal[i2];
   }
-  if(timer>112){
+  if(timer>90){
    state="rest"; timer=0;
-   if(win){flash=90;}
-   hold=Math.max(0,hold-1)||3;
+   if(win){ wins++; flash=110; atkOpen=1; }
   }
- }else{
-  if(timer>(win?110:26)){
-   state="spin";timer=0;win=false;
-   for(var i3=0;i3<3;i3++){reels[i3].stop=-1;}
-  }
+ }else{                            // 止まったあと
+  if(atkOpen>0){ atkOpen++; if(atkOpen>140) atkOpen=0; }   // アタッカーが開いている
+  if(timer>(win?150:10)){ state="idle"; timer=0; win=false; }
  }
  if(flash>0)flash--;
 }
@@ -471,6 +435,20 @@ function solve(dt){
     }
    }
   }
+  // ヘソ（スタートチャッカー）。入った玉は吸い込まれ、液晶が1回転ぶん溜まる
+  // 判定の幅は役物の外形ではなく、**実際の入口の幅**（玉2個ぶん）。
+  // 外形のまま使うと、脇を通り過ぎた玉まで吸い込んでしまう
+  var ch=LAY.parts.chucker, chW=0.022;
+  if(ch && b.vv<0 && Math.abs(b.u-ch.u)<chW/2 &&
+     b.v < ch.v+ch.h/2 && b.v > ch.v-ch.h/2){
+   scene.remove(b.mesh); balls.splice(i,1); onChucker(); continue;
+  }
+  // アタッカー（開いているときだけ入る）
+  var at=LAY.parts.attacker;
+  if(at && atkOpen>0 && b.vv<0 && Math.abs(b.u-at.u)<at.w/2 &&
+     b.v-bR < at.v+at.h/2 && b.v > at.v-at.h/2){
+   scene.remove(b.mesh); balls.splice(i,1); payout+=15; continue;
+  }
   // 玉どうしのぶつかり。実機は盤面に何個も同時に落ちていて、これが効いている
   for(var q3=0;q3<balls.length;q3++){
    var o=balls[q3];
@@ -509,6 +487,7 @@ function solve(dt){
 var gauge=document.getElementById("gauge");
 var power=0, holding=false, dragY=0, dragP=0, fireTimer=0;
 var knob=null, ray=new THREE.Raycaster(), pt=new THREE.Vector2();
+var atkLid=null, atkLidY=0;
 
 function buildHandle(root){
  // ばらばらの部品を1つのまとまりにして、軸で回せるようにする
@@ -565,7 +544,12 @@ function draw(ts){
  var bc=document.getElementById("ballCount");
  if(bc){bc.textContent=balls.length;
         document.getElementById("stateTxt").textContent=
-          holding?(LANG[lang].t.firing||"発射中"):(LANG[lang].t.idle||"待機");}
+          holding?(LANG[lang].t.firing||"発射中"):(LANG[lang].t.idle||"待機");
+        document.getElementById("scoreTxt").textContent=
+          (LANG[lang].t.spinL||"回転")+" "+spins+" ／ "+
+          (LANG[lang].t.winL||"当たり")+" "+wins+" ／ "+
+          (LANG[lang].t.payL||"払い出し")+" "+payout;}
+ if(atkLid) atkLid.position.y=atkLidY-(atkOpen>0?0.022:0);   // 当たると扉が開く
  if(knob) knob.group.rotation.z=-power*Math.PI/3;      // ハンドルが実際に回る
  if(holding&&power>0.02){
   fireTimer-=el*TIME;      // 玉の動きを遅くしたぶん、発射の間隔も同じだけ延ばす
