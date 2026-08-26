@@ -127,10 +127,17 @@ renderer.toneMappingExposure=0.80;
 
 var scene=new THREE.Scene();
 var camera=new THREE.PerspectiveCamera(32,1,0.05,20);
-// 触らせない。正面の1アングルに固定する
-var LOOK={pos:[0,0.42,2.05],tgt:[0,0.42,0]};
-camera.position.set(LOOK.pos[0],LOOK.pos[1],LOOK.pos[2]);
-camera.lookAt(LOOK.tgt[0],LOOK.tgt[1],LOOK.tgt[2]);
+// 触らせない。正面の1アングルに固定して、台の高さが画面の縦にちょうど収まる距離に置く。
+// 台は高さ0.82m・幅0.52m。中心は高さ0.41m
+var MID_Y=0.41, HALF_H=0.452, HALF_W=0.300;   // 台には奥行きがあり、手前の面ほど大きく写る。そのぶん余白を足してある
+function place(){
+ var tanH=Math.tan(camera.fov*Math.PI/360);
+ var dH=HALF_H/tanH;                          // 縦で決まる距離
+ var dW=HALF_W/(tanH*camera.aspect);          // 横で切れないための距離
+ var dist=Math.max(dH,dW);
+ camera.position.set(0,MID_Y,dist);
+ camera.lookAt(0,MID_Y,0);
+}
 
 // 灯り。Blenderのレンダと同じで、左上から
 scene.add(new THREE.HemisphereLight(0x4a525c,0x050506,0.16));
@@ -188,13 +195,14 @@ function resize(){
  if(cv.width!==w||cv.height!==h){
   renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.updateProjectionMatrix();
-  camera.lookAt(LOOK.tgt[0],LOOK.tgt[1],LOOK.tgt[2]);
+  place();
  }
 }
 // 見た目を数値で確かめられるようにしておく（色が飛んでいないか等）
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
                 get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);}};
 // 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
+place();
 function draw(){resize();renderer.render(scene,camera);}
 window.addEventListener("resize",draw);
 setInterval(draw,500);        // 読み込み後の反映と、端末の回転などの取りこぼし用
