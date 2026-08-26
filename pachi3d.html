@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">パチンコ台を3Dで作った | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="実寸の比率で組んだパチンコ台の3Dモデル。ドラッグで回せます。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B; --card:#141416; --card2:#1C1C1F;
+  --red:#E31E24; --red-dark:#A8151A;
+  --text:#F2F0EC; --muted:#ACA8A2; --line:#2A2A2D;
+  --orange:#F0913F;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;}
+.wrap{max-width:520px;margin:0 auto;background:var(--card);min-height:100vh;
+  box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:36px;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:22px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.35em;font-weight:900;letter-spacing:.05em;color:#fff;padding-right:78px;}
+.banner p{margin:.45em 0 0;font-size:.82em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72em;font-weight:700;
+  padding:6px 12px;border-radius:14px;cursor:pointer;}
+#stage{width:100%;height:70vh;min-height:380px;max-height:640px;display:block;
+  background:radial-gradient(120% 90% at 50% 20%,#191B20 0%,#08090B 70%);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  touch-action:none;cursor:grab;}
+#stage:active{cursor:grabbing;}
+.bar{display:flex;gap:8px;padding:12px 16px 0;flex-wrap:wrap;}
+.bar button{flex:1 1 88px;background:var(--card2);border:1px solid var(--line);color:var(--text);
+  font-size:.78em;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer;}
+.bar button:hover{border-color:rgba(240,145,63,.55);}
+.bar button.on{border-color:var(--orange);color:var(--orange);}
+.entry{padding:18px 22px 0;}
+.entry p{line-height:1.9;font-size:.9em;color:#D9D6D0;margin:0 0 1em;}
+.spec{border:1px solid var(--line);border-radius:10px;background:var(--card2);
+  padding:12px 15px;margin:14px 0 0;}
+.spec table{width:100%;border-collapse:collapse;font-size:.82em;}
+.spec td{padding:5px 0;border-bottom:1px solid var(--line);color:#D9D6D0;}
+.spec tr:last-child td{border-bottom:0;}
+.spec td:last-child{text-align:right;font-family:var(--mono);color:#fff;}
+.loading{position:relative;top:-40vh;text-align:center;font-size:.8em;color:var(--muted);}
+.footer{padding:22px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">パチンコ台を3Dで作った</h1>
+<p id="bannerP">ドラッグで回せます。</p>
+</div>
+
+<canvas id="stage"></canvas>
+<div class="loading" id="loading">読み込み中…</div>
+
+<div class="bar">
+<button id="btnFront">正面</button>
+<button id="btnBoard">盤面に寄る</button>
+<button id="btnIso">斜めから</button>
+<button id="btnSpin" class="on">回す</button>
+</div>
+
+<div class="entry">
+<p id="p1">パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。</p>
+<p id="p2">色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。</p>
+<p id="p3">中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。</p>
+<div class="spec">
+<table>
+<tr><td id="s1">枠</td><td>520 × 820 mm</td></tr>
+<tr><td id="s2">遊技盤</td><td>直径 440 mm</td></tr>
+<tr><td id="s3">釘</td><td>75 本</td></tr>
+<tr><td id="s4">発射レール</td><td id="s4v">左（実機どおり）</td></tr>
+<tr><td id="s5">ファイルの大きさ</td><td>1.4 MB</td></tr>
+</table>
+</div>
+</div>
+
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
+</div>
+
+<!-- three.js r128 (MIT) はリポジトリに同梱。外部CDNに頼ると、そこが落ちた時に真っ白になる -->
+<script src="chibi/lib/three.min.js"></script>
+<script src="chibi/lib/OrbitControls.js"></script>
+<script src="chibi/lib/GLTFLoader.js"></script>
+<script>
+var LANG={
+ja:{toggleTo:"English",
+ title:"パチンコ台を3Dで作った | tukurimichi.com",
+ desc:"実寸の比率で組んだパチンコ台の3Dモデル。ドラッグで回せます。",
+ t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"ドラッグで回せます。",
+  btnFront:"正面",btnBoard:"盤面に寄る",btnIso:"斜めから",btnSpin:"回す",
+  loading:"読み込み中…",
+  p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
+  p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
+  p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。",
+  s1:"枠",s2:"遊技盤",s3:"釘",s4:"発射レール",s4v:"左（実機どおり）",s5:"ファイルの大きさ",
+  footBack:"← トップに戻る"}},
+en:{toggleTo:"日本語",
+ title:"A Pachinko Machine in 3D | tukurimichi.com",
+ desc:"A pachinko machine modelled at real-world proportions. Drag to spin it.",
+ t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Drag to spin it.",
+  btnFront:"Front",btnBoard:"Playfield",btnIso:"Angled",btnSpin:"Spin",
+  loading:"Loading…",
+  p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
+  p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
+  p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away.",
+  s1:"Cabinet",s2:"Playfield",s3:"Nails",s4:"Launch rail",s4v:"Left (as on a real machine)",s5:"File size",
+  footBack:"← Back to top"}}
+};
+var lang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(l){var L=LANG[l];document.documentElement.lang=l;
+ document.getElementById("pageTitle").textContent=L.title;
+ document.getElementById("metaDesc").setAttribute("content",L.desc);
+ for(var k in L.t){var e=document.getElementById(k);if(e)e.textContent=L.t[k];}
+ document.getElementById("langBtn").textContent=L.toggleTo;}
+document.getElementById("langBtn").onclick=function(){
+ lang=lang==="ja"?"en":"ja";localStorage.setItem("lang",lang);render(lang);};
+render(lang);
+
+(function(){
+var cv=document.getElementById("stage");
+var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(32,1,0.05,20);
+var controls=new THREE.OrbitControls(camera,cv);
+controls.enableDamping=true;controls.dampingFactor=0.08;
+controls.minDistance=0.55;controls.maxDistance=4.0;
+controls.target.set(0,0.45,0);
+
+// 灯り。Blenderのレンダと同じで、左上から
+scene.add(new THREE.HemisphereLight(0x9aa4b4,0x0b0c0e,0.55));
+var key=new THREE.DirectionalLight(0xffffff,1.5); key.position.set(-1.3,1.8,2.0); scene.add(key);
+var fill=new THREE.DirectionalLight(0xffffff,0.45); fill.position.set(1.8,0.6,1.4); scene.add(fill);
+var rim=new THREE.DirectionalLight(0xffcaa0,0.9); rim.position.set(0.4,1.6,-2.0); scene.add(rim);
+
+// 金属が真っ黒にならないよう、まわりの映り込みを1枚用意する
+var pmrem=new THREE.PMREMGenerator(renderer);
+var envScene=new THREE.Scene();
+envScene.background=new THREE.Color(0x2a2e34);
+var glow=new THREE.Mesh(new THREE.SphereGeometry(4,16,12),
+  new THREE.MeshBasicMaterial({color:0x8f97a4,side:THREE.BackSide}));
+envScene.add(glow);
+try{ scene.environment=pmrem.fromScene(envScene,0.04).texture; }catch(e){}
+
+var machine=null,spin=true;
+new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
+ machine=g.scene;
+ scene.add(machine);
+ document.getElementById("loading").style.display="none";
+ view("front");
+},undefined,function(){
+ document.getElementById("loading").textContent="読み込めませんでした";
+});
+
+var VIEW={
+ front:{pos:[0,0.42,2.05],tgt:[0,0.42,0]},
+ board:{pos:[0,0.52,1.05],tgt:[0,0.52,0]},
+ iso:  {pos:[-1.15,0.95,1.55],tgt:[0,0.46,0]}
+};
+function view(k){
+ var v=VIEW[k];
+ camera.position.set(v.pos[0],v.pos[1],v.pos[2]);
+ controls.target.set(v.tgt[0],v.tgt[1],v.tgt[2]);
+ controls.update();
+}
+document.getElementById("btnFront").onclick=function(){view("front");};
+document.getElementById("btnBoard").onclick=function(){view("board");};
+document.getElementById("btnIso").onclick=function(){view("iso");};
+var bs=document.getElementById("btnSpin");
+bs.onclick=function(){spin=!spin;bs.className=spin?"on":"";};
+controls.addEventListener("start",function(){spin=false;bs.className="";});
+
+function resize(){
+ var w=cv.clientWidth,h=cv.clientHeight;
+ if(!w||!h)return;
+ if(cv.width!==w||cv.height!==h){
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+ }
+}
+function loop(){
+ requestAnimationFrame(loop);
+ resize();
+ if(spin&&machine){machine.rotation.y+=0.004;}
+ controls.update();
+ renderer.render(scene,camera);
+}
+loop();
+})();
+</script>
+</body>
+</html>
