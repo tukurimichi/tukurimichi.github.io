@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826i";
+var AV="?v=20260826j";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -586,7 +586,9 @@ window.addEventListener("touchend",hUp);
 
 place();
 var acc=0,last=0;
+var frames=0;
 function draw(ts){
+ frames++;
  requestAnimationFrame(draw);
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
@@ -611,6 +613,13 @@ function draw(ts){
  resize(); renderer.render(scene,camera);
 }
 requestAnimationFrame(draw);
+// **保険。** requestAnimationFrame が動かない環境があると、1コマも描かれず真っ黒になる。
+// 一定時間コマが進んでいなければ、こちらから回す
+var lastFrames=-1;
+setInterval(function(){
+ if(frames===lastFrames){ draw(performance.now()); }
+ lastFrames=frames;
+},250);
 
 // ---- 診断。画面が真っ黒になったときに、何が起きているかを読める形で出す
 setInterval(function(){
@@ -630,6 +639,8 @@ setInterval(function(){
   " lost:"+(gl&&gl.isContextLost&&gl.isContextLost()?"YES":"no")+
   " cv:"+cv.clientWidth+"x"+cv.clientHeight+
   " px:"+renderer.getPixelRatio()+
+  " f:"+frames+
+  " back:"+cv.width+"x"+cv.height+
   " cam:"+camera.position.y.toFixed(2)+"/"+camera.position.z.toFixed(2)+
   " asp:"+camera.aspect.toFixed(2)+
   " box:"+(function(){ if(!machine) return "-";
