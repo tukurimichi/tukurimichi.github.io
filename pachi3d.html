@@ -49,6 +49,11 @@ body{margin:0;background:var(--bg);color:var(--text);
 .ctrl{padding:14px 16px 0;}
 .readout{display:flex;justify-content:space-between;align-items:baseline;
   font-size:.78em;color:var(--muted);margin-bottom:7px;}
+.stock{display:flex;align-items:baseline;gap:10px;margin:2px 0 9px;font-size:.78em;color:var(--muted);}
+.stock b{font-family:var(--mono);font-size:1.7em;font-weight:900;color:#F2F0EC;}
+.refill{margin-left:auto;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+  font-size:.9em;padding:6px 12px;border-radius:8px;cursor:pointer;}
+.refill:hover{border-color:rgba(240,145,63,.55);color:var(--orange);}
 #scoreTxt{font-family:var(--mono);font-size:.95em;color:#D9D6D0;}
 .readout b{font-family:var(--mono);font-size:1.5em;font-weight:900;color:var(--orange);}
 .lever{width:100%;padding:15px;border:0;border-radius:12px;cursor:pointer;
@@ -89,6 +94,8 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="ctrl">
 <div class="readout"><span id="stateTxt">待機</span>
 <span id="scoreTxt"></span><b id="ballCount">0</b></div>
+<div class="stock"><span id="stockLb">持ち玉</span><b id="stockNum">250</b>
+<button id="refill" class="refill">250玉もらう</button></div>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
 <p class="diag" id="diag"></p>
 <p class="hint" id="hint">画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
@@ -123,6 +130,7 @@ ja:{toggleTo:"English",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
   firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
+  stockLb:"持ち玉",refill:"250玉もらう",
   retry:"読み込み直しています",lost:"描画が止まりました",lostHint:"ページを開き直してください",failed:"台を読み込めませんでした。時間をおいて開き直してください",
   hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
@@ -136,6 +144,7 @@ en:{toggleTo:"日本語",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
   firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
+  stockLb:"Balls",refill:"Get 250",
   retry:"Retrying",lost:"Rendering stopped",lostHint:"Please reload the page",failed:"Could not load the machine. Please try again shortly",
   hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
@@ -150,6 +159,8 @@ function render(l){var L=LANG[l];document.documentElement.lang=l;
  document.getElementById("metaDesc").setAttribute("content",L.desc);
  for(var k in L.t){var e=document.getElementById(k);if(e)e.textContent=L.t[k];}
  document.getElementById("langBtn").textContent=L.toggleTo;}
+var rf=document.getElementById("refill");
+if(rf) rf.onclick=function(){ setStock(250); };
 document.getElementById("langBtn").onclick=function(){
  lang=lang==="ja"?"en":"ja";localStorage.setItem("lang",lang);render(lang);};
 render(lang);
@@ -159,7 +170,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826o";
+var AV="?v=20260826p";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -299,6 +310,18 @@ var reels=[{p:0,v:0.42,stop:-1},{p:0,v:0.36,stop:-1},{p:0,v:0.30,stop:-1}];
 var state="idle", timer=0, hold=0, win=false, flash=0, goal=[0,0,0];
 var spins=0, wins=0, payout=0, atkOpen=0, idleT=0;
 
+/* ===== 持ち玉 =====
+   実機の1,000円ぶん＝250玉から始める（4円パチンコの基本の単位）。
+   1発撃つと1玉減り、ヘソで3玉、アタッカーで15玉戻る。実機と同じ払い出し。
+   **お金では買えないし、何にも換えられない。** ただの得点として持っている */
+var STOCK_KEY="tsukurimichi_pachi_balls";
+var stock=250;
+try{ var sv=localStorage.getItem(STOCK_KEY); if(sv!==null) stock=Math.max(0,parseInt(sv,10)||0); }catch(e){}
+function setStock(n){
+ stock=Math.max(0,n);
+ try{ localStorage.setItem(STOCK_KEY,String(stock)); }catch(e){}
+}
+
 // 液晶に描く絵柄。マスコットの顔。
 // 石鹸や壁紙と同じ作りにする：色のついた頭 ＋ クリーム色の顔面 ＋ 目2つ。**口はない。**
 function head(g,x,y,r,col){
@@ -370,7 +393,7 @@ function drawLcd(){
 }
 
 function onChucker(){
- payout+=3;                       // ヘソは数個の払い出し
+ payout+=3; setStock(stock+3);    // ヘソは3玉。実機と同じ
  if(hold<4) hold++;               // 保留は4つまで。溢れたぶんは捨てられる
 }
 
@@ -477,6 +500,8 @@ function railAt(s){
 
 function fire(power){
  if(!LAY) return;
+ if(stock<=0) return;             // 玉がなければ打てない
+ setStock(stock-1);
  var m=new THREE.Mesh(ballGeo,ballMat);
  m.position.set(RAIL[0].u,RAIL[0].v,0.010);
  scene.add(m);
@@ -567,7 +592,7 @@ function solve(dt){
   var at=LAY.parts.attacker;
   if(at && atkOpen>0 && b.vv<0 && Math.abs(b.u-at.u)<at.w/2 &&
      b.v-bR < at.v+at.h/2 && b.v > at.v-at.h/2){
-   scene.remove(b.mesh); balls.splice(i,1); payout+=15; continue;
+   scene.remove(b.mesh); balls.splice(i,1); payout+=15; setStock(stock+15); continue;
   }
   // 玉どうしのぶつかり。実機は盤面に何個も同時に落ちていて、これが効いている
   for(var q3=0;q3<balls.length;q3++){
@@ -679,6 +704,9 @@ function tick(ts){
  if(bc){bc.textContent=balls.length;
         document.getElementById("stateTxt").textContent=
           holding?(LANG[lang].t.firing||"発射中"):(LANG[lang].t.idle||"待機");
+        var sn=document.getElementById("stockNum");
+        if(sn){ sn.textContent=stock;
+                sn.style.color=(stock<=0)?"#E08A8A":"#F2F0EC"; }
         document.getElementById("scoreTxt").textContent=
           (LANG[lang].t.spinL||"回転")+" "+spins+" ／ "+
           (LANG[lang].t.winL||"当たり")+" "+wins+" ／ "+
