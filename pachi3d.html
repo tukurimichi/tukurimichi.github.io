@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826h";
+var AV="?v=20260826i";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -224,6 +224,10 @@ function loadMachine(tryN){
  // 材質ごとの効き具合をそろえる。
  // 金属は映り込みで見せる／黒い部品には映り込みをほとんど乗せない
  machine.traverse(function(o){
+  // **画面外かどうかの判定を切る。** three.jsは各メッシュを囲む球で判定するが、
+  // これが壊れていると、目の前にあるのに1つも描かれない（実際それで真っ黒になった）。
+  // 台はこの1体だけなので、判定を省いても重くならない
+  o.frustumCulled=false;
   var m=o.material; if(!m) return;
   var list=(m.length?m:[m]);
   for(var i=0;i<list.length;i++){
@@ -625,7 +629,13 @@ setInterval(function(){
   " gl:"+(gl?(gl.getParameter(gl.VERSION)||"").slice(0,18):"none")+
   " lost:"+(gl&&gl.isContextLost&&gl.isContextLost()?"YES":"no")+
   " cv:"+cv.clientWidth+"x"+cv.clientHeight+
-  " px:"+renderer.getPixelRatio();
+  " px:"+renderer.getPixelRatio()+
+  " cam:"+camera.position.y.toFixed(2)+"/"+camera.position.z.toFixed(2)+
+  " asp:"+camera.aspect.toFixed(2)+
+  " box:"+(function(){ if(!machine) return "-";
+    var b=new THREE.Box3().setFromObject(machine);
+    if(!isFinite(b.min.x)) return "NaN";
+    return b.min.y.toFixed(2)+"〜"+b.max.y.toFixed(2); })();
 },700);
 })();
 </script>
