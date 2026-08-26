@@ -185,7 +185,7 @@ envScene.add(card);
 try{ scene.environment=pmrem.fromScene(envScene,0.04).texture; }catch(e){}
 
 var machine=null;
-new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
+new THREE.GLTFLoader().load("pachi/pachinko.glb"+AV,function(g){
  machine=g.scene;
  // 材質ごとの効き具合をそろえる。
  // 金属は映り込みで見せる／黒い部品には映り込みをほとんど乗せない
@@ -331,6 +331,9 @@ function screen(root){
    盤面はほぼ平らなので、2次元の物理で足りる。単位はメートル、重力は 9.8m/s²。
    レールは「1本の坂道」として扱う。上り坂では重力で減速するので、
    **弱すぎた玉が天辺まで届かず戻ってくる（ファール玉）が、特別な処理なしに起きる。** */
+// モデルと座標のバージョン。**台を作り直したらここを変える。**
+// これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう
+var AV="?v=20260826d";
 var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
 var GRAV=9.8;
 var REST=0.60;      // 釘に当たったときの跳ね返り。上げるほど玉が軽く見える
@@ -341,7 +344,7 @@ var STUCK_S=0.5;    // これだけ止まっていたら挟まったとみなす
 // 0.40 なら実機の2.5倍かけて落ちる
 var TIME=0.40;
 
-fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(function(j){
+fetch("pachi/board_layout.json"+AV).then(function(r){return r.json();}).then(function(j){
  LAY=j;
  // 外レールと内レールの真ん中を、玉が通る道とする
  var a=j.rails.lane0, b=j.rails.lane1, path=[];
