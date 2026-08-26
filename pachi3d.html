@@ -383,7 +383,9 @@ function fire(power){
  scene.add(m);
  // 3.05m/s で天辺にぎりぎり届く。弱いと戻る
  // 2.98m/s でようやく天辺に届く。下の1割ほどはファールになる
- balls.push({mesh:m,onRail:true,s:0,sv:2.98+power*0.95,u:0,v:0,vu:0,vv:0,life:0});
+ // 槌はバネ仕掛けなので、同じ握りでも毎回わずかに強さが違う
+ var v0=(2.98+power*0.55)*(1+(Math.random()-0.5)*0.030);
+ balls.push({mesh:m,onRail:true,s:0,sv:v0,u:0,v:0,vu:0,vv:0,life:0});
 }
 
 function stepBalls(dt){
@@ -441,8 +443,28 @@ function solve(dt){
     b.u=LAY.pegs[k][0]+nu*rr; b.v=LAY.pegs[k][1]+nv*rr;
     var dot=b.vu*nu+b.vv*nv;
     if(dot<0){
-     b.vu=(b.vu-2*dot*nu)*REST+(Math.random()-0.5)*0.10;
+     b.vu=(b.vu-2*dot*nu)*REST;
      b.vv=(b.vv-2*dot*nv)*REST;
+     // 釘の頭は真円ではないし、玉も回っている。当たりが強いほど散る
+     var sc=Math.abs(dot)*0.16;
+     b.vu+=-nv*(Math.random()-0.5)*sc;
+     b.vv+= nu*(Math.random()-0.5)*sc;
+    }
+   }
+  }
+  // 玉どうしのぶつかり。実機は盤面に何個も同時に落ちていて、これが効いている
+  for(var q3=0;q3<balls.length;q3++){
+   var o=balls[q3];
+   if(o===b||o.onRail) continue;
+   var ou=b.u-o.u, ov=b.v-o.v, dd2=ou*ou+ov*ov, tw=bR*2;
+   if(dd2<tw*tw&&dd2>1e-9){
+    var od=Math.sqrt(dd2), nu3=ou/od, nv3=ov/od, pen=(tw-od)/2;
+    b.u+=nu3*pen; b.v+=nv3*pen; o.u-=nu3*pen; o.v-=nv3*pen;
+    var rv=(b.vu-o.vu)*nu3+(b.vv-o.vv)*nv3;
+    if(rv<0){
+     var j=-(1+0.75)*rv/2;            // 同じ重さの玉どうし
+     b.vu+=j*nu3; b.vv+=j*nv3;
+     o.vu-=j*nu3; o.vv-=j*nv3;
     }
    }
   }
