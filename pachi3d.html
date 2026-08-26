@@ -51,6 +51,7 @@ body{margin:0;background:var(--bg);color:var(--text);
   font-size:.78em;color:var(--muted);margin-bottom:7px;}
 .stock{display:flex;align-items:baseline;gap:10px;margin:2px 0 9px;font-size:.78em;color:var(--muted);}
 .stock b{font-family:var(--mono);font-size:1.7em;font-weight:900;color:#F2F0EC;}
+.refill+.refill{margin-left:8px;}
 .refill{margin-left:auto;background:var(--card2);border:1px solid var(--line);color:var(--muted);
   font-size:.9em;padding:6px 12px;border-radius:8px;cursor:pointer;}
 .refill:hover{border-color:rgba(240,145,63,.55);color:var(--orange);}
@@ -96,7 +97,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="readout"><span id="stateTxt">待機</span>
 <span id="scoreTxt"></span><b id="ballCount">0</b></div>
 <div class="stock"><span id="stockLb">持ち玉</span><b id="stockNum">250</b>
-<button id="refill" class="refill">250玉もらう</button></div>
+<button id="mute" class="refill">音を消す</button><button id="refill" class="refill">250玉もらう</button></div>
 <p class="pick"><a href="pachi-story.html" style="color:#FF8A80;text-decoration:none;" id="storyLink">この台ができるまでの記録 →</a></p>
 <p class="pick" id="pick">サイトのあちこちに玉が落ちています。見つけて拾うと持ち玉が増えます。</p>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
@@ -133,7 +134,7 @@ ja:{toggleTo:"English",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
   firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
-  stockLb:"持ち玉",refill:"250玉もらう",
+  stockLb:"持ち玉",refill:"250玉もらう",mute:"音を消す",unmute:"音を出す",
   storyLink:"この台ができるまでの記録 →",
   pick:"サイトのあちこちに玉が落ちています。見つけて拾うと持ち玉が増えます。",
   retry:"読み込み直しています",lost:"描画が止まりました",lostHint:"ページを開き直してください",failed:"台を読み込めませんでした。時間をおいて開き直してください",
@@ -149,7 +150,7 @@ en:{toggleTo:"日本語",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
   firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
-  stockLb:"Balls",refill:"Get 250",
+  stockLb:"Balls",refill:"Get 250",mute:"Mute",unmute:"Sound on",
   storyLink:"How this machine got built →",
   pick:"Balls are lying around the site. Find one and it goes into your stock.",
   retry:"Retrying",lost:"Rendering stopped",lostHint:"Please reload the page",failed:"Could not load the machine. Please try again shortly",
@@ -166,8 +167,6 @@ function render(l){var L=LANG[l];document.documentElement.lang=l;
  document.getElementById("metaDesc").setAttribute("content",L.desc);
  for(var k in L.t){var e=document.getElementById(k);if(e)e.textContent=L.t[k];}
  document.getElementById("langBtn").textContent=L.toggleTo;}
-var rf=document.getElementById("refill");
-if(rf) rf.onclick=function(){ setStock(250); };
 document.getElementById("langBtn").onclick=function(){
  lang=lang==="ja"?"en":"ja";localStorage.setItem("lang",lang);render(lang);};
 render(lang);
@@ -420,7 +419,7 @@ function stepTray(dt){
    b.x+=(b.tx-b.x)*Math.min(1,dt*8);
    b.z+=(b.tz-b.z)*Math.min(1,dt*8);
    if(Math.abs(b.x-b.tx)<0.0012&&Math.abs(b.z-b.tz)<0.0012){
-    b.x=b.tx; b.z=b.tz; b.settled=true;
+    b.x=b.tx; b.z=b.tz; b.settled=true; seTray();
    }
   }
   moved=true;
@@ -513,7 +512,7 @@ function drawLcd(){
 function onChucker(){
  // 実機のヘソは3玉だが、この台はヘソに入る率が実機の4倍ある。
  // 3玉のままだと、それだけで打った玉の6割が戻ってきて、玉が減らない
- payout+=1; setStock(stock+1);
+ payout+=1; setStock(stock+1); seChucker();
  if(hold<4) hold++;               // 保留は4つまで。溢れたぶんは捨てられる
 }
 
@@ -536,13 +535,14 @@ function stepLcd(){
   if(timer===26||timer===50||timer===86){
    var i2=(timer===26)?0:(timer===50?1:2);
    reels[i2].stop=1; reels[i2].p=goal[i2];
+   seReel(i2);
   }
   if(timer>90){
    state="rest"; timer=0;
-   if(win){ wins++; flash=110; atkOpen=1; }
+   if(win){ wins++; flash=110; atkOpen=1; seWin(); seAttacker(true); }
   }
  }else{                            // 止まったあと
-  if(atkOpen>0){ atkOpen++; if(atkOpen>72) atkOpen=0; }    // アタッカーが開いている時間
+  if(atkOpen>0){ atkOpen++; if(atkOpen>72){ atkOpen=0; seAttacker(false); } }  // 開いている時間
   if(timer>(win?150:10)){ state="idle"; timer=0; win=false; }
  }
  if(flash>0)flash--;
@@ -556,6 +556,47 @@ function screen(root){
  tex.flipY=false;                       // glTFのUVは上下が逆
  m.material=new THREE.MeshBasicMaterial({map:tex,toneMapped:false});
 }
+
+/* ===== 音 =====
+   音源ファイルは使わず、その場で合成する。読み込み待ちがないので、
+   **物理が「当たった」と判断したその瞬間に鳴る。** ずれようがない。
+   ブラウザは操作前に音を出させないので、最初に触れたときに起こす。 */
+var AC=null, MASTER=null, muted=false, clickBudget=0, lastPeg=0;
+function audioWake(){
+ if(AC){ if(AC.state==="suspended") AC.resume(); return; }
+ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+ MASTER=AC.createGain(); MASTER.gain.value=0.55; MASTER.connect(AC.destination);
+}
+function tone(f,dur,type,vol,slideTo){
+ if(!AC||muted) return;
+ var t=AC.currentTime;
+ var o=AC.createOscillator(), g=AC.createGain();
+ o.type=type||"square"; o.frequency.setValueAtTime(f,t);
+ if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+ g.gain.setValueAtTime(vol,t);
+ g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+ o.connect(g); g.connect(MASTER); o.start(t); o.stop(t+dur+0.02);
+}
+// 釘の音。玉が多いと1秒に何十回も鳴るので、鳴らす数に上限をつける
+function sePeg(strength){
+ if(!AC||muted) return;
+ if(clickBudget<=0) return;
+ clickBudget--;
+ var v=Math.min(0.075,0.012+strength*0.030);
+ tone(1500+Math.random()*1100, 0.028, "square", v);
+}
+function seFire(){ tone(200,0.07,"sawtooth",0.06,90); }
+function seRail(){ tone(900,0.05,"triangle",0.03,1500); }
+function seChucker(){ tone(880,0.09,"triangle",0.09,1320);
+                      setTimeout(function(){tone(1320,0.10,"triangle",0.07);},70); }
+function seReel(n){ tone(520+n*160,0.07,"square",0.06); }
+function seWin(){
+ [0,1,2,3,4].forEach(function(k){
+  setTimeout(function(){ tone(523*Math.pow(2,k/6),0.16,"triangle",0.09); },k*110);
+ });
+}
+function seAttacker(open){ tone(open?160:120,0.12,"sawtooth",0.07,open?260:80); }
+function seTray(){ if(clickBudget<=0) return; clickBudget--; tone(2200+Math.random()*600,0.02,"sine",0.03); }
 
 /* ===== 玉を打つ =====
    盤面はほぼ平らなので、2次元の物理で足りる。単位はメートル、重力は 9.8m/s²。
@@ -639,6 +680,7 @@ function fire(power){
  // **幅の取り方が肝。** 下限を詰めすぎると、使える強さの全域が「右へ飛ぶ」になる
  var v0=(2.66+power*1.25)*(1+(Math.random()-0.5)*0.030);
  balls.push({mesh:m,onRail:true,s:0,sv:v0,u:0,v:0,vu:0,vv:0,life:0});
+ seFire();
 }
 
 function stepBalls(dt){
@@ -670,7 +712,7 @@ function solve(dt){
     var e=railAt(RAIL_LEN);
     b.onRail=false;
     // レールの接線の向きにそのまま放り出す（10時の位置なら「上向き右」）
-    b.vu=Math.abs(b.sv)*e.tu; b.vv=Math.abs(b.sv)*e.tv;
+    b.vu=Math.abs(b.sv)*e.tu; b.vv=Math.abs(b.sv)*e.tv; seRail();
     // レールの天辺は盤面の円より外にある。そのまま放すと
     // 「円から出さない」処理に掴まれて速さが死ぬので、内側に入れてから放す
     var eu=e.u, ev=e.v-CV, ed=Math.sqrt(eu*eu+ev*ev)||1e-6;
@@ -697,6 +739,7 @@ function solve(dt){
     b.u=LAY.pegs[k][0]+nu*rr; b.v=LAY.pegs[k][1]+nv*rr;
     var dot=b.vu*nu+b.vv*nv;
     if(dot<0){
+     sePeg(Math.min(1,Math.abs(dot)/2.2));      // 当たりの強さで音量が変わる
      b.vu=(b.vu-2*dot*nu)*REST;
      b.vv=(b.vv-2*dot*nv)*REST;
      // 釘の頭は真円ではないし、玉も回っている。当たりが強いほど散る
@@ -794,6 +837,7 @@ function hDown(e){
  // 画面のどこを触っても握れる形にした
  e.preventDefault();
  var cy=(e.touches?e.touches[0].clientY:e.clientY);
+ audioWake();
  holding=true; dragY=cy; dragP=power;
  if(power<0.35) power=0.35;          // 触ったらすぐ出るように、下限を持たせる
 }
@@ -804,6 +848,15 @@ function hMove(e){
  power=Math.max(0,Math.min(1,dragP+(dragY-cy)/140));   // 上へ引くほど強い
 }
 function hUp(){ holding=false; }
+// ボタンの配線は**この中**に置く。外に書くと、ここの変数が見えず動かない
+var rf=document.getElementById("refill");
+if(rf) rf.onclick=function(){ setStock(250); };
+var mb=document.getElementById("mute");
+if(mb) mb.onclick=function(){
+ muted=!muted;
+ mb.textContent=muted?(LANG[lang].t.unmute||"音を出す"):(LANG[lang].t.mute||"音を消す");
+ if(!muted) audioWake();
+};
 cv.addEventListener("mousedown",hDown);
 cv.addEventListener("touchstart",hDown,{passive:false});
 window.addEventListener("mousemove",hMove);
@@ -825,6 +878,7 @@ function draw(ts){
 function tick(ts){
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
+ clickBudget=6;                       // 1コマに鳴らす釘の音は6個まで
  gauge.style.width=(power*100)+"%";
  var bc=document.getElementById("ballCount");
  if(bc){bc.textContent=balls.length;
