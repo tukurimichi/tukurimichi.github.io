@@ -141,7 +141,7 @@ var G=0.40, REST=0.58;
 var TUNE={jit:0.45, spread:0.25, entryL:56, entryR:300,
           rows:[120,300], sp:42,
           drag:0.972, vmax:3.2,      // 横のブレを抑える。狙いを効かせるための要
-          fx:112, fstep:6, fn:3, fy:360};   // カップへ絞る漏斗
+          fx:88, fstep:15, fn:6, fy:320, fdy:22};  // 役物の脇からカップへ戻す寄せ釘
 
 // 釘。千鳥に並べる。真ん中のカップへ集まりすぎないよう、下2段は外へ逃がす
 var pegs=[];
@@ -151,21 +151,23 @@ function layout(){
  for(y=TUNE.rows[0];y<=TUNE.rows[1];y+=sp){
    var off=(row%2)?sp/2:0;
    for(x=28+off;x<RAIL_X-14;x+=sp){
-     if(Math.abs(x-180)<34&&y>220&&y<282) continue;   // 役物の周りは空ける
+     if(Math.abs(x-REEL.x)<REEL.r+14&&Math.abs(y-REEL.y)<REEL.r+14) continue; // 役物の周り
      pegs.push({x:x,y:y});
    }
    row++;
  }
  // カップへ絞る漏斗。上が広く、下がカップの幅に近づく
  for(var i=0;i<TUNE.fn;i++){
-  pegs.push({x:TUNE.fx+i*TUNE.fstep, y:TUNE.fy+i*18});
-  pegs.push({x:360-TUNE.fx-i*TUNE.fstep, y:TUNE.fy+i*18});
+  pegs.push({x:TUNE.fx+i*TUNE.fstep, y:TUNE.fy+i*TUNE.fdy});
+  pegs.push({x:360-TUNE.fx-i*TUNE.fstep, y:TUNE.fy+i*TUNE.fdy});
  }
+ // 役物そのものも障害物。玉は左右に回り込む
+ pegs.push({x:REEL.x, y:REEL.y, r:REEL.r+2, big:true});
 }
-layout();
 
-var CUP={x:180,y:466,w:38,h:16};          // 真ん中のカップ（入賞）
-var REEL={x:180,y:250,r:30};              // 役物（絵が回るところ）
+var CUP={x:180,y:466,w:34,h:16};          // 真ん中のカップ（入賞）
+var REEL={x:180,y:252,r:52};              // 役物（絵が回るところ）
+layout();
 
 function entryX(p){return TUNE.entryR-(TUNE.entryR-TUNE.entryL)*p;}
 
@@ -249,16 +251,38 @@ function draw(){
  cx.strokeStyle="rgba(180,186,196,.38)";cx.lineWidth=1.2;
  cx.beginPath();cx.moveTo(W-2,H);cx.lineTo(W-2,58);
  cx.quadraticCurveTo(W-2,12,W-46,12);cx.stroke();
- // 役物
+ // 役物。金属の枠 → 奥の暗がり → 絵柄3つ
  cx.save();
- cx.fillStyle=S.flash>0?"rgba(227,30,36,"+(0.25+0.25*Math.sin(S.flash*0.4))+")":"#141416";
- cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r+7,0,7);cx.fill();
- cx.strokeStyle="#2A2A2D";cx.lineWidth=1.5;cx.stroke();
+ var rg=cx.createRadialGradient(REEL.x-REEL.r*0.4,REEL.y-REEL.r*0.5,2,REEL.x,REEL.y,REEL.r+9);
+ rg.addColorStop(0,"#9AA0AA");rg.addColorStop(0.55,"#5C616B");rg.addColorStop(1,"#23262B");
+ cx.fillStyle=rg;
+ cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r+9,0,7);cx.fill();
+ if(S.flash>0){
+  cx.strokeStyle="rgba(227,30,36,"+(0.35+0.35*Math.sin(S.flash*0.4))+")";
+  cx.lineWidth=5;cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r+6,0,7);cx.stroke();
+ }
+ cx.fillStyle="#07080A";
+ cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r,0,7);cx.fill();
+ cx.save();
+ cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r-2,0,7);cx.clip();
  var syms=S.spin?S.spin.show:[0,1,2];
- for(var i=0;i<3;i++) head(cx,REEL.x-19+i*19,REEL.y,7.5,SYM[syms[i]],0);
+ for(var i=0;i<3;i++){
+  var sx=REEL.x-32+i*32;
+  cx.fillStyle="rgba(255,255,255,.05)";
+  cx.fillRect(sx-14,REEL.y-REEL.r,28,REEL.r*2);          // 絵柄の帯
+  head(cx,sx,REEL.y,13,SYM[syms[i]],0);
+ }
+ var sh=cx.createLinearGradient(0,REEL.y-REEL.r,0,REEL.y+REEL.r);  // 上下を暗く
+ sh.addColorStop(0,"rgba(0,0,0,.8)");sh.addColorStop(0.35,"rgba(0,0,0,0)");
+ sh.addColorStop(0.65,"rgba(0,0,0,0)");sh.addColorStop(1,"rgba(0,0,0,.8)");
+ cx.fillStyle=sh;cx.fillRect(REEL.x-REEL.r,REEL.y-REEL.r,REEL.r*2,REEL.r*2);
+ cx.restore();
+ cx.strokeStyle="rgba(255,255,255,.18)";cx.lineWidth=1.4;
+ cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r,0,7);cx.stroke();
  cx.restore();
  // 釘。落ち影・金属・上のハイライトの3枚重ね
  for(var p=0;p<pegs.length;p++){
+  if(pegs[p].big) continue;
   var gx=pegs[p].x,gy=pegs[p].y;
   cx.fillStyle="rgba(0,0,0,.55)";
   cx.beginPath();cx.arc(gx+0.8,gy+1.4,PEG_R+0.7,0,7);cx.fill();
@@ -350,7 +374,7 @@ function step(){
   if(px+q.r>RAIL_X) hit(b,px,py,-1,0,px+q.r-RAIL_X,0.5);
   // 釘
   for(i=0;i<pegs.length;i++){
-   var dx=px-pegs[i].x,dy=py-pegs[i].y,rr=q.r+PEG_R;
+   var dx=px-pegs[i].x,dy=py-pegs[i].y,rr=q.r+(pegs[i].r||PEG_R);
    if(dx*dx+dy*dy<rr*rr){
     var d=Math.sqrt(dx*dx+dy*dy)||0.001;
     hit(b,px,py,dx/d,dy/d,rr-d,TUNE.jit);
