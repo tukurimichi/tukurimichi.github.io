@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826l";
+var AV="?v=20260826m";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
