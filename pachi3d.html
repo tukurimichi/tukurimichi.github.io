@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826n";
+var AV="?v=20260826o";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -299,19 +299,38 @@ var reels=[{p:0,v:0.42,stop:-1},{p:0,v:0.36,stop:-1},{p:0,v:0.30,stop:-1}];
 var state="idle", timer=0, hold=0, win=false, flash=0, goal=[0,0,0];
 var spins=0, wins=0, payout=0, atkOpen=0, idleT=0;
 
-// 液晶に描く絵柄。マスコットの頭（口はなし）
+// 液晶に描く絵柄。マスコットの顔。
+// 石鹸や壁紙と同じ作りにする：色のついた頭 ＋ クリーム色の顔面 ＋ 目2つ。**口はない。**
 function head(g,x,y,r,col){
- g.save();g.translate(x,y);g.fillStyle=col;
+ g.save();g.translate(x,y);
+ // 頭。角の丸い四角
+ g.fillStyle=col;
+ var rr=r*0.34;
  g.beginPath();
- g.moveTo(-r,r*0.45);
- g.quadraticCurveTo(-r,-r,0,-r);
- g.quadraticCurveTo(r,-r,r,r*0.45);
- g.quadraticCurveTo(r,r*0.95,0,r*0.95);
- g.quadraticCurveTo(-r,r*0.95,-r,r*0.45);
+ g.moveTo(-r+rr,-r);
+ g.lineTo(r-rr,-r); g.quadraticCurveTo(r,-r,r,-r+rr);
+ g.lineTo(r,r-rr);  g.quadraticCurveTo(r,r,r-rr,r);
+ g.lineTo(-r+rr,r); g.quadraticCurveTo(-r,r,-r,r-rr);
+ g.lineTo(-r,-r+rr);g.quadraticCurveTo(-r,-r,-r+rr,-r);
  g.closePath();g.fill();
- g.fillStyle="rgba(0,0,0,.6)";
- g.beginPath();g.arc(-r*0.34,-r*0.05,r*0.14,0,7);g.fill();
- g.beginPath();g.arc(r*0.34,-r*0.05,r*0.14,0,7);g.fill();
+ // 顔面。クリーム色の面を落とし込む
+ var fw=r*0.70, fh=r*0.56, fr=r*0.22;
+ g.fillStyle="#EFE6D2";
+ g.beginPath();
+ g.moveTo(-fw+fr,-fh);
+ g.lineTo(fw-fr,-fh); g.quadraticCurveTo(fw,-fh,fw,-fh+fr);
+ g.lineTo(fw,fh-fr);  g.quadraticCurveTo(fw,fh,fw-fr,fh);
+ g.lineTo(-fw+fr,fh); g.quadraticCurveTo(-fw,fh,-fw,fh-fr);
+ g.lineTo(-fw,-fh+fr);g.quadraticCurveTo(-fw,-fh,-fw+fr,-fh);
+ g.closePath();g.fill();
+ // 目。彫り込みに見えるよう、影を1枚下に敷く
+ var ex=fw*0.44, ey=fh*0.06, er=r*0.15;
+ g.fillStyle="rgba(0,0,0,.13)";
+ g.beginPath();g.arc(-ex,ey+er*0.28,er,0,7);g.fill();
+ g.beginPath();g.arc( ex,ey+er*0.28,er,0,7);g.fill();
+ g.fillStyle="#2A2622";
+ g.beginPath();g.arc(-ex,ey,er,0,7);g.fill();
+ g.beginPath();g.arc( ex,ey,er,0,7);g.fill();
  g.restore();
 }
 
