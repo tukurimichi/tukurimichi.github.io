@@ -73,7 +73,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 <button class="lever" id="lever">はじく</button>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
 </div>
-<p class="hint" id="hint">押している間、上の矢印が左へ動きます。離すとそこへ玉が落ちます。</p>
+<p class="hint" id="hint">押している間、上の矢印が右へ動きます。強く打つほど遠くへ飛びます。レールは実機と同じで左です。</p>
 <button class="reset" id="reset">はじめから</button>
 <p class="note" id="note">お金は一切かかりません。買うものも、当たるものもありません。ただ玉が跳ねるだけのものです。</p>
 </div>
@@ -86,14 +86,14 @@ ja:{toggleTo:"English",
  desc:"マスコットの玉を弾いて、真ん中の穴に入れる。お金は一切かかりません。",
  t:{backTop:"← トップに戻る",bannerH1:"玉を弾く",bannerP:"真ん中の穴に入ると、絵が回ります。",
   lbBalls:"玉",lbIn:"入賞",lbHit:"当たり",lever:"はじく",reset:"はじめから",
-  hint:"押している間、上の矢印が左へ動きます。離すとそこへ玉が落ちます。",
+  hint:"押している間、上の矢印が右へ動きます。強く打つほど遠くへ飛びます。レールは実機と同じで左です。",
   note:"お金は一切かかりません。買うものも、当たるものもありません。ただ玉が跳ねるだけのものです。"}},
 en:{toggleTo:"日本語",
  title:"Flick the Ball | tukurimichi.com",
  desc:"Flick mascot-headed balls and try to drop one into the centre cup. No money involved.",
  t:{backTop:"← Back to top",bannerH1:"Flick the Ball",bannerP:"Land one in the centre cup and the reels spin.",
   lbBalls:"BALLS",lbIn:"CUP",lbHit:"WINS",lever:"FLICK",reset:"Restart",
-  hint:"Hold and the arrow at the top slides left. Release to drop the ball there.",
+  hint:"Hold and the arrow at the top slides right — the harder you flick, the further it flies. The rail is on the left, as on a real machine.",
   note:"No money is involved. Nothing to buy, nothing to win. The balls just bounce."}}
 };
 var lang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
@@ -115,8 +115,10 @@ var cv=document.getElementById("stage"),cx=cv.getContext("2d");
  cx.setTransform(dpr,0,0,dpr,0,0);
 })();
 
-var RAIL_X=332;              // 右のレール。ここより右の盤面には玉を入れない
-var RAIL_BALL=347;           // 打ち出した玉が通る溝の中心（レールと台の縁のあいだ）
+// 実機どおり、発射レールは**左**。玉は左下から上がって天辺を越え、盤面に落ちる。
+// 強く打つほど遠く（右）まで飛ぶ＝いわゆる右打ち
+var RAIL_X=28;               // 左のレールの線。ここより左の盤面には玉を入れない
+var RAIL_BALL=13;            // 打ち出した玉が通る溝の中心（台の縁とレールのあいだ）
 var PEG_R=3.6, BALL_R=6.4;
 // 当たり判定は絵の輪郭を実測して決めた（pachi/mascot.png を1行ずつ走査した値）
 // 画像は172x256。中心を(86,128)として、画面上の高さ22pxに縮めた座標
@@ -145,7 +147,7 @@ var PART={}, PART_OK={};
 });
 var G=0.40, REST=0.58;
 // ここを触ると手ごたえが変わる
-var TUNE={jit:0.45, spread:0.25, entryL:56, entryR:300,
+var TUNE={jit:0.45, spread:0.25, near:64, far:306,   // 弱いと入口の近く（左）、強いと遠く（右）
           rows:[120,300], sp:42,
           drag:0.972, vmax:3.2,      // 横のブレを抑える。狙いを効かせるための要
           fx:88, fstep:15, fn:6, fy:320, fdy:22};  // 役物の脇からカップへ戻す寄せ釘
@@ -157,7 +159,7 @@ function layout(){
  var y,x,row=0,sp=TUNE.sp;
  for(y=TUNE.rows[0];y<=TUNE.rows[1];y+=sp){
    var off=(row%2)?sp/2:0;
-   for(x=28+off;x<RAIL_X-14;x+=sp){
+   for(x=RAIL_X+14+off;x<W-42;x+=sp){
      if(Math.abs(x-REEL.x)<REEL.r+14&&Math.abs(y-REEL.y)<REEL.r+14) continue; // 役物の周り
      pegs.push({x:x,y:y});
    }
@@ -176,7 +178,7 @@ var CUP={x:180,y:466,w:34,h:16};          // 真ん中のカップ（入賞）
 var REEL={x:180,y:252,r:52};              // 役物（絵が回るところ）
 layout();
 
-function entryX(p){return TUNE.entryR-(TUNE.entryR-TUNE.entryL)*p;}
+function entryX(p){return TUNE.near+(TUNE.far-TUNE.near)*p;}
 
 /* ===== 状態 ===== */
 var S={balls:50,inCup:0,hits:0,ball:null,power:0,charging:false,
@@ -248,16 +250,17 @@ function draw(){
  if(BOARD_OK){cx.drawImage(BOARD,0,0,W,H);}
  else{cx.fillStyle="#0C0C0E";cx.fillRect(0,0,W,H);}
  // レール（内側に細い金属の線を2本重ねて厚みを出す）
+ // 内レール（盤面側）
  cx.strokeStyle="rgba(0,0,0,.55)";cx.lineWidth=5;
  cx.beginPath();cx.moveTo(RAIL_X,H);cx.lineTo(RAIL_X,70);
- cx.quadraticCurveTo(RAIL_X,26,RAIL_X-40,26);cx.stroke();
+ cx.quadraticCurveTo(RAIL_X,26,RAIL_X+40,26);cx.stroke();
  cx.strokeStyle="rgba(210,214,222,.55)";cx.lineWidth=1.6;
  cx.beginPath();cx.moveTo(RAIL_X,H);cx.lineTo(RAIL_X,70);
- cx.quadraticCurveTo(RAIL_X,26,RAIL_X-40,26);cx.stroke();
- // 溝の外側の縁。ここと上の線のあいだを玉が通る
+ cx.quadraticCurveTo(RAIL_X,26,RAIL_X+40,26);cx.stroke();
+ // 外レール。ここと内レールのあいだの溝を、打ち出した玉が上がっていく
  cx.strokeStyle="rgba(180,186,196,.38)";cx.lineWidth=1.2;
- cx.beginPath();cx.moveTo(W-2,H);cx.lineTo(W-2,58);
- cx.quadraticCurveTo(W-2,12,W-46,12);cx.stroke();
+ cx.beginPath();cx.moveTo(2,H);cx.lineTo(2,58);
+ cx.quadraticCurveTo(2,12,48,12);cx.stroke();
  // 役物。金属の枠 → 奥の暗がり → 絵柄3つ
  cx.save();
  if(!PART_OK.bezel){
@@ -369,7 +372,7 @@ function step(){
   if(t>=1){b.rail=false;b.x=entryX(b.power);b.y=44;
            b.vx=(Math.random()-0.5)*TUNE.spread*2;b.vy=0.4;
            b.om=(Math.random()-0.5)*0.12;}
-  else if(t>0.62){var u=(t-0.62)/0.38;      // 上を左へ転がって、狙った位置で落ちる
+  else if(t>0.62){var u=(t-0.62)/0.38;      // 天辺を右へ転がって、狙った位置で落ちる
            var sx=RAIL_BALL, ex=entryX(b.power);
            b.x=sx+(ex-sx)*u;
            b.y=26+Math.sin(u*Math.PI)*-6;}  // てっぺんをすこし膨らませる
@@ -391,8 +394,8 @@ function step(){
   var q=PARTS[k];
   var px=b.x+co*q.x-si*q.y, py=b.y+si*q.x+co*q.y;
   // 壁
-  if(px-q.r<0)      hit(b,px,py,1,0,q.r-px,0.5);
-  if(px+q.r>RAIL_X) hit(b,px,py,-1,0,px+q.r-RAIL_X,0.5);
+  if(px-q.r<RAIL_X) hit(b,px,py,1,0,RAIL_X-(px-q.r),0.5);
+  if(px+q.r>W-6)    hit(b,px,py,-1,0,(px+q.r)-(W-6),0.5);
   // 釘
   for(i=0;i<pegs.length;i++){
    var dx=px-pegs[i].x,dy=py-pegs[i].y,rr=q.r+(pegs[i].r||PEG_R);
