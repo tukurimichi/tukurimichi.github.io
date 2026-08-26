@@ -380,7 +380,7 @@ function fire(power){
  scene.add(m);
  // 3.05m/s で天辺にぎりぎり届く。弱いと戻る
  // 2.98m/s でようやく天辺に届く。下の1割ほどはファールになる
- balls.push({mesh:m,onRail:true,s:0,sv:2.98+power*1.30,u:0,v:0,vu:0,vv:0,life:0});
+ balls.push({mesh:m,onRail:true,s:0,sv:2.98+power*0.95,u:0,v:0,vu:0,vv:0,life:0});
 }
 
 function stepBalls(dt){
@@ -448,6 +448,10 @@ function solve(dt){
    var dot2=b.vu*nu2+b.vv*nv2;
    if(dot2>0){b.vu=(b.vu-2*dot2*nu2)*REST;b.vv=(b.vv-2*dot2*nv2)*REST;}
   }
+  // 釘の隙間を詰めたので、まれに挟まって止まることがある。放っておくと盤面が固まる
+  var spd=Math.sqrt(b.vu*b.vu+b.vv*b.vv);
+  if(spd<0.035){ b.slow=(b.slow||0)+1; } else { b.slow=0; }
+  if(b.slow>90){ b.slow=0; b.vu+=(Math.random()-0.5)*0.35; b.vv-=0.25; }
   b.mesh.position.set(b.u,b.v,0.010);
   // 下まで落ちたら消す
   if(b.v<CV-R+0.012||b.life>25){scene.remove(b.mesh);balls.splice(i,1);}
