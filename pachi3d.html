@@ -577,16 +577,23 @@ function tone(f,dur,type,vol,slideTo){
  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
  o.connect(g); g.connect(MASTER); o.start(t); o.stop(t+dur+0.02);
 }
-// 釘の音。玉が多いと1秒に何十回も鳴るので、鳴らす数に上限をつける
+// 釘の音。**矩形波（ブザーの波形）だと、重なったときにガラガラした雑音になる。**
+// 金属の「チン」は、短い正弦波を2つ重ねて、ごく短く切るほうが近い。
+// 玉が多いと1秒に何十回も鳴るので、数と間隔の両方を絞る
 function sePeg(strength){
  if(!AC||muted) return;
  if(clickBudget<=0) return;
- clickBudget--;
- var v=Math.min(0.075,0.012+strength*0.030);
- tone(1500+Math.random()*1100, 0.028, "square", v);
+ var now=AC.currentTime;
+ if(now-lastPeg<0.022) return;        // 近すぎる音は捨てる
+ lastPeg=now; clickBudget--;
+ var f=2300+Math.random()*500;
+ var v=Math.min(0.030,0.006+strength*0.016);
+ tone(f, 0.011, "sine", v);
+ tone(f*1.62, 0.008, "sine", v*0.4);  // 少しだけ倍音を足すと金属らしくなる
 }
-function seFire(){ tone(200,0.07,"sawtooth",0.06,90); }
-function seRail(){ tone(900,0.05,"triangle",0.03,1500); }
+// 打つ音。のこぎり波はざらつくので、丸い波形で短く
+function seFire(){ tone(170,0.055,"triangle",0.045,85); }
+function seRail(){ tone(760,0.055,"sine",0.028,1240); }
 function seChucker(){ tone(880,0.09,"triangle",0.09,1320);
                       setTimeout(function(){tone(1320,0.10,"triangle",0.07);},70); }
 function seReel(n){ tone(520+n*160,0.07,"square",0.06); }
@@ -595,7 +602,7 @@ function seWin(){
   setTimeout(function(){ tone(523*Math.pow(2,k/6),0.16,"triangle",0.09); },k*110);
  });
 }
-function seAttacker(open){ tone(open?160:120,0.12,"sawtooth",0.07,open?260:80); }
+function seAttacker(open){ tone(open?150:115,0.11,"triangle",0.055,open?240:75); }
 function seTray(){ if(clickBudget<=0) return; clickBudget--; tone(2200+Math.random()*600,0.02,"sine",0.03); }
 
 /* ===== 玉を打つ =====
@@ -878,7 +885,7 @@ function draw(ts){
 function tick(ts){
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
- clickBudget=6;                       // 1コマに鳴らす釘の音は6個まで
+ clickBudget=3;                       // 1コマに鳴らす釘の音は3個まで
  gauge.style.width=(power*100)+"%";
  var bc=document.getElementById("ballCount");
  if(bc){bc.textContent=balls.length;
