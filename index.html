@@ -137,6 +137,7 @@ a{color:inherit;}
 <a href="video.html" id="navVideo"></a>
 <a href="credit.html" id="navCredit"></a>
 <a href="pachi3d.html" id="navPachi"></a>
+<a href="pachi-story.html" id="navPachiStory"></a>
 <a href="tools.html" id="navTools"></a>
 <a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
 <a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX"></a>
@@ -203,6 +204,7 @@ navSoapText:"マスコットを石鹸にした",
 navVideoText:"AIで動画をつくる",
 navCreditText:"1,271円の失敗",
 navPachiText:"パチンコ台を3Dで作った",
+navPachiStoryText:"パチンコ台ができるまで",
 navToolsText:"道具箱",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
@@ -239,6 +241,7 @@ navSoapText:"The Mascot Became a Bar of Soap",
 navVideoText:"Making Videos with AI",
 navCreditText:"A ¥1,271 Mistake",
 navPachiText:"A Pachinko Machine in 3D",
+navPachiStoryText:"How the Machine Got Built",
 navToolsText:"Toolbox",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
@@ -248,14 +251,14 @@ toggleTo:"日本語"
 };
 var TICKER={
 ja:[
+ {d:"2026.08.27",t:"パチンコ台ができるまで。詰まったところを全部",u:"pachi-story.html"},
  {d:"2026.08.26",t:"パチンコ台を3Dで作りました。玉も打てます",u:"pachi3d.html"},
- {d:"2026.08.26",t:"1,271円の失敗。調べる前に契約した話",u:"credit.html"},
- {d:"2026.08.25",t:"動画をコマにする道具を作りました",u:"apps/frames/"}
+ {d:"2026.08.26",t:"1,271円の失敗。調べる前に契約した話",u:"credit.html"}
 ],
 en:[
+ {d:"2026.08.27",t:"How the pachinko machine got built — every mistake",u:"pachi-story.html"},
  {d:"2026.08.26",t:"Built a pachinko machine in 3D — you can fire balls",u:"pachi3d.html"},
- {d:"2026.08.26",t:"A ¥1,271 mistake: signing up before checking",u:"credit.html"},
- {d:"2026.08.25",t:"New tool: slice a video into frames",u:"apps/frames/"}
+ {d:"2026.08.26",t:"A ¥1,271 mistake: signing up before checking",u:"credit.html"}
 ]
 };
 function buildTicker(lang){
@@ -315,6 +318,7 @@ document.getElementById("navSoap").textContent=L.navSoapText;
 document.getElementById("navVideo").textContent=L.navVideoText;
 document.getElementById("navCredit").textContent=L.navCreditText;
 document.getElementById("navPachi").textContent=L.navPachiText;
+document.getElementById("navPachiStory").textContent=L.navPachiStoryText;
 buildTicker(lang);
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
