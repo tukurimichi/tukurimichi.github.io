@@ -113,6 +113,7 @@ ja:{toggleTo:"English",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
   firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
+  retry:"読み込み直しています",failed:"台を読み込めませんでした。時間をおいて開き直してください",
   hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
@@ -125,6 +126,7 @@ en:{toggleTo:"日本語",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
   firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
+  retry:"Retrying",failed:"Could not load the machine. Please try again shortly",
   hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
@@ -143,6 +145,11 @@ document.getElementById("langBtn").onclick=function(){
 render(lang);
 
 (function(){
+// モデルと座標のバージョン。**台を作り直したらここを変える。**
+// これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
+// **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
+// URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
+var AV="?v=20260826e";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -187,7 +194,12 @@ envScene.add(card);
 try{ scene.environment=pmrem.fromScene(envScene,0.04).texture; }catch(e){}
 
 var machine=null;
-new THREE.GLTFLoader().load("pachi/pachinko.glb"+AV,function(g){
+// 読み込みは失敗することがある（配信の反映中など）。黙って諦めず、間を置いて数回試す
+function loadMachine(tryN){
+ new THREE.GLTFLoader().load("pachi/pachinko.glb"+AV,function(g){
+ // **GLTFLoaderは、読み込み後のこの処理で例外が出ても「読み込み失敗」として扱う。**
+ // 中の不具合が「ファイルが読めない」に化けるので、ここで受け止めて分けておく
+ try{
  machine=g.scene;
  // 材質ごとの効き具合をそろえる。
  // 金属は映り込みで見せる／黒い部品には映り込みをほとんど乗せない
@@ -214,9 +226,24 @@ new THREE.GLTFLoader().load("pachi/pachinko.glb"+AV,function(g){
  atkLid=machine.getObjectByName("attacker_lid");
  if(atkLid) atkLidY=atkLid.position.y;
  document.getElementById("loading").style.display="none";
-},undefined,function(){
- document.getElementById("loading").textContent="読み込めませんでした";
-});
+ }catch(err){
+  window.__setupErr=(err&&err.message)||String(err);
+  document.getElementById("loading").innerHTML=
+    "台の組み立てでつまずきました<br><small style='opacity:.7'>"+window.__setupErr+"</small>";
+ }
+ },undefined,function(e){
+  window.__loadErr=(window.__loadErr||[]).concat([{n:tryN,t:(e&&e.type)||"",m:(e&&e.message)||"",s:(e&&e.target&&e.target.status)||""}]);
+  var box=document.getElementById("loading");
+  if(tryN<3){
+   box.textContent=(LANG[lang].t.retry||"読み込み直しています")+"…("+(tryN+1)+"/3)";
+   setTimeout(function(){loadMachine(tryN+1);},1200*(tryN+1));
+  }else{
+   box.innerHTML=(LANG[lang].t.failed||"台を読み込めませんでした")+
+     "<br><small style='opacity:.7'>"+((e&&(e.message||e.type))||"")+"</small>";
+  }
+ });
+}
+loadMachine(0);
 
 function resize(){
  var w=cv.clientWidth,h=cv.clientHeight;
@@ -295,9 +322,6 @@ function screen(root){
    盤面はほぼ平らなので、2次元の物理で足りる。単位はメートル、重力は 9.8m/s²。
    レールは「1本の坂道」として扱う。上り坂では重力で減速するので、
    **弱すぎた玉が天辺まで届かず戻ってくる（ファール玉）が、特別な処理なしに起きる。** */
-// モデルと座標のバージョン。**台を作り直したらここを変える。**
-// これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう
-var AV="?v=20260826d";
 var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
 var GRAV=9.8;
 var REST=0.60;      // 釘に当たったときの跳ね返り。上げるほど玉が軽く見える
