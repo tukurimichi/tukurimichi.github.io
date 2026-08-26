@@ -174,7 +174,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826p";
+var AV="?v=20260826q";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -322,8 +322,66 @@ var STOCK_KEY="tsukurimichi_pachi_balls";
 var stock=250;
 try{ var sv=localStorage.getItem(STOCK_KEY); if(sv!==null) stock=Math.max(0,parseInt(sv,10)||0); }catch(e){}
 function setStock(n){
+ var before=stock;
  stock=Math.max(0,n);
  try{ localStorage.setItem(STOCK_KEY,String(stock)); }catch(e){}
+ syncTray();
+}
+
+// 皿に見せる数は「持ち玉」と「皿の容量」の小さいほう。
+// 差分で足し引きすると、持ち玉が容量を超えているときに皿だけ減っていく
+function syncTray(){
+ if(!ballGeo) return;
+ var want=Math.min(stock,TRAY_MAX);
+ if(tray.length<want) payOut(want-tray.length);
+ else if(tray.length>want) takeFromTray(tray.length-want);
+}
+
+/* ===== 上皿 =====
+   **払い出しは数字が増えるだけでは足りない。** 実機は玉が出てきて皿に溜まる。
+   出てきた玉は空いている場所へ落ちて並び、打つと減る。 */
+var tray=[], trayGeo=null, trayMat=null;
+var TRAY_Y=0.246, TRAY_Z0=0.030, TRAY_ROWS=3, TRAY_COLS=26, TRAY_MAX=TRAY_ROWS*TRAY_COLS;
+function traySlot(i){
+ var row=Math.floor(i/TRAY_COLS), col=i%TRAY_COLS;
+ if(row%2) col=TRAY_COLS-1-col;               // 端まで行ったら折り返して積む
+ return {x:-0.172+col*0.0134, y:TRAY_Y+row*0.0015, z:TRAY_Z0+row*0.0125};
+}
+function payOut(n){
+ if(!ballGeo) return;
+ if(!trayMat) trayMat=ballMat;
+ for(var k=0;k<n;k++){
+  if(tray.length>=TRAY_MAX) break;            // 皿が一杯。実機なら下皿へ落ちる
+  var m=new THREE.Mesh(ballGeo,trayMat);
+  var t=traySlot(tray.length);
+  m.position.set(-0.150,0.335,0.045);         // 払い出し口。皿の左上から出てくる
+  scene.add(m);
+  tray.push({mesh:m,tx:t.x,ty:t.y,tz:t.z,vy:0,delay:k*0.05,settled:false});
+ }
+}
+function takeFromTray(n){
+ for(var k=0;k<n;k++){
+  var b=tray.pop(); if(!b) break;
+  scene.remove(b.mesh);
+ }
+}
+function stepTray(dt){
+ for(var i=0;i<tray.length;i++){
+  var b=tray[i];
+  if(b.settled) continue;
+  if(b.delay>0){ b.delay-=dt; continue; }
+  b.vy-=GRAV*dt;
+  b.mesh.position.y+=b.vy*dt;
+  // 皿の高さまで落ちたら、空いている場所へ滑り込ませる
+  if(b.mesh.position.y<=b.ty){
+   b.mesh.position.y=b.ty; b.vy=0;
+   b.mesh.position.x+=(b.tx-b.mesh.position.x)*Math.min(1,dt*7);
+   b.mesh.position.z+=(b.tz-b.mesh.position.z)*Math.min(1,dt*7);
+   if(Math.abs(b.mesh.position.x-b.tx)<0.0015){
+    b.mesh.position.set(b.tx,b.ty,b.tz); b.settled=true;
+   }
+  }
+ }
 }
 
 // 液晶に描く絵柄。マスコットの顔。
@@ -484,6 +542,10 @@ fetch("pachi/board_layout.json"+AV).then(function(r){return r.json();}).then(fun
  ballMat=new THREE.MeshStandardMaterial({color:0xf4f7fb,metalness:0.85,roughness:0.11,
    emissive:0x2b3038});      // 暗い盤面でも玉が消えないよう、ごく弱く自光させる
  ballMat.envMapIntensity=1.3;
+ // 最初から持っているぶんも、皿に積んでおく
+ payOut(Math.min(stock,TRAY_MAX));
+ tray.forEach(function(b){ b.delay=0; b.settled=true;
+   var t=traySlot(tray.indexOf(b)); b.mesh.position.set(t.x,t.y,t.z); });
 });
 
 function railAt(s){
@@ -722,7 +784,7 @@ function tick(ts){
   if(fireTimer<=0&&balls.length<40){ fire(power); fireTimer=0.6; }  // 実機は毎分100発
  }else{ fireTimer=0; }
  acc+=el*TIME;
- while(acc>=1/120){ stepBalls(1/120); acc-=1/120; }   // 物理は細かく刻む
+ while(acc>=1/120){ stepBalls(1/120); stepTray(1/120); acc-=1/120; }   // 物理は細かく刻む
  stepLcd(); drawLcd();
  resize(); renderer.render(scene,camera);
 }
