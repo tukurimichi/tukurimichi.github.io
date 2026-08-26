@@ -374,7 +374,13 @@ fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(functi
 
 function railAt(s){
  if(s<=0) return {u:RAIL[0].u,v:RAIL[0].v,tu:0,tv:1};
- if(s>=RAIL_LEN){var e=RAIL[RAIL.length-1];return {u:e.u,v:e.v,tu:1,tv:0};}
+ if(s>=RAIL_LEN){
+  // 終端の向きは、最後のひと区間の傾きをそのまま使う。
+  // ここを「真横」に決め打ちすると、どんな強さでも同じ方向へ飛び出してしまう
+  var e=RAIL[RAIL.length-1], e2=RAIL[RAIL.length-2]||e;
+  var eu=e.u-e2.u, ev=e.v-e2.v, eL=Math.sqrt(eu*eu+ev*ev)||1e-6;
+  return {u:e.u,v:e.v,tu:eu/eL,tv:ev/eL};
+ }
  var lo=0,hi=RAIL.length-1;
  while(hi-lo>1){var m=(lo+hi)>>1; if(RAIL[m].s<s)lo=m; else hi=m;}
  var A=RAIL[lo],B=RAIL[hi],seg=B.s-A.s||1e-6,t=(s-A.s)/seg;
@@ -423,7 +429,8 @@ function solve(dt){
    if(b.s>=RAIL_LEN){              // 天辺を越えた。盤面へ放り出す
     var e=railAt(RAIL_LEN);
     b.onRail=false;
-    b.vu=Math.abs(b.sv);b.vv=-0.15;
+    // レールの接線の向きにそのまま放り出す（10時の位置なら「上向き右」）
+    b.vu=Math.abs(b.sv)*e.tu; b.vv=Math.abs(b.sv)*e.tv;
     // レールの天辺は盤面の円より外にある。そのまま放すと
     // 「円から出さない」処理に掴まれて速さが死ぬので、内側に入れてから放す
     var eu=e.u, ev=e.v-CV, ed=Math.sqrt(eu*eu+ev*ev)||1e-6;
