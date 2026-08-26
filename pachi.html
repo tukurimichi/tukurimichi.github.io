@@ -117,14 +117,21 @@ var cv=document.getElementById("stage"),cx=cv.getContext("2d");
 
 var RAIL_X=332;              // 右のレール。ここより右には玉を入れない
 var PEG_R=3.6, BALL_R=6.4;
-// マスコットの形そのものを当たり判定にする。頭・胴・腕2・脚2の6つの円
-var PARTS=[{x:0,y:-5.4,r:6.0},{x:0,y:2.6,r:4.6},
-           {x:-5.4,y:1.4,r:2.1},{x:5.4,y:1.4,r:2.1},
-           {x:-2.6,y:7.2,r:2.2},{x:2.6,y:7.2,r:2.2}];
+// 当たり判定は絵の輪郭を実測して決めた（pachi/mascot.png を1行ずつ走査した値）
+// 画像は172x256。中心を(86,128)として、画面上の高さ22pxに縮めた座標
+var IMG_W=172, IMG_H=256, IMG_S=22/256;
+var PARTS=[{x:0,y:-4.6,r:6.35},          // 頭
+           {x:0,y:2.0,r:3.6},{x:0,y:5.2,r:3.4},   // 胴（上下2つ）
+           {x:-5.7,y:5.3,r:1.7},{x:5.7,y:5.3,r:1.7},  // 腕
+           {x:-2.2,y:8.5,r:1.7},{x:2.2,y:8.5,r:1.7}]; // 脚
 var MASS=0,INER=0,RMAX=0;
 (function(){for(var i=0;i<PARTS.length;i++){var q=PARTS[i],m=q.r*q.r;
  MASS+=m;INER+=m*(q.r*q.r*0.5+q.x*q.x+q.y*q.y);
  RMAX=Math.max(RMAX,Math.sqrt(q.x*q.x+q.y*q.y)+q.r);}})();
+// 絵。読めなければ下の手描きに戻る（真っ白にならないように）
+var SPRITE=new Image(), SPRITE_OK=false;
+SPRITE.onload=function(){SPRITE_OK=true;};
+SPRITE.src="pachi/mascot.png";
 var G=0.40, REST=0.58;
 // ここを触ると手ごたえが変わる
 var TUNE={jit:0.45, spread:0.25, entryL:56, entryR:300,
@@ -196,12 +203,18 @@ function head(g,x,y,r,col,rot){
 
 // 当たり判定と同じ形を描く（ずれていると理不尽に見えるので、同じ配列から描く）
 function mascot(g,x,y,rot){
+ if(SPRITE_OK){
+  g.save();g.translate(x,y);g.rotate(rot);
+  g.drawImage(SPRITE,-86*IMG_S,-128*IMG_S,IMG_W*IMG_S,IMG_H*IMG_S);
+  g.restore();return;
+ }
  g.save();g.translate(x,y);g.rotate(rot);
  g.fillStyle="#D9762F";
- for(var k=2;k<PARTS.length;k++){var q=PARTS[k];
+ for(var k=3;k<PARTS.length;k++){var q=PARTS[k];
   g.beginPath();g.arc(q.x,q.y,q.r,0,7);g.fill();}
  g.fillStyle="#F0913F";
  g.beginPath();g.arc(PARTS[1].x,PARTS[1].y,PARTS[1].r,0,7);g.fill();
+ g.beginPath();g.arc(PARTS[2].x,PARTS[2].y,PARTS[2].r,0,7);g.fill();
  var h=PARTS[0];
  g.beginPath();                       // 頭。上が丸く、下がすこし角ばる
  g.moveTo(h.x-h.r,h.y+h.r*0.45);
