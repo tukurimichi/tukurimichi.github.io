@@ -174,7 +174,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826r";
+var AV="?v=20260826s";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -298,9 +298,10 @@ function resize(){
 // 見た目を数値で確かめられるようにしておく（色が飛んでいないか等）
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
                 get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);},
-                fire:function(pw){fire(pw);}, step:function(dt){stepBalls(dt);},
+                fire:function(pw){fire(pw);}, step:function(dt){stepBalls(dt);stepTray(dt);},
                 get balls(){return balls;}, get railLen(){return RAIL_LEN;},
-                get stats(){return {spins:spins,wins:wins,payout:payout,hold:hold,state:state,atk:atkOpen};}};
+                get stats(){return {spins:spins,wins:wins,payout:payout,hold:hold,state:state,atk:atkOpen};},
+                setStock:function(n){setStock(n);}};
 // 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
 /* ===== 液晶の中身 =====
    小さな2Dのcanvasに絵を描いて、それを3Dの画面に貼る。
@@ -342,14 +343,15 @@ function syncTray(){
    500個を1個ずつ描くと描画命令が500回になってスマホで重い。
    **同じ形をまとめて1回で描く（インスタンス描画）**ので、何個並べても命令は1回。 */
 var tray=[], trayMesh=null, trayDirty=true, TRAY_DUMMY=null;
-var TRAY_MAX=502;
+var TRAY_MAX=504;
 
-// 並べる場所。上皿 → 上皿の2段目 → 下皿 → 下皿の2段目、の順に埋まる
+// 並べる場所。上皿 → 下皿 → その手前、の順に埋まる。
+// **奥の段ほど高くする。** 正面から見ているので、奥行きだけで積むと
+// すべて同じ高さに重なって「1列」にしか見えない。段を上げると山になって量が分かる
 var TRAY_ZONES=[
- {x0:-0.198,dx:0.0118,cols:34, z0:0.020,dz:0.0118,rows:5, y:0.2455},
- {x0:-0.186,dx:0.0122,cols:32, z0:0.026,dz:0.0122,rows:4, y:0.2560},
- {x0:-0.176,dx:0.0120,cols:30, z0:0.014,dz:0.0120,rows:4, y:0.1405},
- {x0:-0.164,dx:0.0124,cols:28, z0:0.020,dz:0.0124,rows:3, y:0.1510}
+ {x0:-0.196,dx:0.0118,cols:34, z0:0.036,dz:-0.0104,rows:6, y:0.2400,dy:0.0056},
+ {x0:-0.176,dx:0.0120,cols:30, z0:0.032,dz:-0.0104,rows:6, y:0.1300,dy:0.0056},
+ {x0:-0.176,dx:0.0120,cols:30, z0:0.030,dz:-0.0104,rows:4, y:0.1660,dy:0.0056}
 ];
 function traySlot(i){
  for(var z=0;z<TRAY_ZONES.length;z++){
@@ -357,11 +359,11 @@ function traySlot(i){
   if(i<cap){
    var row=Math.floor(i/Z.cols), col=i%Z.cols;
    if(row%2) col=Z.cols-1-col;                 // 端まで行ったら折り返す
-   return {x:Z.x0+col*Z.dx, y:Z.y+row*0.0006, z:Z.z0+row*Z.dz};
+   return {x:Z.x0+col*Z.dx, y:Z.y+row*Z.dy, z:Z.z0+row*Z.dz};
   }
   i-=cap;
  }
- return {x:0,y:0.246,z:0.03};
+ return {x:0,y:0.240,z:0.036};
 }
 function trayInit(){
  if(trayMesh||!LAY||!ballMat) return;
