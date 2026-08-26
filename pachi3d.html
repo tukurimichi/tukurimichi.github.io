@@ -74,9 +74,8 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="loading" id="loading">読み込み中…</div>
 
 <div class="ctrl">
-<button class="lever" id="lever">押している間、強くなる</button>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
-<p class="hint" id="hint">押して離すと、左のレールから玉が出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
+<p class="hint" id="hint">右下のハンドルを上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
 </div>
 
 <div class="entry">
@@ -107,8 +106,7 @@ ja:{toggleTo:"English",
  desc:"実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
-  lever:"押している間、強くなる",
-  hint:"押して離すと、左のレールから玉が出ます。弱すぎると天辺まで届かず、戻ってきます。",
+  hint:"右下のハンドルを上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
   p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。画面の中では、絵柄が3つ回っています。",
@@ -119,8 +117,7 @@ en:{toggleTo:"日本語",
  desc:"A pachinko machine modelled at real-world proportions. Modelled at real-world proportions.",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
-  lever:"Hold to build power",
-  hint:"Hold and release to fire a ball up the left rail. Too weak and it never clears the top — it rolls back down.",
+  hint:"Drag the handle at the bottom right up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
   p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away. Inside it, three reels are spinning.",
@@ -205,6 +202,7 @@ new THREE.GLTFLoader().load("pachi/pachinko.glb",function(g){
  });
  screen(machine);
  scene.add(machine);
+ buildHandle(machine);
  document.getElementById("loading").style.display="none";
 },undefined,function(){
  document.getElementById("loading").textContent="読み込めませんでした";
@@ -351,7 +349,6 @@ fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(functi
  RAIL_LEN=acc;
  ballGeo=new THREE.SphereGeometry(j.board.ballR,16,10);
  ballMat=new THREE.MeshStandardMaterial({color:0xdfe3e9,metalness:1.0,roughness:0.16});
- document.getElementById("lever").disabled=false;
 });
 
 function railAt(s){
@@ -376,6 +373,20 @@ function fire(power){
 
 function stepBalls(dt){
  if(!LAY) return;
+ // **玉は秒速3m近く出る。1/120秒でも1コマ25mm進み、玉と釘が触れる8.7mmを飛び越す。**
+ // 進む距離が2mmを超えないところまで刻みを割ってから解く
+ var fast=0;
+ for(var q=0;q<balls.length;q++){
+  var bb=balls[q];
+  var sp=bb.onRail?Math.abs(bb.sv):Math.sqrt(bb.vu*bb.vu+bb.vv*bb.vv);
+  if(sp>fast)fast=sp;
+ }
+ var sub=Math.min(24,Math.max(1,Math.ceil(fast*dt/0.002)));
+ if(sub>1){ for(var q2=0;q2<sub;q2++) solve(dt/sub); return; }
+ solve(dt);
+}
+
+function solve(dt){
  var R=LAY.board.r, CV=LAY.board.cv, pegR=LAY.board.pegR, bR=LAY.board.ballR;
  for(var i=balls.length-1;i>=0;i--){
   var b=balls[i];
@@ -431,17 +442,53 @@ function stepBalls(dt){
  }
 }
 
-// ---- レバー
-var lever=document.getElementById("lever"),gauge=document.getElementById("gauge");
-var power=0,charging=false;
-lever.disabled=true;
-function down(e){e.preventDefault();charging=true;power=0;}
-lever.addEventListener("mousedown",down);
-lever.addEventListener("touchstart",down,{passive:false});
-function up(){ if(!charging)return; charging=false; fire(power);
- power=0;gauge.style.width="0%"; }
-window.addEventListener("mouseup",up);
-window.addEventListener("touchend",up);
+// ---- ハンドル。実機と同じで、握っているあいだ撃ち続ける
+var gauge=document.getElementById("gauge");
+var power=0, holding=false, dragY=0, dragP=0, fireTimer=0;
+var knob=null, ray=new THREE.Raycaster(), pt=new THREE.Vector2();
+
+function buildHandle(root){
+ // ばらばらの部品を1つのまとまりにして、軸で回せるようにする
+ var g=new THREE.Group();
+ g.position.set(0.185,0.128,0.086);
+ scene.add(g);
+ var picks=[];
+ root.traverse(function(o){ if(/^handle_/.test(o.name)) picks.push(o); });
+ picks.forEach(function(o){
+  if(o.name==="handle_base"){ return; }      // 台座は回らない
+  g.attach(o);
+ });
+ knob={group:g,hits:picks};
+}
+
+function pick(ev){
+ var r=cv.getBoundingClientRect();
+ var cx=(ev.touches?ev.touches[0].clientX:ev.clientX);
+ var cy=(ev.touches?ev.touches[0].clientY:ev.clientY);
+ pt.x=((cx-r.left)/r.width)*2-1;
+ pt.y=-((cy-r.top)/r.height)*2+1;
+ ray.setFromCamera(pt,camera);
+ return {y:cy, hit:knob?ray.intersectObjects(knob.hits,true).length>0:false};
+}
+function hDown(e){
+ var q=pick(e);
+ if(!q.hit) return;                  // ハンドル以外を触ったときは何もしない
+ e.preventDefault();
+ holding=true; dragY=q.y; dragP=power;
+}
+function hMove(e){
+ if(!holding) return;
+ e.preventDefault();
+ var cy=(e.touches?e.touches[0].clientY:e.clientY);
+ power=Math.max(0,Math.min(1,dragP+(dragY-cy)/140));   // 上へ引くほど強い
+}
+function hUp(){ holding=false; }
+cv.addEventListener("mousedown",hDown);
+cv.addEventListener("touchstart",hDown,{passive:false});
+window.addEventListener("mousemove",hMove);
+window.addEventListener("touchmove",hMove,{passive:false});
+window.addEventListener("mouseup",hUp);
+window.addEventListener("touchend",hUp);
 
 place();
 var acc=0,last=0;
@@ -449,7 +496,12 @@ function draw(ts){
  requestAnimationFrame(draw);
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
- if(charging){power=Math.min(1,power+el*1.5);gauge.style.width=(power*100)+"%";}
+ gauge.style.width=(power*100)+"%";
+ if(knob) knob.group.rotation.z=-power*Math.PI/3;      // ハンドルが実際に回る
+ if(holding&&power>0.02){
+  fireTimer-=el;
+  if(fireTimer<=0&&balls.length<40){ fire(power); fireTimer=0.6; }  // 実機は毎分100発
+ }else{ fireTimer=0; }
  acc+=el;
  while(acc>=1/120){ stepBalls(1/120); acc-=1/120; }   // 物理は細かく刻む
  stepLcd(); drawLcd();
