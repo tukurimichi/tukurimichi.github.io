@@ -135,6 +135,7 @@ a{color:inherit;}
 <a href="wallpapers.html" id="navWallpapers"></a>
 <a href="soap.html" id="navSoap"></a>
 <a href="video.html" id="navVideo"></a>
+<a href="credit.html" id="navCredit"></a>
 <a href="tools.html" id="navTools"></a>
 <a href="https://tukurimichi.booth.pm/" target="_blank" rel="noopener" id="navBooth"></a>
 <a href="https://x.com/tsukuru_besu" target="_blank" rel="noopener" id="navX"></a>
@@ -199,6 +200,7 @@ navChibiText:"チビロボを着せ替える",
     navWallpapersText:"海辺の壁紙",
 navSoapText:"マスコットを石鹸にした",
 navVideoText:"AIで動画をつくる",
+navCreditText:"1,271円の失敗",
 navToolsText:"道具箱",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
@@ -233,6 +235,7 @@ navChibiText:"Dress Up Chibi Robo",
     navWallpapersText:"Coast Wallpapers",
 navSoapText:"The Mascot Became a Bar of Soap",
 navVideoText:"Making Videos with AI",
+navCreditText:"A ¥1,271 Mistake",
 navToolsText:"Toolbox",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
@@ -242,14 +245,14 @@ toggleTo:"日本語"
 };
 var TICKER={
 ja:[
+ {d:"2026.08.26",t:"1,271円の失敗。調べる前に契約した話",u:"credit.html"},
  {d:"2026.08.25",t:"動画をコマにする道具を作りました",u:"apps/frames/"},
- {d:"2026.08.25",t:"動画のつくりかたのページを作りました",u:"video.html"},
- {d:"2026.08.25",t:"石鹸の壁紙8枚、BOOTHで無料配布中",u:"soap.html"}
+ {d:"2026.08.25",t:"動画のつくりかたのページを作りました",u:"video.html"}
 ],
 en:[
+ {d:"2026.08.26",t:"A ¥1,271 mistake: signing up before checking",u:"credit.html"},
  {d:"2026.08.25",t:"New tool: slice a video into frames",u:"apps/frames/"},
- {d:"2026.08.25",t:"New page: how the videos get made",u:"video.html"},
- {d:"2026.08.25",t:"Eight soap wallpapers, free on BOOTH",u:"soap.html"}
+ {d:"2026.08.25",t:"New page: how the videos get made",u:"video.html"}
 ]
 };
 function buildTicker(lang){
@@ -307,6 +310,7 @@ document.getElementById("navChibi").textContent=L.navChibiText;
   document.getElementById("navWallpapers").textContent=L.navWallpapersText;
 document.getElementById("navSoap").textContent=L.navSoapText;
 document.getElementById("navVideo").textContent=L.navVideoText;
+document.getElementById("navCredit").textContent=L.navCreditText;
 buildTicker(lang);
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
