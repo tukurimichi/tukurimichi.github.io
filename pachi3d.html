@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826j";
+var AV="?v=20260826k";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -586,10 +586,16 @@ window.addEventListener("touchend",hUp);
 
 place();
 var acc=0,last=0;
-var frames=0;
+var frames=0, drawErr="";
 function draw(ts){
  frames++;
  requestAnimationFrame(draw);
+ // **ループの中で例外が出ると、描画に届かないまま毎コマ落ちて真っ黒になる。**
+ // 黙って落ちないよう受け止めて、画面に出す
+ try{ tick(ts); }catch(e){ drawErr=(e&&e.message)||String(e);
+  try{ resize(); renderer.render(scene,camera); }catch(e2){} }
+}
+function tick(ts){
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
  gauge.style.width=(power*100)+"%";
@@ -639,7 +645,7 @@ setInterval(function(){
   " lost:"+(gl&&gl.isContextLost&&gl.isContextLost()?"YES":"no")+
   " cv:"+cv.clientWidth+"x"+cv.clientHeight+
   " px:"+renderer.getPixelRatio()+
-  " f:"+frames+
+  (drawErr?(" ERR:"+drawErr+" "):" ")+"f:"+frames+
   " back:"+cv.width+"x"+cv.height+
   " cam:"+camera.position.y.toFixed(2)+"/"+camera.position.z.toFixed(2)+
   " asp:"+camera.aspect.toFixed(2)+
