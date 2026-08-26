@@ -12,6 +12,8 @@
   var STOCK_KEY = "tsukurimichi_pachi_balls";   // パチンコ台と共通
   var GOT_KEY = "tsukurimichi_balls_got";       // 拾い終えた玉の目印
   var PER = 3;                                  // 1個あたりの玉数
+  var GOLD_KEY = "tsukurimichi_gold";           // 金の玉が今どのページに居るか
+  var GOLD_PER = 50;                            // 金の玉は50玉
 
   // ページごとの個数。合計で50玉ぶんになるように配る
   var PLAN = {
@@ -73,13 +75,71 @@
     }, 1600);
   }
 
+  /* ===== 金の玉 =====
+     サイト全体で1個だけ。取ると、また別のページへ移る。
+     いまは端末ごとに1個（サーバーが無いので、訪問者どうしでは共有できない）。
+     人が増えたら、置き場所だけをサーバーに移せば「みんなで1個」に載せ替えられる。 */
+  function goldPages() {
+    var a = [];
+    for (var k in PLAN) if (PLAN.hasOwnProperty(k)) a.push(k);
+    return a;
+  }
+
+  function goldWhere() {
+    var v = null;
+    try { v = localStorage.getItem(GOLD_KEY); } catch (e) { }
+    if (!v) {
+      var a = goldPages();
+      v = a[Math.floor(Math.random() * a.length)];
+      try { localStorage.setItem(GOLD_KEY, v); } catch (e) { }
+    }
+    return v;
+  }
+
+  function moveGold(from) {
+    var a = goldPages().filter(function (k) { return k !== from; });
+    var to = a[Math.floor(Math.random() * a.length)];
+    try { localStorage.setItem(GOLD_KEY, to); } catch (e) { }
+  }
+
+  function placeGold(key, docH) {
+    if (goldWhere() !== key) return;
+    var s = hash("gold:" + key + ":" + (Date.now() / 86400000 | 0));
+    var x = 8 + rnd(s * 0.9) * 78;
+    var y = 0.24 + rnd(s * 1.7) * 0.64;
+
+    var b = document.createElement("button");
+    b.setAttribute("aria-label", "金の玉を拾う");
+    b.style.cssText =
+      "position:absolute;width:30px;height:30px;padding:0;border:0;" +
+      "border-radius:50%;cursor:pointer;z-index:9999;" +
+      "background:radial-gradient(circle at 32% 26%,#fff6d8 0%,#f6d27a 34%,#d09a2c 70%,#7a5510 100%);" +
+      "box-shadow:0 0 14px rgba(240,180,60,.55),0 2px 8px rgba(0,0,0,.6)," +
+      "0 0 0 1px rgba(255,255,255,.28) inset;" +
+      "left:" + x + "%;top:" + Math.round(y * docH) + "px;" +
+      "animation:ballBob 2.2s ease-in-out infinite;";
+    b.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      var el = ev.currentTarget;
+      addStock(GOLD_PER);
+      moveGold(key);
+      el.style.transition = "transform .45s,opacity .45s";
+      el.style.transform = "translateY(-40px) scale(.3)";
+      el.style.opacity = "0";
+      setTimeout(function () { el.remove(); }, 460);
+      toast("金の玉！ " + GOLD_PER + " 個");
+      if (window.gtag) gtag("event", "gold_pick", { page: key });
+    });
+    document.body.appendChild(b);
+  }
+
   function place() {
     var key = pageKey();
+    var docH = Math.max(document.body.scrollHeight, window.innerHeight);
     var n = PLAN[key];
-    if (!n) return;
+    if (!n) { placeGold(key, docH); return; }
 
     var taken = got();
-    var docH = Math.max(document.body.scrollHeight, window.innerHeight);
 
     for (var i = 0; i < n; i++) {
       var id = key + ":" + i;
@@ -118,10 +178,12 @@
       document.body.appendChild(b);
     }
 
+    placeGold(key, docH);
+
     var st = document.createElement("style");
     st.textContent =
       "@keyframes ballBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}" +
-      "@media (prefers-reduced-motion:reduce){[aria-label='玉を拾う']{animation:none!important}}";
+      "@media (prefers-reduced-motion:reduce){[aria-label='玉を拾う'],[aria-label='金の玉を拾う']{animation:none!important}}";
     document.head.appendChild(st);
   }
 
