@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">パチンコ台ができるまで | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="じゃんけんが150回遊ばれていた、という数字から始まって、なぜかパチンコ台を3Dで作ることになった記録。詰まったところを全部書きます。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B; --card:#141416; --card2:#1C1C1F;
+  --red:#E31E24; --red-dark:#A8151A;
+  --text:#F2F0EC; --muted:#ACA8A2; --line:#2A2A2D;
+  --orange:#F0913F;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:520px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:44px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.45em;font-weight:900;letter-spacing:.05em;color:#fff;padding-right:78px;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:22px;right:20px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72em;font-weight:700;padding:6px 12px;border-radius:14px;cursor:pointer;}
+.backlink{display:inline-block;padding:16px 22px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.entry{padding:24px 22px;}
+.entry p{line-height:1.9;font-size:.93em;color:#D9D6D0;margin:0 0 1.1em;}
+.entry h2{font-size:1.02em;font-weight:900;color:#fff;margin:2.2em 0 .7em;padding-left:11px;border-left:3px solid var(--red);}
+.fact{border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:14px 16px;margin:14px 0 18px;}
+.fact table{width:100%;border-collapse:collapse;font-size:.84em;}
+.fact td{padding:6px 0;border-bottom:1px solid var(--line);color:#D9D6D0;}
+.fact tr:last-child td{border-bottom:0;}
+.fact td:last-child{text-align:right;font-family:var(--mono);color:#fff;font-weight:700;white-space:nowrap;}
+.fact .em td:last-child{color:#FFB13B;}
+.bug{border:1px solid var(--line);border-left:3px solid #FFB13B;border-radius:0 10px 10px 0;
+  background:var(--card2);padding:13px 16px;margin:14px 0 20px;}
+.bug b{display:block;font-size:.9em;color:#FFB13B;margin-bottom:.4em;}
+.bug p{font-size:.88em;line-height:1.85;color:#E8DCC6;margin:0;}
+.try{display:block;margin:26px 0 0;padding:15px 18px;border:1px solid var(--line);border-radius:10px;
+  background:linear-gradient(165deg,var(--card2),var(--card));text-decoration:none;color:inherit;}
+.try:hover{border-color:rgba(240,145,63,.5);}
+.try b{display:block;font-size:.98em;font-weight:800;color:#fff;}
+.try span{display:block;font-size:.78em;color:var(--muted);margin-top:4px;}
+.try i{display:block;font-style:normal;font-size:.78em;font-weight:800;color:var(--orange);margin-top:9px;}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">パチンコ台ができるまで</h1>
+<p id="bannerP">詰まったところを、全部書きます。</p>
+</div>
+
+<div class="entry">
+<p id="p1">アクセス解析を見ていて、意外だったことがあります。トップページに置いたじゃんけんが150回遊ばれていました。同じ場所にあるおみくじは26回。読ませるものより、遊べるもののほうが触られるらしい。</p>
+<div class="fact"><table>
+<tr class="em"><td id="f1">じゃんけん</td><td>150回</td></tr>
+<tr><td id="f2">おみくじ</td><td>26回</td></tr>
+<tr><td id="f3">サイトに来た人</td><td>141人</td></tr>
+</table></div>
+<p id="p2">じゃあ何か遊べるものを作ろう、とAIと相談しました。そうしたら、なぜかパチンコ台になりました。<b>私はパチンコをやりません。</b>だから本物に似ているかどうかは、正直よく分かっていません。</p>
+
+<h2 id="h1">まず、台そのものを作った</h2>
+<p id="p3">先に遊びを作るのではなく、台を実寸で組むところから始めました。枠520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下。ここを本物に合わせておけば、あとの動きも自然と本物に近づくだろう、という考えです。</p>
+<p id="p4">釘の位置は、台を組んでいるその場で座標として書き出しました。<b>別のプログラムで計算し直すと、台を直したときに必ずずれます。</b>見えている釘と当たり判定が食い違うと、あとで原因の分からない不具合になります。書き出した座標と3Dモデルを照合して、ズレが0.00mmであることを確かめてから先に進みました。</p>
+
+<h2 id="h2">玉が跳ねなかった</h2>
+<div class="bug"><b>1コマで25mm進む玉と、8.7mmの当たり判定</b>
+<p>玉は秒速3m近く出ます。物理を1/120秒ごとに解いていたので、1コマで25mm動く。ところが玉と釘が触れる距離は8.7mmしかない。<b>ほとんどの釘をすり抜けていました。</b>進む距離が2mmを超えないところまで刻みを自動で割ったら、1発あたり釘に8〜11回当たるようになりました。</p></div>
+
+<h2 id="h3">玉が重かった</h2>
+<div class="bug"><b>速い玉ほど強くブレーキがかかっていた</b>
+<p>空気抵抗を「1コマごと」に掛けていました。ところが上の修正で、速い玉ほど細かく刻む作りになっている。つまり<b>速い玉ほど何度も減速される</b>という、逆さまの挙動です。1秒あたりに直すと横方向の速さが16%まで落ちる計算で、実質ブレーキでした。経った時間で効かせるように直したら、横に散る量が2倍以上になりました。</p></div>
+
+<h2 id="h4">どの強さで打っても同じところへ飛んだ</h2>
+<div class="bug"><b>放り出す向きを「真横」に決め打ちしていた</b>
+<p>実機のレールの先端は天辺ではなく<b>10時の位置</b>にあります。玉はそこから斜め上に放り出されて、自分の勢いで天井をなぞりながら右へ流れていく。だから弱ければ左に落ち、強ければ右まで届く。こちらは天辺で放していたうえ、向きを真横に固定していたので、<b>構造上どうやっても左には行けませんでした。</b></p></div>
+<p id="p5">直す途中で、もう2つ見つかりました。放り出す場所が釘の畑の中にあって、出た瞬間に正面衝突していたこと。道釘の1本目が、ちょうど接触する距離（9mm）に立っていたこと。実機の盤面は、レールの出口から天井にかけて釘のない通り道が空いています。理由があって空いているのだと、作ってみて分かりました。</p>
+
+<h2 id="h5">玉が溜まって出てこなくなった</h2>
+<div class="bug"><b>ヘソへ寄せるはずの釘が、谷を作っていた</b>
+<p>寄せ釘を中央へ向かって<b>上り坂</b>に置いていました。左右にV字の谷ができて、そこに落ちた玉が永久に出てこない。しかも釘の間隔が6.6mmで、玉（11mm）は絶対に通れない。完全な受け皿でした。下り坂に直しても、今度は釘と釘のあいだのくぼみにはまる。間隔を7mmまで詰めて、実質なめらかな滑り台にして解決しました。</p></div>
+
+<h2 id="h6">画面が真っ黒になった</h2>
+<div class="bug"><b>自分の環境では映っていた</b>
+<p>液晶の動きを作り直したとき、置き換える範囲を広く取りすぎて、<b>画面を描く関数まで巻き添えで消していました。</b>呼び出しだけが残り、毎コマそこで落ちる。落ちる場所が描画命令の手前だったので、1コマも映りません。厄介だったのは、私の動作確認が別の描画経路を通っていて、そちらは壊れた関数を通らないので<b>正常に映っていた</b>ことです。「こちらでは出ています」と言い続けてしまいました。</p></div>
+<p id="p6">同じ種類のミスを、このあとにもう一度やりました。1,000行近い1枚のファイルを、範囲を指定して書き換えていたのが原因です。次に大きく手を入れるときは、機能ごとにファイルを分けます。</p>
+
+<h2 id="h7">数字は現実から借りた</h2>
+<p id="p7">迷ったときは実機の数字をそのまま使いました。玉は直径11mm。発射は毎分100発まで（法律で決まっています）。ヘソの払い出しは3玉、アタッカーは1個につき15玉。持ち玉は1,000円ぶんの250玉から始まります。</p>
+<div class="fact"><table>
+<tr><td id="g1">遊技盤</td><td>直径 440mm</td></tr>
+<tr><td id="g2">釘</td><td>114本</td></tr>
+<tr><td id="g3">玉</td><td>直径 11mm</td></tr>
+<tr><td id="g4">発射</td><td>毎分100発</td></tr>
+<tr class="em"><td id="g5">ヘソに入る率</td><td>約29%</td></tr>
+</table></div>
+<p id="p8">ひとつだけ、わざと現実から外しました。<b>ヘソに入る率です。</b>実機は5〜10%ですが、この台は約29%あります。実機並みにすると回らなすぎて、遊びとしては退屈だからです。お金がかかっていないのだから、そこは楽しいほうに寄せていい。</p>
+
+<h2 id="h8">最後に、玉が整列しすぎていた</h2>
+<p id="p9">払い出された玉を皿に並べたら、きれいな格子になりました。実際の玉は転がって、六角に詰まった山になります。上へ行くほど狭く、1個ずつわずかにずれる。そう直したら、ようやく「溜まっている」ように見えました。500玉まで出せますが、同じ形をまとめて描く仕組みにしてあるので、描画の負担は1個ぶんです。</p>
+<p id="p10">私はパチンコをやらないので、本物っぽいかどうかは分かりません。ただ、ミニゲームとしてはよくできたほうだと思っています。</p>
+
+<a class="try" href="pachi3d.html" id="tryLink" onclick="gtag('event','pachi_click',{from:'story'});">
+<b id="tryT">実際に打ってみる</b>
+<span id="tryS">ハンドルを上下にドラッグすると玉が出ます。弱いと左、強いと右。</span>
+<i id="tryG">パチンコ台へ →</i>
+</a>
+</div>
+
+<div class="footer"><a href="index.html" id="footBack">← トップに戻る</a></div>
+</div>
+<script src="balls.js" defer></script>
+<script>
+var LANG={
+ja:{toggleTo:"English",
+title:"パチンコ台ができるまで | tukurimichi.com",
+desc:"じゃんけんが150回遊ばれていた、という数字から始まって、なぜかパチンコ台を3Dで作ることになった記録。詰まったところを全部書きます。",
+t:{
+backTop:"← トップに戻る",bannerH1:"パチンコ台ができるまで",bannerP:"詰まったところを、全部書きます。",
+p1:"アクセス解析を見ていて、意外だったことがあります。トップページに置いたじゃんけんが150回遊ばれていました。同じ場所にあるおみくじは26回。読ませるものより、遊べるもののほうが触られるらしい。",
+f1:"じゃんけん",f2:"おみくじ",f3:"サイトに来た人",
+p2:"じゃあ何か遊べるものを作ろう、とAIと相談しました。そうしたら、なぜかパチンコ台になりました。私はパチンコをやりません。だから本物に似ているかどうかは、正直よく分かっていません。",
+h1:"まず、台そのものを作った",
+p3:"先に遊びを作るのではなく、台を実寸で組むところから始めました。枠520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下。ここを本物に合わせておけば、あとの動きも自然と本物に近づくだろう、という考えです。",
+p4:"釘の位置は、台を組んでいるその場で座標として書き出しました。別のプログラムで計算し直すと、台を直したときに必ずずれます。見えている釘と当たり判定が食い違うと、あとで原因の分からない不具合になります。書き出した座標と3Dモデルを照合して、ズレが0.00mmであることを確かめてから先に進みました。",
+h2:"玉が跳ねなかった",
+h3:"玉が重かった",
+h4:"どの強さで打っても同じところへ飛んだ",
+p5:"直す途中で、もう2つ見つかりました。放り出す場所が釘の畑の中にあって、出た瞬間に正面衝突していたこと。道釘の1本目が、ちょうど接触する距離（9mm）に立っていたこと。実機の盤面は、レールの出口から天井にかけて釘のない通り道が空いています。理由があって空いているのだと、作ってみて分かりました。",
+h5:"玉が溜まって出てこなくなった",
+h6:"画面が真っ黒になった",
+p6:"同じ種類のミスを、このあとにもう一度やりました。1,000行近い1枚のファイルを、範囲を指定して書き換えていたのが原因です。次に大きく手を入れるときは、機能ごとにファイルを分けます。",
+h7:"数字は現実から借りた",
+p7:"迷ったときは実機の数字をそのまま使いました。玉は直径11mm。発射は毎分100発まで（法律で決まっています）。ヘソの払い出しは3玉、アタッカーは1個につき15玉。持ち玉は1,000円ぶんの250玉から始まります。",
+g1:"遊技盤",g2:"釘",g3:"玉",g4:"発射",g5:"ヘソに入る率",
+p8:"ひとつだけ、わざと現実から外しました。ヘソに入る率です。実機は5〜10%ですが、この台は約29%あります。実機並みにすると回らなすぎて、遊びとしては退屈だからです。お金がかかっていないのだから、そこは楽しいほうに寄せていい。",
+h8:"最後に、玉が整列しすぎていた",
+p9:"払い出された玉を皿に並べたら、きれいな格子になりました。実際の玉は転がって、六角に詰まった山になります。上へ行くほど狭く、1個ずつわずかにずれる。そう直したら、ようやく「溜まっている」ように見えました。500玉まで出せますが、同じ形をまとめて描く仕組みにしてあるので、描画の負担は1個ぶんです。",
+p10:"私はパチンコをやらないので、本物っぽいかどうかは分かりません。ただ、ミニゲームとしてはよくできたほうだと思っています。",
+tryT:"実際に打ってみる",tryS:"ハンドルを上下にドラッグすると玉が出ます。弱いと左、強いと右。",tryG:"パチンコ台へ →",
+footBack:"← トップに戻る"
+}},
+en:{toggleTo:"日本語",
+title:"How the Pachinko Machine Got Built | tukurimichi.com",
+desc:"It started with a number: the rock-paper-scissors on the front page had been played 150 times. Somehow it ended in a 3D pachinko machine. Every thing that went wrong, written down.",
+t:{
+backTop:"← Back to top",bannerH1:"How the Pachinko Machine Got Built",bannerP:"Everything that went wrong, written down.",
+p1:"Something in the analytics surprised me. The rock-paper-scissors on the front page had been played 150 times. The fortune slip sitting right next to it: 26. Apparently people would rather play with something than read it.",
+f1:"Rock-paper-scissors",f2:"Fortune slip",f3:"Visitors",
+p2:"So I sat down with the AI to make something playable. Somehow we ended up with a pachinko machine. I don't play pachinko. So whether it feels like the real thing, I genuinely cannot tell you.",
+h1:"The cabinet came first",
+p3:"Rather than starting with the game, I built the machine at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield, the launch rail up the left side and the handle bottom right, exactly as on a real machine. Get the object right, the thinking went, and the behaviour follows.",
+p4:"The nail positions were written out as coordinates at the moment the cabinet was built. Recomputing them in a separate program guarantees they drift the next time the cabinet changes — and when the visible nails and the collision data disagree, you get bugs nobody can explain. I checked the exported coordinates against the 3D model and confirmed a 0.00 mm gap before going on.",
+h2:"The ball wouldn't bounce",
+h3:"The ball felt heavy",
+h4:"Every shot landed in the same place",
+p5:"Two more turned up while fixing that. The release point sat inside the nail field, so the ball hit a nail head-on the instant it left. And the first guide nail stood exactly one contact-distance away — 9 mm. On a real board there is a clear lane from the rail exit across the top. It is clear for a reason, as I found out by leaving it full.",
+h5:"Balls collected and never came out",
+h6:"The screen went black",
+p6:"I made the same class of mistake again shortly after. The cause is a single file approaching a thousand lines being edited by range. Next time it gets split by function.",
+h7:"The numbers are borrowed from reality",
+p7:"Whenever I wasn't sure, I used the real machine's figures. The ball is 11 mm across. Firing is capped at 100 a minute — that one is written into law. The start pocket pays 3 balls, the attacker pays 15 per ball. You start with 250, which is what ¥1,000 buys.",
+g1:"Playfield",g2:"Nails",g3:"Ball",g4:"Firing",g5:"Start-pocket rate",
+p8:"One number I deliberately broke: the start-pocket rate. A real machine is 5–10%. This one is about 29%. At the real rate the reels barely spin and it stops being fun. No money is involved here, so it may as well lean towards enjoyable.",
+h8:"And finally, the balls sat in a grid",
+p9:"When the paid-out balls first landed in the tray they formed a perfect lattice. Real balls roll, pack hexagonally and build a mound — narrower towards the top, each one slightly off. Once I did that, it finally looked like a pile. It holds 500, drawn in a single pass, so the cost is that of one ball.",
+p10:"I don't play pachinko, so I can't tell you whether it feels real. As a small game, though, I think it came out rather well.",
+tryT:"Go and play it",tryS:"Drag the handle up or down to fire. Weak lands left, strong lands right.",tryG:"To the machine →",
+footBack:"← Back to top"
+}}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+var L=LANG[lang];
+document.documentElement.lang=lang;
+document.getElementById("pageTitle").textContent=L.title;
+document.getElementById("metaDesc").setAttribute("content",L.desc);
+for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
+document.getElementById("langBtn").textContent=L.toggleTo;
+}
+document.getElementById("langBtn").onclick=function(){
+currentLang=currentLang==="ja"?"en":"ja";
+localStorage.setItem("lang",currentLang);
+render(currentLang);
+};
+render(currentLang);
+</script>
+</body>
+</html>
