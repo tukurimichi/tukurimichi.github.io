@@ -174,7 +174,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826s";
+var AV="?v=20260826t";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -345,25 +345,41 @@ function syncTray(){
 var tray=[], trayMesh=null, trayDirty=true, TRAY_DUMMY=null;
 var TRAY_MAX=504;
 
-// 並べる場所。上皿 → 下皿 → その手前、の順に埋まる。
-// **奥の段ほど高くする。** 正面から見ているので、奥行きだけで積むと
-// すべて同じ高さに重なって「1列」にしか見えない。段を上げると山になって量が分かる
-var TRAY_ZONES=[
- {x0:-0.196,dx:0.0118,cols:34, z0:0.036,dz:-0.0104,rows:6, y:0.2400,dy:0.0056},
- {x0:-0.176,dx:0.0120,cols:30, z0:0.032,dz:-0.0104,rows:6, y:0.1300,dy:0.0056},
- {x0:-0.176,dx:0.0120,cols:30, z0:0.030,dz:-0.0104,rows:4, y:0.1660,dy:0.0056}
-];
-function traySlot(i){
- for(var z=0;z<TRAY_ZONES.length;z++){
-  var Z=TRAY_ZONES[z], cap=Z.cols*Z.rows;
-  if(i<cap){
-   var row=Math.floor(i/Z.cols), col=i%Z.cols;
-   if(row%2) col=Z.cols-1-col;                 // 端まで行ったら折り返す
-   return {x:Z.x0+col*Z.dx, y:Z.y+row*Z.dy, z:Z.z0+row*Z.dz};
+/* 並べ方。**格子に並べると整列しすぎて嘘になる。**
+   実際の玉は転がって、六角に詰まった山になる。上へ行くほど狭く、
+   1個ずつわずかにずれる。ずれは番号から決まるので、毎回同じ形に積まれる。 */
+var SLOTS=null;
+function jit(i,seed){                     // 番号から -1〜1 の決まった値を作る
+ var x=Math.sin(i*12.9898+seed*78.233)*43758.5453;
+ return (x-Math.floor(x))*2-1;
+}
+function buildSlots(){
+ SLOTS=[];
+ var d=0.0118;                            // 玉どうしの間隔
+ var zones=[{y:0.2395,z:0.0330,w:0.400,layers:5},   // 上皿
+            {y:0.1290,z:0.0310,w:0.356,layers:5}];  // 下皿
+ for(var zi=0;zi<zones.length;zi++){
+  var Z=zones[zi];
+  for(var k=0;k<Z.layers;k++){
+   var cols=Math.floor((Z.w-k*d*1.7)/d);  // 上の段ほど狭い＝山になる
+   if(cols<4) break;
+   var x0=-(cols-1)*d/2;
+   for(var r=0;r<3;r++){                  // 皿の奥行きは玉3個ぶん
+    for(var c=0;c<cols;c++){
+     var i=SLOTS.length;
+     SLOTS.push({
+      x:x0+c*d+(((k+r)%2)?d*0.5:0)+jit(i,1)*0.0010,
+      y:Z.y+k*d*0.84+jit(i,2)*0.0006,
+      z:Z.z-r*d*0.86+jit(i,3)*0.0010
+     });
+    }
+   }
   }
-  i-=cap;
  }
- return {x:0,y:0.240,z:0.036};
+}
+function traySlot(i){
+ if(!SLOTS) buildSlots();
+ return SLOTS[i]||SLOTS[SLOTS.length-1]||{x:0,y:0.24,z:0.033};
 }
 function trayInit(){
  if(trayMesh||!LAY||!ballMat) return;
