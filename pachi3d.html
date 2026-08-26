@@ -54,6 +54,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 .refill{margin-left:auto;background:var(--card2);border:1px solid var(--line);color:var(--muted);
   font-size:.9em;padding:6px 12px;border-radius:8px;cursor:pointer;}
 .refill:hover{border-color:rgba(240,145,63,.55);color:var(--orange);}
+.pick{font-size:.74em;color:var(--muted);line-height:1.7;margin:0 2px 10px;}
 #scoreTxt{font-family:var(--mono);font-size:.95em;color:#D9D6D0;}
 .readout b{font-family:var(--mono);font-size:1.5em;font-weight:900;color:var(--orange);}
 .lever{width:100%;padding:15px;border:0;border-radius:12px;cursor:pointer;
@@ -96,6 +97,7 @@ body{margin:0;background:var(--bg);color:var(--text);
 <span id="scoreTxt"></span><b id="ballCount">0</b></div>
 <div class="stock"><span id="stockLb">持ち玉</span><b id="stockNum">250</b>
 <button id="refill" class="refill">250玉もらう</button></div>
+<p class="pick" id="pick">サイトのあちこちに玉が落ちています。見つけて拾うと持ち玉が増えます。</p>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
 <p class="diag" id="diag"></p>
 <p class="hint" id="hint">画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
@@ -131,6 +133,7 @@ ja:{toggleTo:"English",
   loading:"読み込み中…",
   firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
   stockLb:"持ち玉",refill:"250玉もらう",
+  pick:"サイトのあちこちに玉が落ちています。見つけて拾うと持ち玉が増えます。",
   retry:"読み込み直しています",lost:"描画が止まりました",lostHint:"ページを開き直してください",failed:"台を読み込めませんでした。時間をおいて開き直してください",
   hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
@@ -145,6 +148,7 @@ en:{toggleTo:"日本語",
   loading:"Loading…",
   firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
   stockLb:"Balls",refill:"Get 250",
+  pick:"Balls are lying around the site. Find one and it goes into your stock.",
   retry:"Retrying",lost:"Rendering stopped",lostHint:"Please reload the page",failed:"Could not load the machine. Please try again shortly",
   hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
