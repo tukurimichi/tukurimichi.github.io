@@ -158,7 +158,7 @@ a{color:inherit;}
 <div id="deskLabels"></div>
 </div>
 <div class="deskFallback" id="deskFallback">
-<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>・<a href="chibi/" id="fbChibi">着せ替え</a>・<a href="tools.html" id="fbTools">道具箱</a>
+<a href="story.html" id="fbStory">物語</a>・<a href="play.html" id="fbPlay">遊ぶ</a>・<a href="diary.html" id="fbDiary">日記</a>・<a href="made.html" id="fbMade">つくったもの</a>・<a href="tips.html" id="fbTips">AIワザ</a>・<a href="changelog.html" id="fbLog">更新ログ</a>・<a href="#" id="ideaFallback">提案</a>・<a href="claude-code-news.html" id="fbNews">ニュース</a>・<a href="chibi/" id="fbChibi">着せ替え</a>・<a href="tools.html" id="fbTools">道具箱</a>・<a href="pachi3d.html" id="fbPachi">パチンコ</a>
 </div>
 
 <div class="footer">
@@ -206,7 +206,7 @@ navPachiText:"パチンコ台を3Dで作った",
 navToolsText:"道具箱",
 navBoothText:"BOOTHショップ",
 navXText:"Xをフォロー",
-fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",fbChibiText:"着せ替え",fbToolsText:"道具箱",
+fbStoryText:"物語",fbPlayText:"遊ぶ",fbDiaryText:"日記",fbMadeText:"つくったもの",fbTipsText:"AIワザ",fbLogText:"更新ログ",fbIdeaText:"提案",fbNewsText:"ニュース",fbChibiText:"着せ替え",fbToolsText:"道具箱",fbPachiText:"パチンコ",
 toggleTo:"English"
 },
 en:{
@@ -242,7 +242,7 @@ navPachiText:"A Pachinko Machine in 3D",
 navToolsText:"Toolbox",
 navBoothText:"BOOTH Shop",
 navXText:"Follow on X",
-fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",fbChibiText:"Dress Up",fbToolsText:"Toolbox",
+fbStoryText:"Story",fbPlayText:"Play",fbDiaryText:"Diary",fbMadeText:"Made",fbTipsText:"AI Tricks",fbLogText:"Changelog",fbIdeaText:"Suggest",fbNewsText:"News",fbChibiText:"Dress Up",fbToolsText:"Toolbox",fbPachiText:"Pachinko",
 toggleTo:"日本語"
 }
 };
@@ -319,7 +319,7 @@ buildTicker(lang);
   document.getElementById("navTools").textContent=L.navToolsText;
 document.getElementById("navBooth").textContent=L.navBoothText;
 document.getElementById("navX").textContent=L.navXText;
-["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews","fbChibi","fbTools"].forEach(function(k){
+["fbStory","fbPlay","fbDiary","fbMade","fbTips","fbLog","fbNews","fbChibi","fbTools","fbPachi"].forEach(function(k){
 var el=document.getElementById(k);if(el)el.textContent=L[k+"Text"];});
 document.getElementById("ideaFallback").textContent=L.fbIdeaText;
 if(window.__deskRelabel)window.__deskRelabel();
@@ -457,6 +457,45 @@ function buildDeskBlocks(){
   var c2=new THREE.Mesh(cubeGeo,new THREE.MeshStandardMaterial({color:0xF7EEE1}));c2.position.set(3.8,3.5,1.2);c2.rotation.y=-0.18;
   var c3=new THREE.Mesh(cubeGeo,new THREE.MeshStandardMaterial({color:0x3A2A22}));c3.position.set(0.1,10.3,0.6);c3.rotation.set(0.12,0.4,0.08);
   g.add(c1,c2,c3);
+  return g;
+}
+function buildDeskPachinko(){
+  // 机の上のパチンコ台。実物と同じ配色（黒い枠・オレンジの縁・緑の盤面・銀のレール）
+  var g=new THREE.Group();
+  var dark=new THREE.MeshStandardMaterial({color:0x17161A});
+  var orange=new THREE.MeshStandardMaterial({color:0xF0862E});
+  var green=new THREE.MeshStandardMaterial({color:0x14503A});
+  var steel=new THREE.MeshStandardMaterial({color:0xC9CED6,metalness:0.7,roughness:0.3});
+  var screen=new THREE.MeshStandardMaterial({color:0x0B0D11});
+  // 枠
+  var body=new THREE.Mesh(new THREE.BoxGeometry(13,20,4),dark);
+  body.position.y=10; g.add(body);
+  // 縁のオレンジ
+  for(var sx=-1;sx<=1;sx+=2){
+    var edge=new THREE.Mesh(new THREE.BoxGeometry(0.9,18,0.7),orange);
+    edge.position.set(sx*6.0,10.5,2.1); g.add(edge);
+  }
+  var topBar=new THREE.Mesh(new THREE.BoxGeometry(10,0.9,0.7),orange);
+  topBar.position.set(0,19.2,2.1); g.add(topBar);
+  // 盤面（緑の基板）と、その外周
+  var board=new THREE.Mesh(new THREE.CylinderGeometry(5.0,5.0,0.7,24),green);
+  board.rotation.x=Math.PI/2; board.position.set(0,12.6,2.1); g.add(board);
+  var rim=new THREE.Mesh(new THREE.TorusGeometry(5.0,0.45,8,24),orange);
+  rim.position.set(0,12.6,2.3); g.add(rim);
+  // 液晶
+  var lcd=new THREE.Mesh(new THREE.BoxGeometry(5.2,3.4,0.5),screen);
+  lcd.position.set(0,13.4,2.6); g.add(lcd);
+  // 発射レール（左）
+  var rail=new THREE.Mesh(new THREE.TorusGeometry(5.8,0.22,6,18,Math.PI*1.05),steel);
+  rail.position.set(0,12.6,2.4); rail.rotation.z=Math.PI*0.32; g.add(rail);
+  // 上皿・下皿
+  var tray=new THREE.Mesh(new THREE.BoxGeometry(11,1.6,2.2),dark);
+  tray.position.set(0,5.6,2.6); g.add(tray);
+  var tray2=new THREE.Mesh(new THREE.BoxGeometry(9.5,1.4,2.0),dark);
+  tray2.position.set(0,2.8,2.5); g.add(tray2);
+  // ハンドル（右下）
+  var knob=new THREE.Mesh(new THREE.SphereGeometry(1.15,10,8),orange);
+  knob.position.set(4.6,3.4,3.2); g.add(knob);
   return g;
 }
 function buildDeskToolbox(){
@@ -1154,7 +1193,8 @@ function initDeskScene(){
     {key:"tips",ja:"AIワザ",en:"AI TRICKS",href:"tips.html",build:buildDeskCamera,pos:[78,0,38],rot:-0.28,shadowR:22,labelFront:16},
     {key:"idea",ja:"提案",en:"IDEA",action:"idea",build:buildDeskPlane,pos:[25,0,68],rot:0.9,shadowR:22,labelFront:8},
     {key:"tools",ja:"道具箱",en:"TOOLS",href:"tools.html",build:buildDeskToolbox,pos:[-8,0,-60],rot:0.28,shadowR:24,labelFront:16},
-    {key:"news",ja:"ニュース",en:"NEWS",href:"claude-code-news.html",build:buildDeskNewspaper,pos:[42,0,-12],rot:0.4,shadowR:23,labelFront:16}
+    {key:"news",ja:"ニュース",en:"NEWS",href:"claude-code-news.html",build:buildDeskNewspaper,pos:[42,0,-12],rot:0.4,shadowR:23,labelFront:16},
+    {key:"pachi",ja:"パチンコ",en:"PACHINKO",href:"pachi3d.html",build:buildDeskPachinko,pos:[-105,0,-18],rot:0.34,shadowR:20,labelFront:22}
   ];
 
   var items=[];
