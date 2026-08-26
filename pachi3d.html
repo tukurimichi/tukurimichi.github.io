@@ -46,6 +46,16 @@ body{margin:0;background:var(--bg);color:var(--text);
 .spec td{padding:5px 0;border-bottom:1px solid var(--line);color:#D9D6D0;}
 .spec tr:last-child td{border-bottom:0;}
 .spec td:last-child{text-align:right;font-family:var(--mono);color:#fff;}
+.ctrl{padding:14px 16px 0;}
+.lever{width:100%;padding:15px;border:0;border-radius:12px;cursor:pointer;
+  background:linear-gradient(180deg,#C9302C,#8E1B18);color:#fff;font-size:.9em;font-weight:900;
+  letter-spacing:.05em;box-shadow:0 3px 0 #5E1210;transition:transform .05s,box-shadow .05s;
+  -webkit-user-select:none;user-select:none;}
+.lever:active{transform:translateY(3px);box-shadow:0 0 0 #5E1210;}
+.gauge{height:8px;background:var(--card2);border:1px solid var(--line);border-radius:5px;
+  margin-top:9px;overflow:hidden;}
+.gaugeFill{height:100%;width:0%;background:linear-gradient(90deg,#7FCFA0,#FFB13B,#E31E24);}
+.hint{font-size:.76em;color:var(--muted);line-height:1.8;margin:10px 2px 0;}
 .loading{position:relative;top:-40vh;text-align:center;font-size:.8em;color:var(--muted);}
 .footer{padding:22px;text-align:center;font-size:.72em;color:var(--muted);}
 .footer a{color:#FF8A80;}
@@ -62,6 +72,12 @@ body{margin:0;background:var(--bg);color:var(--text);
 
 <canvas id="stage"></canvas>
 <div class="loading" id="loading">読み込み中…</div>
+
+<div class="ctrl">
+<button class="lever" id="lever">押している間、強くなる</button>
+<div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
+<p class="hint" id="hint">押して離すと、左のレールから玉が出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
+</div>
 
 <div class="entry">
 <p id="p1">パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。</p>
@@ -91,6 +107,8 @@ ja:{toggleTo:"English",
  desc:"実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
+  lever:"押している間、強くなる",
+  hint:"押して離すと、左のレールから玉が出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
   p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。画面の中では、絵柄が3つ回っています。",
@@ -101,6 +119,8 @@ en:{toggleTo:"日本語",
  desc:"A pachinko machine modelled at real-world proportions. Modelled at real-world proportions.",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
+  lever:"Hold to build power",
+  hint:"Hold and release to fire a ball up the left rail. Too weak and it never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
   p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away. Inside it, three reels are spinning.",
@@ -201,7 +221,9 @@ function resize(){
 }
 // 見た目を数値で確かめられるようにしておく（色が飛んでいないか等）
 window.__pachi={get renderer(){return renderer;},get scene(){return scene;},
-                get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);}};
+                get camera(){return camera;},draw:function(){resize();renderer.render(scene,camera);},
+                fire:function(pw){fire(pw);}, step:function(dt){stepBalls(dt);},
+                get balls(){return balls;}, get railLen(){return RAIL_LEN;}};
 // 動きがないので、毎コマ描き続ける必要はない。大きさが変わったときだけ描き直す
 /* ===== 液晶の中身 =====
    小さな2Dのcanvasに絵を描いて、それを3Dの画面に貼る。
@@ -264,7 +286,9 @@ function drawLcd(){
  if(tex) tex.needsUpdate=true;
 }
 
+var lcdTick=0;
 function stepLcd(){
+ if((++lcdTick)%4) return;      // 毎コマだとリールが速すぎる
  timer++;
  if(state==="spin"){
   for(var i=0;i<3;i++) if(reels[i].stop<0) reels[i].p+=reels[i].v;
@@ -299,12 +323,139 @@ function screen(root){
  m.material=new THREE.MeshBasicMaterial({map:tex,toneMapped:false});
 }
 
+/* ===== 玉を打つ =====
+   盤面はほぼ平らなので、2次元の物理で足りる。単位はメートル、重力は 9.8m/s²。
+   レールは「1本の坂道」として扱う。上り坂では重力で減速するので、
+   **弱すぎた玉が天辺まで届かず戻ってくる（ファール玉）が、特別な処理なしに起きる。** */
+var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
+var GRAV=9.8, REST=0.42, FRIC=0.985;
+
+fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(function(j){
+ LAY=j;
+ // 外レールと内レールの真ん中を、玉が通る道とする
+ var a=j.rails.lane0, b=j.rails.lane1, path=[];
+ for(var i=0;i<Math.min(a.length,b.length);i++)
+  path.push([(a[i][0]+b[i][0])/2,(a[i][1]+b[i][1])/2]);
+ // **物理のレールは天辺までにする。**
+ // 先の「返し」まで道として辿らせると、玉が必ず真下へ落とされてしまい、
+ // 強く打っても弱く打っても同じ場所に落ちる。返しは見た目としてだけ残す。
+ var apex=0;
+ for(var i2=0;i2<path.length;i2++) if(path[i2][1]>path[apex][1]) apex=i2;
+ path=path.slice(0,Math.min(path.length,apex+3));
+ var acc=0;
+ for(var k=0;k<path.length;k++){
+  if(k>0){var dx=path[k][0]-path[k-1][0],dy=path[k][1]-path[k-1][1];
+          acc+=Math.sqrt(dx*dx+dy*dy);}
+  RAIL.push({u:path[k][0],v:path[k][1],s:acc});
+ }
+ RAIL_LEN=acc;
+ ballGeo=new THREE.SphereGeometry(j.board.ballR,16,10);
+ ballMat=new THREE.MeshStandardMaterial({color:0xdfe3e9,metalness:1.0,roughness:0.16});
+ document.getElementById("lever").disabled=false;
+});
+
+function railAt(s){
+ if(s<=0) return {u:RAIL[0].u,v:RAIL[0].v,tu:0,tv:1};
+ if(s>=RAIL_LEN){var e=RAIL[RAIL.length-1];return {u:e.u,v:e.v,tu:1,tv:0};}
+ var lo=0,hi=RAIL.length-1;
+ while(hi-lo>1){var m=(lo+hi)>>1; if(RAIL[m].s<s)lo=m; else hi=m;}
+ var A=RAIL[lo],B=RAIL[hi],seg=B.s-A.s||1e-6,t=(s-A.s)/seg;
+ var du=B.u-A.u,dv=B.v-A.v,L=Math.sqrt(du*du+dv*dv)||1e-6;
+ return {u:A.u+du*t, v:A.v+dv*t, tu:du/L, tv:dv/L};
+}
+
+function fire(power){
+ if(!LAY) return;
+ var m=new THREE.Mesh(ballGeo,ballMat);
+ m.position.set(RAIL[0].u,RAIL[0].v,0.010);
+ scene.add(m);
+ // 3.05m/s で天辺にぎりぎり届く。弱いと戻る
+ // 2.98m/s でようやく天辺に届く。下の1割ほどはファールになる
+ balls.push({mesh:m,onRail:true,s:0,sv:2.98+power*1.30,u:0,v:0,vu:0,vv:0,life:0});
+}
+
+function stepBalls(dt){
+ if(!LAY) return;
+ var R=LAY.board.r, CV=LAY.board.cv, pegR=LAY.board.pegR, bR=LAY.board.ballR;
+ for(var i=balls.length-1;i>=0;i--){
+  var b=balls[i];
+  b.life+=dt;
+  if(b.onRail){
+   var p=railAt(b.s);
+   b.sv+=-GRAV*p.tv*dt;            // 坂の傾きぶんだけ重力で加減速する
+   b.sv*=0.9995;
+   b.s+=b.sv*dt;
+   if(b.s>=RAIL_LEN){              // 天辺を越えた。盤面へ放り出す
+    var e=railAt(RAIL_LEN);
+    b.onRail=false;
+    b.vu=Math.abs(b.sv);b.vv=-0.15;
+    // レールの天辺は盤面の円より外にある。そのまま放すと
+    // 「円から出さない」処理に掴まれて速さが死ぬので、内側に入れてから放す
+    var eu=e.u, ev=e.v-CV, ed=Math.sqrt(eu*eu+ev*ev)||1e-6;
+    var inn=R-bR-0.008;
+    if(ed>inn){ b.u=eu/ed*inn; b.v=CV+ev/ed*inn; } else { b.u=e.u; b.v=e.v; }
+   }else if(b.s<0){                // 届かずに戻ってきた（ファール玉）
+    scene.remove(b.mesh);balls.splice(i,1);continue;
+   }else{
+    p=railAt(b.s);b.mesh.position.set(p.u,p.v,0.010);continue;
+   }
+  }
+  // 自由落下
+  b.vv-=GRAV*dt;
+  b.vu*=FRIC;
+  b.u+=b.vu*dt; b.v+=b.vv*dt;
+  // 釘
+  for(var k=0;k<LAY.pegs.length;k++){
+   var du=b.u-LAY.pegs[k][0], dv=b.v-LAY.pegs[k][1], rr=bR+pegR;
+   if(du*du+dv*dv<rr*rr){
+    var d=Math.sqrt(du*du+dv*dv)||1e-6, nu=du/d, nv=dv/d;
+    b.u=LAY.pegs[k][0]+nu*rr; b.v=LAY.pegs[k][1]+nv*rr;
+    var dot=b.vu*nu+b.vv*nv;
+    if(dot<0){
+     b.vu=(b.vu-2*dot*nu)*REST+(Math.random()-0.5)*0.10;
+     b.vv=(b.vv-2*dot*nv)*REST;
+    }
+   }
+  }
+  // 盤面の外周（円）から出さない
+  var cu=b.u, cv=b.v-CV, dd=Math.sqrt(cu*cu+cv*cv), lim=R-bR-0.004;
+  if(dd>lim){
+   var nu2=cu/dd,nv2=cv/dd;
+   b.u=nu2*lim; b.v=CV+nv2*lim;
+   var dot2=b.vu*nu2+b.vv*nv2;
+   if(dot2>0){b.vu=(b.vu-2*dot2*nu2)*REST;b.vv=(b.vv-2*dot2*nv2)*REST;}
+  }
+  b.mesh.position.set(b.u,b.v,0.010);
+  // 下まで落ちたら消す
+  if(b.v<CV-R+0.012||b.life>25){scene.remove(b.mesh);balls.splice(i,1);}
+ }
+}
+
+// ---- レバー
+var lever=document.getElementById("lever"),gauge=document.getElementById("gauge");
+var power=0,charging=false;
+lever.disabled=true;
+function down(e){e.preventDefault();charging=true;power=0;}
+lever.addEventListener("mousedown",down);
+lever.addEventListener("touchstart",down,{passive:false});
+function up(){ if(!charging)return; charging=false; fire(power);
+ power=0;gauge.style.width="0%"; }
+window.addEventListener("mouseup",up);
+window.addEventListener("touchend",up);
+
 place();
-function draw(){resize();stepLcd();drawLcd();renderer.render(scene,camera);}
-window.addEventListener("resize",draw);
-// 台は動かないが、液晶の中は動く。毎コマではなく間引いて回す（電池のため）
-setInterval(draw,1000/16);
-draw();
+var acc=0,last=0;
+function draw(ts){
+ requestAnimationFrame(draw);
+ if(!last)last=ts||0;
+ var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
+ if(charging){power=Math.min(1,power+el*1.5);gauge.style.width=(power*100)+"%";}
+ acc+=el;
+ while(acc>=1/120){ stepBalls(1/120); acc-=1/120; }   // 物理は細かく刻む
+ stepLcd(); drawLcd();
+ resize(); renderer.render(scene,camera);
+}
+requestAnimationFrame(draw);
 })();
 </script>
 </body>
