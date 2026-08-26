@@ -117,12 +117,20 @@ var cv=document.getElementById("stage"),cx=cv.getContext("2d");
 
 var RAIL_X=332;              // 右のレール。ここより右には玉を入れない
 var PEG_R=3.6, BALL_R=6.4;
+// マスコットの形そのものを当たり判定にする。頭・胴・腕2・脚2の6つの円
+var PARTS=[{x:0,y:-5.4,r:6.0},{x:0,y:2.6,r:4.6},
+           {x:-5.4,y:1.4,r:2.1},{x:5.4,y:1.4,r:2.1},
+           {x:-2.6,y:7.2,r:2.2},{x:2.6,y:7.2,r:2.2}];
+var MASS=0,INER=0,RMAX=0;
+(function(){for(var i=0;i<PARTS.length;i++){var q=PARTS[i],m=q.r*q.r;
+ MASS+=m;INER+=m*(q.r*q.r*0.5+q.x*q.x+q.y*q.y);
+ RMAX=Math.max(RMAX,Math.sqrt(q.x*q.x+q.y*q.y)+q.r);}})();
 var G=0.40, REST=0.58;
 // ここを触ると手ごたえが変わる
 var TUNE={jit:0.45, spread:0.25, entryL:56, entryR:300,
-          rows:[120,300], sp:36,
+          rows:[120,300], sp:42,
           drag:0.972, vmax:3.2,      // 横のブレを抑える。狙いを効かせるための要
-          fx:138, fstep:8, fn:5, fy:360};   // カップへ絞る漏斗
+          fx:112, fstep:6, fn:3, fy:360};   // カップへ絞る漏斗
 
 // 釘。千鳥に並べる。真ん中のカップへ集まりすぎないよう、下2段は外へ逃がす
 var pegs=[];
@@ -145,7 +153,7 @@ function layout(){
 }
 layout();
 
-var CUP={x:180,y:466,w:34,h:16};          // 真ん中のカップ（入賞）
+var CUP={x:180,y:466,w:38,h:16};          // 真ん中のカップ（入賞）
 var REEL={x:180,y:250,r:30};              // 役物（絵が回るところ）
 
 function entryX(p){return TUNE.entryR-(TUNE.entryR-TUNE.entryL)*p;}
@@ -186,6 +194,28 @@ function head(g,x,y,r,col,rot){
  g.restore();
 }
 
+// 当たり判定と同じ形を描く（ずれていると理不尽に見えるので、同じ配列から描く）
+function mascot(g,x,y,rot){
+ g.save();g.translate(x,y);g.rotate(rot);
+ g.fillStyle="#D9762F";
+ for(var k=2;k<PARTS.length;k++){var q=PARTS[k];
+  g.beginPath();g.arc(q.x,q.y,q.r,0,7);g.fill();}
+ g.fillStyle="#F0913F";
+ g.beginPath();g.arc(PARTS[1].x,PARTS[1].y,PARTS[1].r,0,7);g.fill();
+ var h=PARTS[0];
+ g.beginPath();                       // 頭。上が丸く、下がすこし角ばる
+ g.moveTo(h.x-h.r,h.y+h.r*0.45);
+ g.quadraticCurveTo(h.x-h.r,h.y-h.r,h.x,h.y-h.r);
+ g.quadraticCurveTo(h.x+h.r,h.y-h.r,h.x+h.r,h.y+h.r*0.45);
+ g.quadraticCurveTo(h.x+h.r,h.y+h.r*0.95,h.x,h.y+h.r*0.95);
+ g.quadraticCurveTo(h.x-h.r,h.y+h.r*0.95,h.x-h.r,h.y+h.r*0.45);
+ g.closePath();g.fill();
+ g.fillStyle="rgba(0,0,0,.6)";        // 目は彫り込み。口はない
+ g.beginPath();g.arc(h.x-h.r*0.34,h.y-h.r*0.05,h.r*0.14,0,7);g.fill();
+ g.beginPath();g.arc(h.x+h.r*0.34,h.y-h.r*0.05,h.r*0.14,0,7);g.fill();
+ g.restore();
+}
+
 function draw(){
  cx.clearRect(0,0,W,H);
  // 枠とレール
@@ -223,49 +253,80 @@ function draw(){
   cx.beginPath();cx.moveTo(ax,22);cx.lineTo(ax,H);cx.stroke();cx.setLineDash([]);
  }
  // 玉
- if(S.ball) head(cx,S.ball.x,S.ball.y,BALL_R,"#F0913F",S.ball.rot);
+ if(S.ball) mascot(cx,S.ball.x,S.ball.y,S.ball.rot);
 }
 
 /* ===== 物理 ===== */
+// 当たった一点で押し戻して、その位置に応じた回転を与える
+function hit(b,px,py,nx,ny,pen,jit){
+ b.x+=nx*pen; b.y+=ny*pen;
+ var rx=px-b.x, ry=py-b.y;
+ var vx=b.vx-b.om*ry, vy=b.vy+b.om*rx;      // 接触点の速さ（回転ぶんを足す）
+ var vn=vx*nx+vy*ny;
+ if(vn>=0) return;                            // 離れていく向きなら何もしない
+ var rn=rx*ny-ry*nx;
+ var j=-(1+REST)*vn/(1/MASS+rn*rn/INER);
+ b.vx+=j*nx/MASS; b.vy+=j*ny/MASS; b.om+=rn*j/INER;
+ // 摩擦。これがないと転がらず、滑るだけになる
+ var tx=-ny,ty=nx, vt=vx*tx+vy*ty, rt=rx*ty-ry*tx;
+ var jt=-vt/(1/MASS+rt*rt/INER);
+ var lim=0.42*Math.abs(j);
+ if(jt> lim)jt= lim; if(jt<-lim)jt=-lim;
+ b.vx+=jt*tx/MASS; b.vy+=jt*ty/MASS; b.om+=rt*jt/INER;
+ if(jit){ b.vx+=(Math.random()-0.5)*jit; b.om+=(Math.random()-0.5)*jit*0.05; }
+}
+
 function step(){
  var b=S.ball;if(!b)return;
  if(b.rail){                                  // レールを駆け上がる
   b.t+=0.055;
   var t=b.t;
   if(t>=1){b.rail=false;b.x=entryX(b.power);b.y=44;
-           b.vx=(Math.random()-0.5)*TUNE.spread*2;b.vy=0.4;}
+           b.vx=(Math.random()-0.5)*TUNE.spread*2;b.vy=0.4;
+           b.om=(Math.random()-0.5)*0.12;}
   else if(t>0.72){var u=(t-0.72)/0.28;      // 上を左へ転がって、狙った位置で落ちる
            b.x=RAIL_X-30-(RAIL_X-30-entryX(b.power))*u;b.y=30;}
   else{b.x=RAIL_X;b.y=580-(580-30)*(t/0.72);}
-  b.rot+=0.3;return;
+  b.rot+=0.22;return;
  }
  b.vy+=G;
  b.vx*=TUNE.drag;                                   // 横だけ減衰させる
  if(b.vx> TUNE.vmax)b.vx= TUNE.vmax;
  if(b.vx<-TUNE.vmax)b.vx=-TUNE.vmax;
- b.x+=b.vx;b.y+=b.vy;b.rot+=b.vx*0.05;
- if(b.x<BALL_R){b.x=BALL_R;b.vx=-b.vx*REST;}
- if(b.x>RAIL_X-BALL_R){b.x=RAIL_X-BALL_R;b.vx=-b.vx*REST;}
- for(var i=0;i<pegs.length;i++){
-  var dx=b.x-pegs[i].x,dy=b.y-pegs[i].y,d2=dx*dx+dy*dy,rr=BALL_R+PEG_R;
-  if(d2<rr*rr){
-   var d=Math.sqrt(d2)||0.001,nx=dx/d,ny=dy/d;
-   b.x=pegs[i].x+nx*rr;b.y=pegs[i].y+ny*rr;
-   var dot=b.vx*nx+b.vy*ny;
-   b.vx=(b.vx-2*dot*nx)*REST+(Math.random()-0.5)*TUNE.jit*2;
-   b.vy=(b.vy-2*dot*ny)*REST;
-   beep(1200+Math.random()*500,0.03,"square",0.035);
+ b.om*=0.985;
+ if(b.om> 0.34)b.om= 0.34;
+ if(b.om<-0.34)b.om=-0.34;
+ b.x+=b.vx;b.y+=b.vy;b.rot+=b.om;
+
+ var co=Math.cos(b.rot),si=Math.sin(b.rot),i,k;
+ // 手足の1つずつを釘・壁とぶつける
+ for(k=0;k<PARTS.length;k++){
+  var q=PARTS[k];
+  var px=b.x+co*q.x-si*q.y, py=b.y+si*q.x+co*q.y;
+  // 壁
+  if(px-q.r<0)      hit(b,px,py,1,0,q.r-px,0.5);
+  if(px+q.r>RAIL_X) hit(b,px,py,-1,0,px+q.r-RAIL_X,0.5);
+  // 釘
+  for(i=0;i<pegs.length;i++){
+   var dx=px-pegs[i].x,dy=py-pegs[i].y,rr=q.r+PEG_R;
+   if(dx*dx+dy*dy<rr*rr){
+    var d=Math.sqrt(dx*dx+dy*dy)||0.001;
+    hit(b,px,py,dx/d,dy/d,rr-d,TUNE.jit);
+    beep(1100+Math.random()*600,0.03,"square",0.03);
+   }
   }
  }
  // 釘の上で止まってしまったとき。放っておくと盤面が固まるので逃がす
- if(b.vx*b.vx+b.vy*b.vy<0.55){ b.slow=(b.slow||0)+1; } else { b.slow=0; }
+ b.age=(b.age||0)+1;
+ if(b.age>560){ S.ball=null; update(); return; }      // 9秒以上かかったら1発ぶん諦める
+ if(b.vx*b.vx+b.vy*b.vy<0.55&&Math.abs(b.om)<0.06){ b.slow=(b.slow||0)+1; } else { b.slow=0; }
  if(b.slow>36){
   b.slow=0; b.nudge=(b.nudge||0)+1;
-  b.vx+=(Math.random()-0.5)*2.6; b.vy=1.3;
+  b.vx+=(Math.random()-0.5)*2.6; b.vy=1.3; b.om+=(Math.random()-0.5)*0.3;
   if(b.nudge>3){ S.ball=null; update(); return; }   // それでも駄目なら1発ぶん諦める
  }
  // カップ判定
- if(b.y+BALL_R>CUP.y&&b.y<CUP.y+CUP.h&&Math.abs(b.x-CUP.x)<CUP.w/2-2&&b.vy>0){
+ if(b.y+6>CUP.y&&b.y<CUP.y+CUP.h+6&&Math.abs(b.x-CUP.x)<CUP.w/2&&b.vy>0){
   S.ball=null;S.inCup++;S.balls+=1;spin();update();return;
  }
  if(b.y>H+30){S.ball=null;update();}
@@ -314,7 +375,7 @@ function fire(){
  S.charging=false;
  if(S.ball||S.balls<=0){S.power=0;gauge.style.width="0%";return;}
  S.balls--;S.fired++;
- S.ball={x:RAIL_X,y:580,vx:0,vy:0,rot:0,rail:true,t:0,power:S.power};
+ S.ball={x:RAIL_X,y:580,vx:0,vy:0,om:0,rot:0,rail:true,t:0,power:S.power};
  beep(300,0.06,"sawtooth",0.05);
  if(!S.sentPlay){S.sentPlay=true;gtag("event","pachinko_play",{});}
  if(S.fired>=100&&!S.sentDeep){S.sentDeep=true;gtag("event","pachinko_deep",{launches:S.fired});}
