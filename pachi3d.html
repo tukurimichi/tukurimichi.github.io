@@ -333,6 +333,10 @@ function screen(root){
    **弱すぎた玉が天辺まで届かず戻ってくる（ファール玉）が、特別な処理なしに起きる。** */
 var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
 var GRAV=9.8, REST=0.42, FRIC=0.985;
+// 実際の重力で動かすと、44cmの盤面を0.3秒で落ちきってしまい、目で追えない。
+// 重力だけ弱めると跳ね方の比率が変わるので、**時間そのものを遅くする**。
+// 0.40 なら実機の2.5倍かけて落ちる
+var TIME=0.40;
 
 fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(function(j){
  LAY=j;
@@ -513,10 +517,10 @@ function draw(ts){
           holding?(LANG[lang].t.firing||"発射中"):(LANG[lang].t.idle||"待機");}
  if(knob) knob.group.rotation.z=-power*Math.PI/3;      // ハンドルが実際に回る
  if(holding&&power>0.02){
-  fireTimer-=el;
+  fireTimer-=el*TIME;      // 玉の動きを遅くしたぶん、発射の間隔も同じだけ延ばす
   if(fireTimer<=0&&balls.length<40){ fire(power); fireTimer=0.6; }  // 実機は毎分100発
  }else{ fireTimer=0; }
- acc+=el;
+ acc+=el*TIME;
  while(acc>=1/120){ stepBalls(1/120); acc-=1/120; }   // 物理は細かく刻む
  stepLcd(); drawLcd();
  resize(); renderer.render(scene,camera);
