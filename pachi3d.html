@@ -159,7 +159,7 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826m";
+var AV="?v=20260826n";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -403,7 +403,7 @@ var LAY=null, RAIL=[], RAIL_LEN=0, balls=[], ballGeo=null, ballMat=null;
 var GRAV=9.8;
 var REST=0.60;      // 釘に当たったときの跳ね返り。上げるほど玉が軽く見える
 var DRAG=0.30;      // 空気抵抗。**1秒あたりの割合**で効かせる（後述）
-var STUCK_S=0.5;    // これだけ止まっていたら挟まったとみなす
+var STUCK_S=0.35;    // これだけ止まっていたら挟まったとみなす
 // 実際の重力で動かすと、44cmの盤面を0.3秒で落ちきってしまい、目で追えない。
 // 重力だけ弱めると跳ね方の比率が変わるので、**時間そのものを遅くする**。
 // 0.40 なら実機の2.5倍かけて落ちる
@@ -576,8 +576,14 @@ function solve(dt){
   }
   // 釘の隙間を詰めたので、まれに挟まって止まることがある。放っておくと盤面が固まる
   var spd=Math.sqrt(b.vu*b.vu+b.vv*b.vv);
-  if(spd<0.035){ b.slow=(b.slow||0)+dt; } else { b.slow=0; }
-  if(b.slow>STUCK_S){ b.slow=0; b.vu+=(Math.random()-0.5)*0.35; b.vv-=0.25; }
+  if(spd<0.06){ b.slow=(b.slow||0)+dt; } else { b.slow=0; }
+  if(b.slow>STUCK_S){
+   // 止まったら中央側へ押してやる。左右どちらに居るかで向きを決める
+   b.slow=0; b.stuckN=(b.stuckN||0)+1;
+   b.vu+=(b.u>0?-1:1)*(0.25+0.10*b.stuckN);
+   b.vv-=0.30;
+   if(b.stuckN>6){ scene.remove(b.mesh); balls.splice(i,1); continue; }  // それでも駄目なら諦める
+  }
   b.mesh.position.set(b.u,b.v,0.010);
   // 下まで落ちたら消す
   if(b.v<CV-R+0.012||b.life>25){scene.remove(b.mesh);balls.splice(i,1);}
