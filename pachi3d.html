@@ -47,6 +47,9 @@ body{margin:0;background:var(--bg);color:var(--text);
 .spec tr:last-child td{border-bottom:0;}
 .spec td:last-child{text-align:right;font-family:var(--mono);color:#fff;}
 .ctrl{padding:14px 16px 0;}
+.readout{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:.78em;color:var(--muted);margin-bottom:7px;}
+.readout b{font-family:var(--mono);font-size:1.5em;font-weight:900;color:var(--orange);}
 .lever{width:100%;padding:15px;border:0;border-radius:12px;cursor:pointer;
   background:linear-gradient(180deg,#C9302C,#8E1B18);color:#fff;font-size:.9em;font-weight:900;
   letter-spacing:.05em;box-shadow:0 3px 0 #5E1210;transition:transform .05s,box-shadow .05s;
@@ -74,8 +77,9 @@ body{margin:0;background:var(--bg);color:var(--text);
 <div class="loading" id="loading">読み込み中…</div>
 
 <div class="ctrl">
+<div class="readout"><span id="stateTxt">待機</span><b id="ballCount">0</b></div>
 <div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
-<p class="hint" id="hint">右下のハンドルを上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
+<p class="hint" id="hint">画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。</p>
 </div>
 
 <div class="entry">
@@ -106,7 +110,8 @@ ja:{toggleTo:"English",
  desc:"実寸の比率で組んだパチンコ台の3Dモデル。実寸の比率で組みました。",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
-  hint:"右下のハンドルを上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
+  firing:"発射中",idle:"待機",
+  hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
   p3:"中央の液晶は、角を丸くしてマスコットの頭に見立てました。上に立っているアンテナがその名残です。画面の中では、絵柄が3つ回っています。",
@@ -117,7 +122,8 @@ en:{toggleTo:"日本語",
  desc:"A pachinko machine modelled at real-world proportions. Modelled at real-world proportions.",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
-  hint:"Drag the handle at the bottom right up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
+  firing:"Firing",idle:"Idle",
+  hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
   p3:"The screen in the middle has rounded corners so it reads as the mascot's head. The little antenna on top is what gives it away. Inside it, three reels are spinning.",
@@ -348,7 +354,9 @@ fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(functi
  }
  RAIL_LEN=acc;
  ballGeo=new THREE.SphereGeometry(j.board.ballR,16,10);
- ballMat=new THREE.MeshStandardMaterial({color:0xdfe3e9,metalness:1.0,roughness:0.16});
+ ballMat=new THREE.MeshStandardMaterial({color:0xf4f7fb,metalness:0.85,roughness:0.11,
+   emissive:0x2b3038});      // 暗い盤面でも玉が消えないよう、ごく弱く自光させる
+ ballMat.envMapIntensity=1.3;
 });
 
 function railAt(s){
@@ -471,10 +479,12 @@ function pick(ev){
  return {y:cy, hit:knob?ray.intersectObjects(knob.hits,true).length>0:false};
 }
 function hDown(e){
- var q=pick(e);
- if(!q.hit) return;                  // ハンドル以外を触ったときは何もしない
+ // ハンドルだけを掴ませると、小さくて当てられないことがある。
+ // 画面のどこを触っても握れる形にした
  e.preventDefault();
- holding=true; dragY=q.y; dragP=power;
+ var cy=(e.touches?e.touches[0].clientY:e.clientY);
+ holding=true; dragY=cy; dragP=power;
+ if(power<0.35) power=0.35;          // 触ったらすぐ出るように、下限を持たせる
 }
 function hMove(e){
  if(!holding) return;
@@ -497,6 +507,10 @@ function draw(ts){
  if(!last)last=ts||0;
  var now=ts||0, el=Math.min((now-last)/1000,0.05); last=now;
  gauge.style.width=(power*100)+"%";
+ var bc=document.getElementById("ballCount");
+ if(bc){bc.textContent=balls.length;
+        document.getElementById("stateTxt").textContent=
+          holding?(LANG[lang].t.firing||"発射中"):(LANG[lang].t.idle||"待機");}
  if(knob) knob.group.rotation.z=-power*Math.PI/3;      // ハンドルが実際に回る
  if(holding&&power>0.02){
   fireTimer-=el;
