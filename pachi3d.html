@@ -113,7 +113,7 @@ ja:{toggleTo:"English",
  t:{backTop:"← トップに戻る",bannerH1:"パチンコ台を3Dで作った",bannerP:"実寸の比率で組みました。",
   loading:"読み込み中…",
   firing:"発射中",idle:"待機",spinL:"回転",winL:"当たり",payL:"払い出し",
-  retry:"読み込み直しています",failed:"台を読み込めませんでした。時間をおいて開き直してください",
+  retry:"読み込み直しています",lost:"描画が止まりました",lostHint:"ページを開き直してください",failed:"台を読み込めませんでした。時間をおいて開き直してください",
   hint:"画面を上下にドラッグしてください。回している間、玉が続けて出ます。弱すぎると天辺まで届かず、戻ってきます。",
   p1:"パチンコ台をBlenderで組みました。実機の比率に合わせてあります。枠が520×820mm、遊技盤は直径440mmの円。発射レールは実機どおり左側で、ハンドルは右下です。",
   p2:"色は黒を基調にして、オレンジは光っているところだけに使っています。金属のまま残したのはレール・釘・風車の軸・ハンドルだけ。動く部品は金属、飾りはオレンジ、という切り分けです。",
@@ -126,7 +126,7 @@ en:{toggleTo:"日本語",
  t:{backTop:"← Back to top",bannerH1:"A Pachinko Machine in 3D",bannerP:"Modelled at real-world proportions.",
   loading:"Loading…",
   firing:"Firing",idle:"Idle",spinL:"Spins",winL:"Wins",payL:"Paid",
-  retry:"Retrying",failed:"Could not load the machine. Please try again shortly",
+  retry:"Retrying",lost:"Rendering stopped",lostHint:"Please reload the page",failed:"Could not load the machine. Please try again shortly",
   hint:"Drag anywhere up or down. Balls keep firing while you hold it. Too weak and the ball never clears the top — it rolls back down.",
   p1:"I built a pachinko machine in Blender, at real proportions: a 520 × 820 mm cabinet with a 440 mm circular playfield. The launch rail runs up the left side and the handle sits bottom right, exactly as on a real machine.",
   p2:"The palette is black with orange only where something is lit. The only parts left as bare metal are the rails, the nails, the windmill hubs and the handle — moving parts are metal, decoration is orange.",
@@ -149,10 +149,20 @@ render(lang);
 // これを付けないと、ページを更新してもブラウザが古いモデルを使い回してしまう。
 // **宣言は使う場所より上に置くこと。** 下に書くと、読み込みの時点では空のままで、
 // URLが "pachinko.glbundefined" になって404になる（実際にそれで詰まった）
-var AV="?v=20260826e";
+var AV="?v=20260826f";
 var cv=document.getElementById("stage");
 var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+// 描画の土台（WebGL）は、再読み込みを繰り返したり別のタブが重かったりすると落ちる。
+// 落ちると**何も言わずに真っ黒になる**ので、拾って知らせる
+cv.addEventListener("webglcontextlost",function(ev){
+ ev.preventDefault();
+ var box=document.getElementById("loading");
+ box.style.display="block";
+ box.innerHTML=(LANG[lang].t.lost||"描画が止まりました")+
+   "<br><small style='opacity:.7'>"+(LANG[lang].t.lostHint||"ページを開き直してください")+"</small>";
+},false);
+cv.addEventListener("webglcontextrestored",function(){ location.reload(); },false);
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.00;
