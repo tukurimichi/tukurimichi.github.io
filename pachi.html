@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title id="pageTitle">玉を弾く | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="マスコットの玉を弾いて、真ん中の穴に入れる。お金は一切かかりません。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B; --card:#141416; --card2:#1C1C1F;
+  --red:#E31E24; --red-dark:#A8151A;
+  --text:#F2F0EC; --muted:#ACA8A2; --line:#2A2A2D;
+  --orange:#F0913F; --cream:#E8DCC6;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+.wrap{max-width:420px;margin:0 auto;background:var(--card);min-height:100vh;
+  box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:28px;}
+.backlink{display:inline-block;padding:14px 20px 0;font-size:.85em;color:#FF8A80;text-decoration:none;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:18px 20px;position:relative;}
+.banner h1{margin:0;font-size:1.3em;font-weight:900;letter-spacing:.05em;color:#fff;padding-right:78px;}
+.banner p{margin:.4em 0 0;font-size:.8em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:17px;right:18px;background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72em;font-weight:700;
+  padding:6px 12px;border-radius:14px;cursor:pointer;}
+.hud{display:flex;gap:8px;padding:12px 16px 8px;}
+.hud div{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;}
+.hud span{display:block;font-size:.66em;color:var(--muted);letter-spacing:.05em;}
+.hud b{display:block;font-size:1.25em;font-family:var(--mono);font-weight:900;margin-top:1px;}
+.hud b.flash{color:#FFB13B;}
+#stage{display:block;width:100%;height:auto;background:#08080A;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);touch-action:none;}
+.ctrl{padding:14px 16px 0;}
+.lever{width:100%;padding:16px;border:0;border-radius:12px;cursor:pointer;
+  background:linear-gradient(180deg,#C9302C,#8E1B18);color:#fff;font-size:.95em;font-weight:900;
+  letter-spacing:.06em;box-shadow:0 3px 0 #5E1210;transition:transform .05s,box-shadow .05s;}
+.lever:active{transform:translateY(3px);box-shadow:0 0 0 #5E1210;}
+.lever[disabled]{opacity:.4;box-shadow:0 3px 0 #333;}
+.gauge{height:8px;background:var(--card2);border:1px solid var(--line);border-radius:5px;
+  margin-top:9px;overflow:hidden;}
+.gaugeFill{height:100%;width:0%;background:linear-gradient(90deg,#7FCFA0,#FFB13B,#E31E24);}
+.hint{font-size:.76em;color:var(--muted);line-height:1.8;padding:12px 18px 0;}
+.reset{display:inline-block;margin:12px 18px 0;background:transparent;border:1px solid var(--line);
+  color:var(--muted);font-size:.76em;padding:7px 14px;border-radius:9px;cursor:pointer;}
+.note{font-size:.72em;color:var(--muted);line-height:1.8;padding:16px 18px 0;border-top:1px solid var(--line);margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="backlink" href="index.html" id="backTop">← トップに戻る</a>
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">玉を弾く</h1>
+<p id="bannerP">真ん中の穴に入ると、絵が回ります。</p>
+</div>
+
+<div class="hud">
+<div><span id="lbBalls">玉</span><b id="vBalls">0</b></div>
+<div><span id="lbIn">入賞</span><b id="vIn">0</b></div>
+<div><span id="lbHit">当たり</span><b id="vHit">0</b></div>
+</div>
+
+<canvas id="stage" width="360" height="620"></canvas>
+
+<div class="ctrl">
+<button class="lever" id="lever">はじく</button>
+<div class="gauge"><div class="gaugeFill" id="gauge"></div></div>
+</div>
+<p class="hint" id="hint">押している間、上の矢印が左へ動きます。離すとそこへ玉が落ちます。</p>
+<button class="reset" id="reset">はじめから</button>
+<p class="note" id="note">お金は一切かかりません。買うものも、当たるものもありません。ただ玉が跳ねるだけのものです。</p>
+</div>
+
+<script>
+/* ===== 文言 ===== */
+var LANG={
+ja:{toggleTo:"English",
+ title:"玉を弾く | tukurimichi.com",
+ desc:"マスコットの玉を弾いて、真ん中の穴に入れる。お金は一切かかりません。",
+ t:{backTop:"← トップに戻る",bannerH1:"玉を弾く",bannerP:"真ん中の穴に入ると、絵が回ります。",
+  lbBalls:"玉",lbIn:"入賞",lbHit:"当たり",lever:"はじく",reset:"はじめから",
+  hint:"押している間、上の矢印が左へ動きます。離すとそこへ玉が落ちます。",
+  note:"お金は一切かかりません。買うものも、当たるものもありません。ただ玉が跳ねるだけのものです。"}},
+en:{toggleTo:"日本語",
+ title:"Flick the Ball | tukurimichi.com",
+ desc:"Flick mascot-headed balls and try to drop one into the centre cup. No money involved.",
+ t:{backTop:"← Back to top",bannerH1:"Flick the Ball",bannerP:"Land one in the centre cup and the reels spin.",
+  lbBalls:"BALLS",lbIn:"CUP",lbHit:"WINS",lever:"FLICK",reset:"Restart",
+  hint:"Hold and the arrow at the top slides left. Release to drop the ball there.",
+  note:"No money is involved. Nothing to buy, nothing to win. The balls just bounce."}}
+};
+var lang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(l){var L=LANG[l];document.documentElement.lang=l;
+ document.getElementById("pageTitle").textContent=L.title;
+ document.getElementById("metaDesc").setAttribute("content",L.desc);
+ for(var k in L.t){var e=document.getElementById(k);if(e)e.textContent=L.t[k];}
+ document.getElementById("langBtn").textContent=L.toggleTo;}
+document.getElementById("langBtn").onclick=function(){
+ lang=lang==="ja"?"en":"ja";localStorage.setItem("lang",lang);render(lang);};
+render(lang);
+
+/* ===== 盤面 ===== */
+var W=360,H=620;
+var cv=document.getElementById("stage"),cx=cv.getContext("2d");
+(function fitDPR(){
+ var dpr=Math.min(window.devicePixelRatio||1,2);
+ cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=W+"/"+H;
+ cx.setTransform(dpr,0,0,dpr,0,0);
+})();
+
+var RAIL_X=332;              // 右のレール。ここより右には玉を入れない
+var PEG_R=3.6, BALL_R=6.4;
+var G=0.40, REST=0.58;
+// ここを触ると手ごたえが変わる
+var TUNE={jit:0.45, spread:0.25, entryL:56, entryR:300,
+          rows:[120,300], sp:36,
+          drag:0.972, vmax:3.2,      // 横のブレを抑える。狙いを効かせるための要
+          fx:138, fstep:8, fn:5, fy:360};   // カップへ絞る漏斗
+
+// 釘。千鳥に並べる。真ん中のカップへ集まりすぎないよう、下2段は外へ逃がす
+var pegs=[];
+function layout(){
+ pegs.length=0;
+ var y,x,row=0,sp=TUNE.sp;
+ for(y=TUNE.rows[0];y<=TUNE.rows[1];y+=sp){
+   var off=(row%2)?sp/2:0;
+   for(x=28+off;x<RAIL_X-14;x+=sp){
+     if(Math.abs(x-180)<34&&y>220&&y<282) continue;   // 役物の周りは空ける
+     pegs.push({x:x,y:y});
+   }
+   row++;
+ }
+ // カップへ絞る漏斗。上が広く、下がカップの幅に近づく
+ for(var i=0;i<TUNE.fn;i++){
+  pegs.push({x:TUNE.fx+i*TUNE.fstep, y:TUNE.fy+i*18});
+  pegs.push({x:360-TUNE.fx-i*TUNE.fstep, y:TUNE.fy+i*18});
+ }
+}
+layout();
+
+var CUP={x:180,y:466,w:34,h:16};          // 真ん中のカップ（入賞）
+var REEL={x:180,y:250,r:30};              // 役物（絵が回るところ）
+
+function entryX(p){return TUNE.entryR-(TUNE.entryR-TUNE.entryL)*p;}
+
+/* ===== 状態 ===== */
+var S={balls:50,inCup:0,hits:0,ball:null,power:0,charging:false,
+       spin:null,flash:0,fired:0,sentPlay:false,sentDeep:false};
+
+var SYM=["#F0913F","#B7DCC6","#C6BEE0","#EDE4A6","#E7B8BC","#8FB8E0"];
+
+/* ===== 音（外部ファイルなし） ===== */
+var AC=null;
+function beep(freq,dur,type,vol){
+ try{
+  if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  var o=AC.createOscillator(),g=AC.createGain();
+  o.type=type||"square";o.frequency.value=freq;
+  g.gain.setValueAtTime(vol||0.05,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+dur);
+  o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+dur);
+ }catch(e){}
+}
+
+/* ===== 絵 ===== */
+function head(g,x,y,r,col,rot){
+ g.save();g.translate(x,y);g.rotate(rot||0);
+ g.fillStyle=col;
+ g.beginPath();                       // 頭は上が丸く、下がすこし角ばった形
+ g.moveTo(-r,r*0.45);
+ g.quadraticCurveTo(-r,-r,0,-r);
+ g.quadraticCurveTo(r,-r,r,r*0.45);
+ g.quadraticCurveTo(r,r*0.9,0,r*0.9);
+ g.quadraticCurveTo(-r,r*0.9,-r,r*0.45);
+ g.closePath();g.fill();
+ g.fillStyle="rgba(0,0,0,.55)";       // 目は彫り込み。口はない
+ g.beginPath();g.arc(-r*0.34,-r*0.1,r*0.13,0,7);g.fill();
+ g.beginPath();g.arc(r*0.34,-r*0.1,r*0.13,0,7);g.fill();
+ g.restore();
+}
+
+function draw(){
+ cx.clearRect(0,0,W,H);
+ // 枠とレール
+ cx.fillStyle="#0C0C0E";cx.fillRect(0,0,W,H);
+ cx.strokeStyle="#2A2A2D";cx.lineWidth=2;
+ cx.beginPath();cx.moveTo(RAIL_X,H);cx.lineTo(RAIL_X,70);
+ cx.quadraticCurveTo(RAIL_X,26,RAIL_X-40,26);cx.stroke();
+ // 役物
+ cx.save();
+ cx.fillStyle=S.flash>0?"rgba(227,30,36,"+(0.25+0.25*Math.sin(S.flash*0.4))+")":"#141416";
+ cx.beginPath();cx.arc(REEL.x,REEL.y,REEL.r+7,0,7);cx.fill();
+ cx.strokeStyle="#2A2A2D";cx.lineWidth=1.5;cx.stroke();
+ var syms=S.spin?S.spin.show:[0,1,2];
+ for(var i=0;i<3;i++) head(cx,REEL.x-19+i*19,REEL.y,7.5,SYM[syms[i]],0);
+ cx.restore();
+ // 釘
+ cx.fillStyle="#4A4A50";
+ for(var p=0;p<pegs.length;p++){
+  cx.beginPath();cx.arc(pegs[p].x,pegs[p].y,PEG_R,0,7);cx.fill();
+ }
+ // カップ
+ cx.fillStyle="#1C1C1F";cx.strokeStyle="#E31E24";cx.lineWidth=2;
+ cx.beginPath();cx.rect(CUP.x-CUP.w/2,CUP.y,CUP.w,CUP.h);cx.fill();cx.stroke();
+ cx.fillStyle="rgba(227,30,36,.25)";
+ cx.fillRect(CUP.x-CUP.w/2,CUP.y,CUP.w,4);
+ // 下の受け皿の線
+ cx.strokeStyle="#2A2A2D";cx.lineWidth=1;
+ cx.beginPath();cx.moveTo(0,560);cx.lineTo(W,560);cx.stroke();
+ // 狙い（押している間だけ出る）
+ if(S.charging){
+  var ax=entryX(S.power);
+  cx.fillStyle="rgba(227,30,36,.85)";
+  cx.beginPath();cx.moveTo(ax,20);cx.lineTo(ax-6,8);cx.lineTo(ax+6,8);cx.closePath();cx.fill();
+  cx.strokeStyle="rgba(227,30,36,.28)";cx.lineWidth=1;cx.setLineDash([4,6]);
+  cx.beginPath();cx.moveTo(ax,22);cx.lineTo(ax,H);cx.stroke();cx.setLineDash([]);
+ }
+ // 玉
+ if(S.ball) head(cx,S.ball.x,S.ball.y,BALL_R,"#F0913F",S.ball.rot);
+}
+
+/* ===== 物理 ===== */
+function step(){
+ var b=S.ball;if(!b)return;
+ if(b.rail){                                  // レールを駆け上がる
+  b.t+=0.055;
+  var t=b.t;
+  if(t>=1){b.rail=false;b.x=entryX(b.power);b.y=44;
+           b.vx=(Math.random()-0.5)*TUNE.spread*2;b.vy=0.4;}
+  else if(t>0.72){var u=(t-0.72)/0.28;      // 上を左へ転がって、狙った位置で落ちる
+           b.x=RAIL_X-30-(RAIL_X-30-entryX(b.power))*u;b.y=30;}
+  else{b.x=RAIL_X;b.y=580-(580-30)*(t/0.72);}
+  b.rot+=0.3;return;
+ }
+ b.vy+=G;
+ b.vx*=TUNE.drag;                                   // 横だけ減衰させる
+ if(b.vx> TUNE.vmax)b.vx= TUNE.vmax;
+ if(b.vx<-TUNE.vmax)b.vx=-TUNE.vmax;
+ b.x+=b.vx;b.y+=b.vy;b.rot+=b.vx*0.05;
+ if(b.x<BALL_R){b.x=BALL_R;b.vx=-b.vx*REST;}
+ if(b.x>RAIL_X-BALL_R){b.x=RAIL_X-BALL_R;b.vx=-b.vx*REST;}
+ for(var i=0;i<pegs.length;i++){
+  var dx=b.x-pegs[i].x,dy=b.y-pegs[i].y,d2=dx*dx+dy*dy,rr=BALL_R+PEG_R;
+  if(d2<rr*rr){
+   var d=Math.sqrt(d2)||0.001,nx=dx/d,ny=dy/d;
+   b.x=pegs[i].x+nx*rr;b.y=pegs[i].y+ny*rr;
+   var dot=b.vx*nx+b.vy*ny;
+   b.vx=(b.vx-2*dot*nx)*REST+(Math.random()-0.5)*TUNE.jit*2;
+   b.vy=(b.vy-2*dot*ny)*REST;
+   beep(1200+Math.random()*500,0.03,"square",0.035);
+  }
+ }
+ // 釘の上で止まってしまったとき。放っておくと盤面が固まるので逃がす
+ if(b.vx*b.vx+b.vy*b.vy<0.55){ b.slow=(b.slow||0)+1; } else { b.slow=0; }
+ if(b.slow>36){
+  b.slow=0; b.nudge=(b.nudge||0)+1;
+  b.vx+=(Math.random()-0.5)*2.6; b.vy=1.3;
+  if(b.nudge>3){ S.ball=null; update(); return; }   // それでも駄目なら1発ぶん諦める
+ }
+ // カップ判定
+ if(b.y+BALL_R>CUP.y&&b.y<CUP.y+CUP.h&&Math.abs(b.x-CUP.x)<CUP.w/2-2&&b.vy>0){
+  S.ball=null;S.inCup++;S.balls+=1;spin();update();return;
+ }
+ if(b.y>H+30){S.ball=null;update();}
+}
+
+/* ===== 役物 ===== */
+function spin(){
+ beep(880,0.08,"triangle",0.06);
+ var win=Math.random()<0.125;
+ var goal=win?[0,0,0]:[1,3,5];
+ if(win){var s=Math.floor(Math.random()*SYM.length);goal=[s,s,s];}
+ else{ // わざと揃わない並び
+  var a=Math.floor(Math.random()*6),b2=(a+1+Math.floor(Math.random()*4))%6,c=(b2+1+Math.floor(Math.random()*4))%6;
+  if(a===c)c=(c+1)%6;goal=[a,b2,c];
+ }
+ S.spin={show:[0,0,0],goal:goal,t:0,win:win,locked:0};
+}
+function spinStep(){
+ var s=S.spin;if(!s)return;
+ s.t++;
+ for(var i=0;i<3;i++){
+  if(i<s.locked) continue;
+  s.show[i]=Math.floor(Math.random()*SYM.length);
+ }
+ if(s.t===26||s.t===40||s.t===56){
+  s.show[s.locked]=s.goal[s.locked];s.locked++;
+  beep(s.locked===3&&s.win?1320:660,0.06,"triangle",0.05);
+ }
+ if(s.locked>=3){
+  if(s.win){
+   S.hits++;S.balls+=12;S.flash=70;
+   gtag("event","pachinko_hit",{balls_used:S.fired});
+   for(var k=0;k<4;k++)(function(k){setTimeout(function(){beep(660+k*220,0.12,"triangle",0.06);},k*90);})(k);
+  }
+  S.spin=null;update();
+ }
+}
+
+/* ===== 操作 ===== */
+var lever=document.getElementById("lever"),gauge=document.getElementById("gauge");
+function charge(){
+ if(S.charging){S.power=Math.min(1,S.power+0.028);gauge.style.width=(S.power*100)+"%";}
+}
+function fire(){
+ if(!S.charging)return;
+ S.charging=false;
+ if(S.ball||S.balls<=0){S.power=0;gauge.style.width="0%";return;}
+ S.balls--;S.fired++;
+ S.ball={x:RAIL_X,y:580,vx:0,vy:0,rot:0,rail:true,t:0,power:S.power};
+ beep(300,0.06,"sawtooth",0.05);
+ if(!S.sentPlay){S.sentPlay=true;gtag("event","pachinko_play",{});}
+ if(S.fired>=100&&!S.sentDeep){S.sentDeep=true;gtag("event","pachinko_deep",{launches:S.fired});}
+ S.power=0;gauge.style.width="0%";update();
+}
+function down(e){e.preventDefault();S.charging=true;S.power=0;}
+lever.addEventListener("mousedown",down);
+lever.addEventListener("touchstart",down,{passive:false});
+window.addEventListener("mouseup",fire);
+window.addEventListener("touchend",fire);
+document.getElementById("reset").onclick=function(){
+ S.balls=50;S.inCup=0;S.hits=0;S.ball=null;S.spin=null;S.fired=0;S.flash=0;update();
+};
+
+function update(){
+ document.getElementById("vBalls").textContent=S.balls;
+ document.getElementById("vIn").textContent=S.inCup;
+ var h=document.getElementById("vHit");
+ h.textContent=S.hits;h.className=S.hits>0?"flash":"";
+ lever.disabled=(S.balls<=0);
+}
+
+/* ===== ループ ===== */
+var acc=0,last=0;
+function loop(ts){
+ if(!last)last=ts;
+ acc+=Math.min(ts-last,80);last=ts;
+ while(acc>=16.7){charge();step();spinStep();if(S.flash>0)S.flash--;acc-=16.7;}
+ draw();
+ requestAnimationFrame(loop);
+}
+update();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
