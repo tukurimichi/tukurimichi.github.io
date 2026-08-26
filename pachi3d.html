@@ -853,7 +853,12 @@ setInterval(function(){
 },250);
 
 // ---- 診断。画面が真っ黒になったときに、何が起きているかを読める形で出す
+// 普段は出さない。**消しはしない。** 真っ黒になったときにこれで原因が分かるので、
+// ?debug=1 を付けたときだけ出す
+var DEBUG=/[?&]debug=1/.test(location.search);
+if(!DEBUG){ var dg=document.getElementById("diag"); if(dg) dg.style.display="none"; }
 setInterval(function(){
+ if(!DEBUG) return;
  var d=document.getElementById("diag"); if(!d) return;
  var meshes=0, vis=0;
  scene.traverse(function(o){ if(o.isMesh){meshes++; if(o.visible)vis++;} });
