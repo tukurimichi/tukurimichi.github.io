@@ -347,12 +347,18 @@ fetch("pachi/board_layout.json").then(function(r){return r.json();}).then(functi
  var a=j.rails.lane0, b=j.rails.lane1, path=[];
  for(var i=0;i<Math.min(a.length,b.length);i++)
   path.push([(a[i][0]+b[i][0])/2,(a[i][1]+b[i][1])/2]);
- // **物理のレールは天辺までにする。**
- // 先の「返し」まで道として辿らせると、玉が必ず真下へ落とされてしまい、
- // 強く打っても弱く打っても同じ場所に落ちる。返しは見た目としてだけ残す。
- var apex=0;
- for(var i2=0;i2<path.length;i2++) if(path[i2][1]>path[apex][1]) apex=i2;
- path=path.slice(0,Math.min(path.length,apex+3));
+ // **物理のレールは左上（10〜11時）で終わらせる。**
+ // 実機の内レールの先端はそこにあり、玉はそこから放り出されて、
+ // あとは自分の勢いで天井をなぞりながら右へ流れていく。
+ // 天辺まで道として辿らせると、どの強さでも同じ場所から出てしまい、
+ // **左側にはぜったいに行かなくなる。** 先の「返し」は見た目としてだけ残す。
+ var CVv=j.board.cv, cut=path.length-1;
+ for(var i2=0;i2<path.length;i2++){
+  var ang=Math.atan2(path[i2][1]-CVv,path[i2][0])*180/Math.PI;
+  if(ang<0)ang+=360;
+  if(ang<=150){cut=i2;break;}          // 252度から下がってきて、150度を切った点
+ }
+ path=path.slice(0,cut+1);
  var acc=0;
  for(var k=0;k<path.length;k++){
   if(k>0){var dx=path[k][0]-path[k-1][0],dy=path[k][1]-path[k-1][1];
@@ -384,7 +390,8 @@ function fire(power){
  // 3.05m/s で天辺にぎりぎり届く。弱いと戻る
  // 2.98m/s でようやく天辺に届く。下の1割ほどはファールになる
  // 槌はバネ仕掛けなので、同じ握りでも毎回わずかに強さが違う
- var v0=(2.98+power*0.55)*(1+(Math.random()-0.5)*0.030);
+ // 左上まで上がるのに 2.60m/s。そこからは勢いのぶんだけ右へ流れる
+ var v0=(2.62+power*1.05)*(1+(Math.random()-0.5)*0.030);
  balls.push({mesh:m,onRail:true,s:0,sv:v0,u:0,v:0,vu:0,vv:0,life:0});
 }
 
@@ -420,7 +427,7 @@ function solve(dt){
     // レールの天辺は盤面の円より外にある。そのまま放すと
     // 「円から出さない」処理に掴まれて速さが死ぬので、内側に入れてから放す
     var eu=e.u, ev=e.v-CV, ed=Math.sqrt(eu*eu+ev*ev)||1e-6;
-    var inn=R-bR-0.008;
+    var inn=R-bR-0.016;
     if(ed>inn){ b.u=eu/ed*inn; b.v=CV+ev/ed*inn; } else { b.u=e.u; b.v=e.v; }
    }else if(b.s<0){                // 届かずに戻ってきた（ファール玉）
     scene.remove(b.mesh);balls.splice(i,1);continue;
