@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" id="htmlRoot">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Cute Robot Controller & Multi-Motion</title>
+  <title id="pageTitle">マスコット3D（動かせる版） | tukurimichi.com</title>
+  <meta name="description" id="metaDesc" content="マスコットの3Dモデルを歩かせたり踊らせたりできるビューア。矢印キーまたはW/A/S/Dで動かせます。" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129302;</text></svg>" />
+  <script>
+  /* このページは mascot3d.html に iframe で埋め込まれている。
+     埋め込み表示まで数えると二重計上になるので、単独で開かれた時だけ計測する。 */
+  if (window.self === window.top) {
+    var s = document.createElement("script");
+    s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T";
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag("js", new Date()); gtag("config", "G-L4R2JR109T");
+  }
+  </script>
   <style>
+    #langToggle{position:fixed;right:12px;top:12px;z-index:30;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#F2F0EC;border-radius:20px;padding:6px 13px;font-size:.72rem;cursor:pointer;backdrop-filter:blur(2px);font-family:inherit;}
+    #langToggle[hidden]{display:none;}
     body {
       margin: 0;
       overflow: hidden;
@@ -149,6 +165,7 @@
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
+  <button id="langToggle" hidden>English</button>
   <div id="motion-ui">
     <button id="btn-idle" class="motion-btn active">🟢 待機</button>
     <button id="btn-walk" class="motion-btn">🚶 歩く</button>
@@ -680,5 +697,53 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
   </script>
+
+<script>
+(function(){
+  var LANG={
+    ja:{title:"マスコット3D（動かせる版） | tukurimichi.com",
+        desc:"マスコットの3Dモデルを歩かせたり踊らせたりできるビューア。矢印キーまたはW/A/S/Dで動かせます。",
+        toggleTo:"English",
+        btn:{"btn-idle":"\uD83D\uDFE2 待機","btn-walk":"\uD83D\uDEB6 歩く","btn-run":"\uD83C\uDFC3 走る","btn-jump":"\uD83D\uDE80 ジャンプ",
+             "btn-dance":"\uD83D\uDD7A ダンス","btn-wave":"\uD83D\uDC4B 挨拶","btn-sad":"\uD83D\uDE1E 落ち込む","btn-fall":"\uD83D\uDCA5 倒れる"},
+        info:"\uD83C\uDFC3 <b>走る選択時</b>: 移動速度が倍速になり、スピーディな走行フォームで移動します<br>\u2328\uFE0F <b>操作</b>: 矢印キー または W/A/S/D（Q / E で水平旋回）",
+        rotL:"左旋回", rotR:"右旋回"},
+    en:{title:"The 3D Mascot \u2014 Playable | tukurimichi.com",
+        desc:"A viewer where you can walk, run and dance the 3D mascot. Use the arrow keys or W/A/S/D.",
+        toggleTo:"日本語",
+        btn:{"btn-idle":"\uD83D\uDFE2 Idle","btn-walk":"\uD83D\uDEB6 Walk","btn-run":"\uD83C\uDFC3 Run","btn-jump":"\uD83D\uDE80 Jump",
+             "btn-dance":"\uD83D\uDD7A Dance","btn-wave":"\uD83D\uDC4B Wave","btn-sad":"\uD83D\uDE1E Sad","btn-fall":"\uD83D\uDCA5 Fall"},
+        info:"\uD83C\uDFC3 <b>Run mode</b>: moves at double speed with a faster running form<br>\u2328\uFE0F <b>Controls</b>: arrow keys or W/A/S/D (Q / E to turn)",
+        rotL:"Turn left", rotR:"Turn right"}
+  };
+  function cur(){ return localStorage.getItem("lang") || ((navigator.language && navigator.language.indexOf("en")===0) ? "en" : "ja"); }
+  function render(l){
+    var L=LANG[l]||LANG.ja;
+    document.getElementById("htmlRoot").lang=l;
+    document.getElementById("pageTitle").textContent=L.title;
+    document.getElementById("metaDesc").setAttribute("content",L.desc);
+    Object.keys(L.btn).forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=L.btn[id];
+    });
+    var info=document.getElementById("info-text"); if(info) info.innerHTML=L.info;
+    var rl=document.getElementById("btn-rot-left");  if(rl) rl.title=L.rotL;
+    var rr=document.getElementById("btn-rot-right"); if(rr) rr.title=L.rotR;
+    var t=document.getElementById("langToggle"); if(t) t.textContent=L.toggleTo;
+  }
+  var t=document.getElementById("langToggle");
+  /* iframe埋め込み時はトグルを出さない(親ページ側のトグルに従う) */
+  if (window.self === window.top) {
+    t.hidden=false;
+    t.onclick=function(){
+      var n=(cur()==="ja")?"en":"ja";
+      localStorage.setItem("lang",n);
+      render(n);
+    };
+  }
+  /* 親ページで切り替えられたら追随する(same-originなのでstorageイベントが届く) */
+  window.addEventListener("storage",function(e){ if(e.key==="lang") render(cur()); });
+  render(cur());
+})();
+</script>
 </body>
 </html>
