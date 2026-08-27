@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tukurimichi.com/sitemap.xml

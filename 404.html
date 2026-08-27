@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title id="pageTitle">ページが見つかりません | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="お探しのページは見つかりませんでした。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+:root{
+  --bg:#0A0A0B;
+  --card:#141416;
+  --red:#E31E24;
+  --red-dark:#A8151A;
+  --text:#F2F0EC;
+  --muted:#9C9894;
+  --line:#2A2A2D;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);}
+.wrap{max-width:480px;margin:0 auto;background:var(--card);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.5);padding-bottom:40px;}
+.banner{background:linear-gradient(90deg,var(--red-dark),var(--red));padding:24px 22px;position:relative;}
+.banner h1{margin:0;font-size:1.6em;font-weight:900;letter-spacing:.06em;color:#fff;padding-right:78px;}
+.banner p{margin:.5em 0 0;font-size:.85em;color:rgba(255,255,255,.85);}
+.langToggle{position:absolute;top:12px;right:12px;background:rgba(10,10,11,.55);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:4px 11px;font-size:.72em;cursor:pointer;backdrop-filter:blur(2px);}
+.section{padding:22px;}
+.code{font-size:4.4em;font-weight:900;line-height:1;color:var(--red);letter-spacing:.04em;margin:0 0 .1em;}
+.lead{font-size:.95em;color:#D9D6D0;line-height:1.8;margin:0 0 1.4em;}
+.path{display:block;font-size:.8em;color:var(--muted);word-break:break-all;background:#0A0A0B;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:1.6em;}
+.links{list-style:none;padding:0;margin:0;}
+.links li{border-bottom:1px solid var(--line);}
+.links li:last-child{border-bottom:none;}
+.links a{display:block;padding:14px 2px;color:var(--text);text-decoration:none;font-size:.92em;}
+.links a::after{content:" →";color:var(--muted);}
+.footer{padding:24px;text-align:center;font-size:.72em;color:var(--muted);}
+.footer a{color:#FF8A80;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="banner">
+<button id="langBtn" class="langToggle"></button>
+<h1 id="bannerH1">ページが見つかりません</h1>
+<p id="bannerP">URLが変わったか、消えてしまったようです。</p>
+</div>
+<div class="section">
+<p class="code">404</p>
+<p class="lead" id="lead">お探しのページは見つかりませんでした。下から探し直してみてください。</p>
+<code class="path" id="path"></code>
+<ul class="links">
+<li><a href="/" id="l1">トップページ</a></li>
+<li><a href="/made.html" id="l2">つくったもの</a></li>
+<li><a href="/play.html" id="l3">AIと遊ぶ</a></li>
+<li><a href="/tools.html" id="l4">道具箱</a></li>
+<li><a href="/diary.html" id="l5">マスコットの日記</a></li>
+<li><a href="/changelog.html" id="l6">更新ログ</a></li>
+</ul>
+</div>
+<div class="footer"><a href="/" id="footBack">← トップに戻る</a></div>
+</div>
+<script>
+var LANG={
+ja:{
+toggleTo:"English",
+title:"ページが見つかりません | tukurimichi.com",
+desc:"お探しのページは見つかりませんでした。",
+t:{
+bannerH1:"ページが見つかりません",
+bannerP:"URLが変わったか、消えてしまったようです。",
+lead:"お探しのページは見つかりませんでした。下から探し直してみてください。",
+l1:"トップページ",
+l2:"つくったもの",
+l3:"AIと遊ぶ",
+l4:"道具箱",
+l5:"マスコットの日記",
+l6:"更新ログ",
+footBack:"← トップに戻る"
+}
+},
+en:{
+toggleTo:"日本語",
+title:"Page not found | tukurimichi.com",
+desc:"The page you were looking for could not be found.",
+t:{
+bannerH1:"Page not found",
+bannerP:"The URL may have changed, or the page is gone.",
+lead:"We couldn't find the page you were looking for. Try one of these instead.",
+l1:"Home",
+l2:"Things I made",
+l3:"Play with AI",
+l4:"Toolbox",
+l5:"The mascot's diary",
+l6:"Changelog",
+footBack:"← Back to top"
+}
+}
+};
+var currentLang=localStorage.getItem("lang")||(navigator.language&&navigator.language.indexOf("en")===0?"en":"ja");
+function render(lang){
+  var L=LANG[lang]||LANG.ja;
+  document.documentElement.lang=lang;
+  document.getElementById("pageTitle").textContent=L.title;
+  document.getElementById("metaDesc").setAttribute("content",L.desc);
+  document.getElementById("langBtn").textContent=L.toggleTo;
+  Object.keys(L.t).forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.textContent=L.t[id];
+  });
+}
+document.getElementById("langBtn").onclick=function(){
+  currentLang=(currentLang==="ja")?"en":"ja";
+  localStorage.setItem("lang",currentLang);
+  render(currentLang);
+};
+render(currentLang);
+/* 見つからなかったURLを画面にも出しつつ、GA4にも送る(どのリンクが切れているか後で分かるように) */
+(function(){
+  var p=location.pathname+location.search;
+  document.getElementById("path").textContent=p;
+  if(window.gtag) gtag("event","page_not_found",{page_path:p,referrer:document.referrer||"(direct)"});
+})();
+</script>
+</body>
+</html>
