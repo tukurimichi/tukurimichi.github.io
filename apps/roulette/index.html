@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">ルーレット作成（無料・広告なし・名前を入れて回す）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="名前や項目を入れて回すだけの無料ルーレット。広告なし・登録なし。順番決め・当番・抽選・くじ引きに。当たりは偏りのない乱数で決め、入れた名前はどこにも送りません。">
+<meta property="og:title" content="ルーレット作成（無料・広告なし）">
+<meta property="og:description" content="名前や項目を入れて回すだけの無料ルーレット。広告なし・登録なし。入れた名前はどこにも送りません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/roulette/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ルーレット作成（無料・広告なし）">
+<meta name="twitter:description" content="名前や項目を入れて回すだけの無料ルーレット。広告なし・登録なし。入れた名前はどこにも送りません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/roulette/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root {
+    --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B;
+    --surface: #FBF4E4; --border: rgba(43,35,24,0.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+
+  .tool { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  @media (max-width: 720px) { .tool { grid-template-columns: 1fr; } }
+  .stage { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; text-align: center; position: relative; }
+  .wheelBox { position: relative; width: 100%; max-width: 460px; margin: 0 auto; aspect-ratio: 1; }
+  #wheel { width: 100%; height: 100%; display: block; }
+  .pointer { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-top: 34px solid #2B2318; filter: drop-shadow(0 2px 0 rgba(0,0,0,.15)); z-index: 2; }
+  .hub { position: absolute; left: 50%; top: 50%; width: 24%; transform: translate(-50%, -50%); z-index: 2; pointer-events: none; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 15px; font-weight: 700; padding: 12px 26px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:hover:not(:disabled) { background: #249062; }
+  .btn:disabled { background: var(--ink-muted); color: var(--surface); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .btn.ghost:hover { background: rgba(43,35,24,0.16); }
+  .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+  .result { min-height: 2.2em; font-size: 24px; font-weight: 800; margin-top: 12px; }
+  .result small { display: block; font-size: 12px; color: var(--ink-muted); font-weight: 400; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+  .panel label { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 190px; border: 1px solid var(--border); border-radius: 10px; background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; padding: 9px 11px; line-height: 1.6; resize: vertical; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: 10px; color: var(--ink); font-weight: 400; }
+  .hist { margin-top: 14px; font-size: 13px; line-height: 1.8; }
+  .hist ol { margin: 4px 0 0; padding-left: 1.6em; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; }
+  .faq h3 { font-size: 14px; margin: 18px 0 4px; }
+  .faq p { margin: 0; }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: var(--accent); }
+  /* 大きく表示（教室のプロジェクターなど） */
+  body.big .topbar, body.big h1, body.big .lead, body.big .panel, body.big .faq, body.big .note { display: none; }
+  body.big .tool { grid-template-columns: 1fr; }
+  body.big .wheelBox { max-width: min(82vh, 92vw); }
+  body.big .result { font-size: 40px; }
+  @keyframes hop { 0%,100% { transform: translate(-50%,-50%) } 30% { transform: translate(-50%,-62%) } 60% { transform: translate(-50%,-50%) } 80% { transform: translate(-50%,-55%) } }
+  .hub.hop { animation: hop .7s ease-out 2; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">ルーレット作成（無料・広告なし）</h1>
+  <p class="lead" id="leadT">名前や項目を入れて、回すだけ。順番決め・当番・抽選・くじ引きに。広告なし・登録なし。入れた名前はこのブラウザの中だけで使い、どこにも送信しません。</p>
+
+  <div class="tool">
+    <div class="stage">
+      <div class="wheelBox">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="920" height="920"></canvas>
+        <svg class="hub" id="hub" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="10" r="9.6" fill="#FBF4E4" stroke="#2B2318" stroke-width=".5"/>
+          <rect x="9.7" y="2.4" width=".6" height="2" rx=".3" fill="#E07F55"/><circle cx="10" cy="2.3" r=".9" fill="#F2A07B"/>
+          <rect x="3.4" y="7.2" width="1.4" height="3.6" rx=".7" fill="#E07F55"/><rect x="15.2" y="7.2" width="1.4" height="3.6" rx=".7" fill="#E07F55"/>
+          <rect x="4.2" y="4.3" width="11.6" height="9.4" rx="2" fill="#F2A07B"/>
+          <rect x="5.3" y="5.4" width="9.4" height="7.2" rx="1.3" fill="#fff"/>
+          <rect x="6.1" y="6.2" width="7.8" height="5.6" rx=".9" fill="#4A4441"/>
+          <circle id="eyeL" cx="8.4" cy="9" r=".95" fill="#FFD9B8"/><circle id="eyeR" cx="11.6" cy="9" r=".95" fill="#FFD9B8"/>
+          <path id="smile" d="M8.6 10.6 Q10 11.6 11.4 10.6" stroke="#FFD9B8" stroke-width=".45" fill="none" stroke-linecap="round" opacity="0"/>
+        </svg>
+      </div>
+      <div class="result" id="result" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn primary" id="spinBtn" type="button">回す</button>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="bigBtn" type="button">大きく表示</button>
+        <button class="btn ghost" id="soundBtn" type="button">音：あり</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <label for="items" id="lblItems">項目（1行に1つ）</label>
+      <div class="presets">
+        <button class="btn ghost" type="button" data-p="names" id="pNames">名前の例</button>
+        <button class="btn ghost" type="button" data-p="num" id="pNum">数字 1〜10</button>
+        <button class="btn ghost" type="button" data-p="yesno" id="pYesno">はい／いいえ</button>
+        <button class="btn ghost" type="button" data-p="food" id="pFood">晩ごはん</button>
+      </div>
+      <textarea id="items"></textarea>
+      <div class="hint" id="cnt"></div>
+      <label class="chk"><input type="checkbox" id="removeWin"> <span id="lblRemove">当たったものを次から外す（順番決め・抽選に）</span></label>
+      <div class="row" style="justify-content:flex-start">
+        <button class="btn ghost" type="button" id="resetBtn">外したものを戻す</button>
+      </div>
+      <div class="hist" id="histBox" hidden>
+        <b id="lblHist">これまでの結果</b>
+        <ol id="hist"></ol>
+        <button class="btn ghost" type="button" id="clearHist">結果を消す</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+  <div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var PRESETS = {
+    ja: { names: "さくら\nはると\nゆい\nそうた\nあおい\nれん", num: "1\n2\n3\n4\n5\n6\n7\n8\n9\n10", yesno: "はい\nいいえ", food: "カレー\nラーメン\nお寿司\nハンバーグ\nパスタ\n焼き魚" },
+    en: { names: "Alex\nSam\nMia\nLeo\nAva\nNoah", num: "1\n2\n3\n4\n5\n6\n7\n8\n9\n10", yesno: "Yes\nNo", food: "Curry\nRamen\nSushi\nBurger\nPasta\nTacos" }
+  };
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "ルーレット作成（無料・広告なし・名前を入れて回す）| tukurimichi.com",
+      docDesc: "名前や項目を入れて回すだけの無料ルーレット。広告なし・登録なし。順番決め・当番・抽選・くじ引きに。当たりは偏りのない乱数で決め、入れた名前はどこにも送りません。",
+      back: "← つくるみち の道具箱へ",
+      h1: "ルーレット作成（無料・広告なし）",
+      lead: "名前や項目を入れて、回すだけ。順番決め・当番・抽選・くじ引きに。広告なし・登録なし。入れた名前はこのブラウザの中だけで使い、どこにも送信しません。",
+      spin: "回す", spinning: "回っています…", big: "大きく表示", small: "元に戻す", soundOn: "音：あり", soundOff: "音：なし",
+      lblItems: "項目（1行に1つ）", pNames: "名前の例", pNum: "数字 1〜10", pYesno: "はい／いいえ", pFood: "晩ごはん",
+      lblRemove: "当たったものを次から外す（順番決め・抽選に）", reset: "外したものを戻す", lblHist: "これまでの結果", clearHist: "結果を消す",
+      cnt: function (n, out) { return n + " 個" + (out ? "（外した " + out + " 個は除く）" : "") + "・最大200個"; },
+      need: "項目を2つ以上入れてください",
+      empty: "全部当たりました。「外したものを戻す」で最初から回せます",
+      win: function (s) { return "🎉 " + s; },
+      winSub: function (n) { return n + " 回目"; },
+      lastOne: function (s) { return "残りの「" + s + "」は最後に入れました"; },
+      notes: "・当たりは、ブラウザに入っている暗号用の乱数（crypto.getRandomValues）で、回す前に決めています。盤の止まる位置はその結果に合わせているだけなので、どの項目も同じ確率で当たります<br>・入れた項目・設定・結果はこの端末に覚えておくので、ページを開き直しても続きから使えます",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>本当にランダムですか？偏りはありませんか？</h3>"
+        + "<p>偏りはありません。回す前に、ブラウザに入っている暗号用の乱数で当たりを決めています（割り切れない余りが出ないように作ってあります）。盤の止まる場所は、その結果に合わせて動かしているだけです。</p>"
+        + "<h3>入れた名前はどこかに送られますか？</h3>"
+        + "<p>送られません。ルーレットはこのブラウザの中だけで動いていて、入れた名前を保存・記録する仕組みはありません。クラスの名簿や社内の名前を入れても大丈夫です。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3>"
+        + "<p>広告は出ません。無料で、会員登録も要りません。回数の制限もありません。</p>"
+        + "<h3>順番を決めたい・同じ人が2回当たらないようにしたい</h3>"
+        + "<p>「当たったものを次から外す」にチェックを入れて回すと、当たった順に「これまでの結果」に並びます。全員分回せば、それがそのまま順番になります。</p>"
+        + "<h3>教室や会議で大きく映したい</h3>"
+        + "<p>「大きく表示」を押すと、ルーレットだけが画面いっぱいに出ます。プロジェクターやテレビにつないだパソコンで使えます。スマホ（iPhone・Android）でも使えます。</p>"
+        + "<h3>何個まで入れられますか？</h3>"
+        + "<p>200個までです。多いと文字が小さくなるので、30個くらいまでが見やすいです。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Free Spinner Wheel – Random Name Picker, No Ads | tukurimichi.com",
+      docDesc: "Type names or options and spin. Free, no ads, no sign-up. For turns, chores, raffles and picking a winner. Results come from an unbiased random number, and nothing you type leaves your browser.",
+      back: "← Back to the tukurimichi toolbox",
+      h1: "Spinner Wheel (free, no ads)",
+      lead: "Type names or options and spin. Great for deciding turns, chores, raffles and draws. No ads, no sign-up. What you type stays in this browser and is never sent anywhere.",
+      spin: "Spin", spinning: "Spinning…", big: "Full screen", small: "Back", soundOn: "Sound: on", soundOff: "Sound: off",
+      lblItems: "Options (one per line)", pNames: "Sample names", pNum: "Numbers 1–10", pYesno: "Yes / No", pFood: "Dinner",
+      lblRemove: "Remove each winner for the next spin (for order or raffles)", reset: "Put removed back", lblHist: "Results so far", clearHist: "Clear results",
+      cnt: function (n, out) { return n + " options" + (out ? " (" + out + " removed)" : "") + " · up to 200"; },
+      need: "Add at least two options",
+      empty: "Every option has won. Press “Put removed back” to start over",
+      win: function (s) { return "🎉 " + s; },
+      winSub: function (n) { return "Spin #" + n; },
+      lastOne: function (s) { return "“" + s + "” was the only one left, so it goes last"; },
+      notes: "・The winner is chosen before the wheel moves, using the browser's cryptographic random generator (crypto.getRandomValues). The wheel just lands where the result says, so every option has the same chance<br>・Your options, settings and results are remembered on this device, so you can pick up where you left off",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is it really random? Is it biased?</h3>"
+        + "<p>No bias. The winner is picked before the spin with the browser's cryptographic random generator (built to avoid modulo bias). The wheel simply stops where that result says.</p>"
+        + "<h3>Are the names I type sent anywhere?</h3>"
+        + "<p>No. The wheel runs entirely in this browser and nothing you type is stored or logged anywhere. Class lists and coworkers' names are fine.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3>"
+        + "<p>No ads. Free, no account, no limit on spins.</p>"
+        + "<h3>I want to set an order, or stop the same person winning twice</h3>"
+        + "<p>Tick “Remove each winner for the next spin”. Winners line up in “Results so far”; spin through everyone and that list is your order.</p>"
+        + "<h3>I want to show it big in class or a meeting</h3>"
+        + "<p>Press “Full screen” and only the wheel fills the screen. Works on a projector or TV, and on iPhone or Android too.</p>"
+        + "<h3>How many options can I add?</h3>"
+        + "<p>Up to 200. Text gets small with many options, so about 30 is easiest to read.</p>"
+    }
+  };
+
+  // 色：つくるみちの色から、隣どうしが見分けやすい順に
+  var COLORS = ["#F2A07B", "#FFE27A", "#9ED3B8", "#9CC3E6", "#F6C1D4", "#C9B6E8", "#F7D2A6", "#B9DD8F"];
+  var KEY = "tukurimichi.roulette.v1";
+  var st = { items: "", removeWin: false, removed: [], hist: [], sound: true, rot: 0 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  if (!st.items) st.items = PRESETS[lang].names;
+
+  function allItems() { return st.items.split("\n").map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 200); }
+  function liveItems() {
+    var out = st.removed.slice(), res = [];
+    allItems().forEach(function (s) { var i = out.indexOf(s); if (st.removeWin && i >= 0) out.splice(i, 1); else res.push(s); });
+    return res;
+  }
+
+  // ---- 盤を描く ----
+  var cv = $("wheel"), g = cv.getContext("2d"), W = cv.width, R = W / 2 - 8, spinning = false;
+  function draw() {
+    var items = liveItems(), n = items.length;
+    g.clearRect(0, 0, W, W);
+    g.save(); g.translate(W / 2, W / 2); g.rotate(st.rot);
+    if (n === 0) {
+      g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fillStyle = "#fff"; g.fill();
+    }
+    var a = Math.PI * 2 / Math.max(n, 1);
+    for (var i = 0; i < n; i++) {
+      var a0 = -Math.PI / 2 + i * a - a / 2;  // 0番の真ん中が真上（針の位置）
+      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a0 + a); g.closePath();
+      g.fillStyle = COLORS[(n % COLORS.length === 1 && i === n - 1) ? 2 : i % COLORS.length]; g.fill();
+      g.strokeStyle = "rgba(43,35,24,.35)"; g.lineWidth = 2; g.stroke();
+      // 文字
+      g.save(); g.rotate(a0 + a / 2);
+      var fs = Math.max(13, Math.min(46, Math.floor(R * a * 0.42), 260 / Math.max(1, Math.sqrt(n))));
+      g.font = "700 " + fs + "px 'Hiragino Sans','Yu Gothic UI','Noto Sans JP',sans-serif";
+      g.fillStyle = "#2B2318"; g.textAlign = "right"; g.textBaseline = "middle";
+      var t = items[i], maxW = R * 0.66;
+      while (g.measureText(t).width > maxW && t.length > 1) t = t.slice(0, -1);
+      if (t !== items[i]) t = t.slice(0, -1) + "…";
+      g.fillText(t, R - 22, 0);
+      g.restore();
+    }
+    g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.lineWidth = 8; g.strokeStyle = "#2B2318"; g.stroke();
+    g.restore();
+    $("cnt").textContent = T().cnt(n, allItems().length - n);
+    $("spinBtn").disabled = spinning || n < 2;
+    if (!spinning && n < 2 && !$("result").innerHTML) $("result").innerHTML = (st.removeWin && allItems().length >= 2 && n < 2 && st.removed.length) ? T().empty : T().need;
+  }
+
+  // ---- 偏りのない乱数（0〜n-1）----
+  function fairInt(n) {
+    var buf = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
+    do { crypto.getRandomValues(buf); } while (buf[0] >= lim);
+    return buf[0] % n;
+  }
+  function rand01() { return fairInt(1000000) / 1000000; }
+
+  // ---- 音（正弦波・三角波だけ）----
+  var ac = null;
+  function audio() { if (!st.sound) return null; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { ac = null; } return ac; }
+  function tone(f, d, type, vol, when) {
+    var c = audio(); if (!c) return;
+    var t0 = c.currentTime + (when || 0), o = c.createOscillator(), gn = c.createGain();
+    o.type = type || "sine"; o.frequency.value = f;
+    gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(vol || 0.15, t0 + 0.004); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    o.connect(gn); gn.connect(c.destination); o.start(t0); o.stop(t0 + d + 0.02);
+  }
+  var lastTick = 0;
+  function tick() { var now = performance.now(); if (now - lastTick < 28) return; lastTick = now; tone(2400, 0.03, "triangle", 0.07); }
+  function fanfare() { [[1046.5, 0], [1318.5, .1], [1568, .2], [2093, .32]].forEach(function (p) { tone(p[0], 0.5, "sine", 0.13, p[1]); tone(p[0] * 2, 0.25, "sine", 0.03, p[1]); }); }
+
+  // ---- 回す ----
+  function spin() {
+    var items = liveItems(), n = items.length;
+    if (spinning || n < 2) return;
+    audio();
+    var win = fairInt(n), a = Math.PI * 2 / n;
+    // 当たりの扇の真ん中が針に来る角度（扇の端は避ける）
+    var off = (rand01() - 0.5) * a * 0.7;
+    var target = -(win * a) - off;
+    var cur = st.rot % (Math.PI * 2);
+    var base = target - cur; base = ((base % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    var total = base + Math.PI * 2 * (5 + fairInt(3));
+    var start = st.rot, dur = 4200 + fairInt(1200), t0 = performance.now(), lastSeg = null;
+    spinning = true; $("spinBtn").disabled = true; $("spinBtn").textContent = T().spinning; $("result").innerHTML = "";
+    $("smile").setAttribute("opacity", "0");
+    function ease(x) { return 1 - Math.pow(1 - x, 3.2); }
+    function step(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      st.rot = start + total * ease(p);
+      var seg = Math.floor((((-st.rot + a / 2) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / a);
+      if (seg !== lastSeg) { if (lastSeg !== null) tick(); lastSeg = seg; }
+      // 目が回っている方を見る
+      var look = Math.sin(now / 90) * 0.9 * (1 - p);
+      $("eyeL").setAttribute("cx", 8.4 + look); $("eyeR").setAttribute("cx", 11.6 + look);
+      draw();
+      if (p < 1) return requestAnimationFrame(step);
+      st.rot = start + total; spinning = false;
+      var won = items[win];
+      st.hist.push(won);
+      var sub = T().winSub(st.hist.length);
+      if (st.removeWin) {
+        st.removed.push(won);
+        var left = liveItems();
+        if (left.length === 1) { st.hist.push(left[0]); st.removed.push(left[0]); sub += "　" + T().lastOne(left[0]); }  // 最後の1つは回さなくても決まる
+      }
+      save();
+      $("spinBtn").textContent = T().spin;
+      $("result").innerHTML = esc(T().win(won)) + "<small>" + esc(sub) + "</small>";
+      $("smile").setAttribute("opacity", "1");
+      var hub = $("hub"); hub.classList.remove("hop"); void hub.offsetWidth; hub.classList.add("hop");
+      fanfare(); renderHist(); draw();
+      if (window.gtag) gtag("event", "roulette_spin", { items: n });
+    }
+    requestAnimationFrame(step);
+  }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function renderHist() {
+    $("histBox").hidden = !st.hist.length;
+    $("hist").innerHTML = st.hist.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("");
+  }
+
+  // ---- 操作 ----
+  var ta = $("items");
+  ta.value = st.items;
+  ta.oninput = function () { st.items = ta.value; st.removed = st.removed.filter(function (s) { return allItems().indexOf(s) >= 0; }); save(); draw(); };
+  $("removeWin").checked = st.removeWin;
+  $("removeWin").onchange = function () { st.removeWin = this.checked; save(); draw(); };
+  $("resetBtn").onclick = function () { st.removed = []; save(); $("result").innerHTML = ""; draw(); };
+  $("clearHist").onclick = function () { st.hist = []; save(); renderHist(); };
+  $("spinBtn").onclick = spin;
+  cv.onclick = spin;
+  document.addEventListener("keydown", function (e) { if ((e.code === "Space" || e.code === "Enter") && document.activeElement === document.body) { e.preventDefault(); spin(); } });
+  [].forEach.call(document.querySelectorAll("[data-p]"), function (b) {
+    b.onclick = function () { st.items = ta.value = PRESETS[lang][b.dataset.p]; st.removed = []; save(); $("result").innerHTML = ""; draw(); };
+  });
+  $("bigBtn").onclick = function () {
+    var on = !document.body.classList.contains("big");
+    document.body.classList.toggle("big", on);
+    try { if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen(); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    applyLang();
+  };
+  document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement && document.body.classList.contains("big")) { document.body.classList.remove("big"); applyLang(); } });
+  $("soundBtn").onclick = function () { st.sound = !st.sound; save(); applyLang(); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    $("spinBtn").textContent = spinning ? L.spinning : L.spin;
+    $("bigBtn").textContent = document.body.classList.contains("big") ? L.small : L.big;
+    $("soundBtn").textContent = st.sound ? L.soundOn : L.soundOff;
+    ["lblItems", "pNames", "pNum", "pYesno", "pFood", "lblRemove", "lblHist"].forEach(function (k) { $(k).textContent = L[k]; });
+    $("resetBtn").textContent = L.reset; $("clearHist").textContent = L.clearHist;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    draw();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  renderHist(); applyLang();
+  window.__roulette = { fairInt: fairInt, liveItems: liveItems, st: st }; // 試験用（中身を読むだけ）
+})();
+</script>
+</body>
+</html>

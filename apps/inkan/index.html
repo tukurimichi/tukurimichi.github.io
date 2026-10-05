@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">電子印鑑 作成（無料・広告なし・登録不要）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="丸印・日付印・角印の電子印鑑を無料で作れます。広告なし・登録なし・インストール不要。背景が透明なPNGで保存、コピーしてWord・Excel・PDFに貼れます。入れた名前や印影はどこにも送りません。">
+<meta property="og:title" content="電子印鑑 作成（無料・広告なし・登録不要）">
+<meta property="og:description" content="丸印・日付印・角印の電子印鑑を無料で作れます。背景が透明なPNGで保存。入れた名前や印影はどこにも送りません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/inkan/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="電子印鑑 作成（無料・広告なし・登録不要）">
+<meta name="twitter:description" content="丸印・日付印・角印の電子印鑑を無料で作れます。背景が透明なPNGで保存。入れた名前や印影はどこにも送りません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/inkan/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  /* 書体はこのサイトに置いたものを使う（外の配信から読むと、使った文字の手がかりが外に出るため） */
+  @font-face { font-family: "InkanMincho"; src: url("fonts/ZenOldMincho-Black.woff2") format("woff2"); font-display: block; }
+  @font-face { font-family: "InkanBrush"; src: url("fonts/YujiSyuku-Regular.woff2") format("woff2"); font-display: block; }
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .tool { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  @media (max-width: 720px) { .tool { grid-template-columns: 1fr; } .preview { order: -1; } }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+  .field { margin-bottom: 14px; }
+  .field > label, .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  input[type=text] { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: #fff; color: var(--ink); font-family: inherit; font-size: 15px; padding: 9px 11px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 6px 13px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .sw { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--border); cursor: pointer; padding: 0; }
+  .sw.on { box-shadow: 0 0 0 3px var(--accent); }
+  .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin-right: 14px; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .preview { position: sticky; top: 16px; text-align: center; }
+  .stampBox { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px; background-image: linear-gradient(45deg,#f3f0ea 25%,transparent 25%),linear-gradient(-45deg,#f3f0ea 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f3f0ea 75%),linear-gradient(-45deg,transparent 75%,#f3f0ea 75%); background-size: 20px 20px; background-position: 0 0,0 10px,10px -10px,-10px 0; }
+  #cv { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; }
+  @keyframes press { 0% { transform: scale(1.18); opacity: .2 } 60% { transform: scale(.96); opacity: 1 } 100% { transform: scale(1) } }
+  #cv.press { animation: press .28s ease-out; }
+  .btns { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 10px 18px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); }
+  .status { font-size: 12px; color: var(--ink-muted); min-height: 1.5em; margin-top: 8px; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; }
+  .faq h3 { font-size: 14px; margin: 18px 0 4px; }
+  .faq p { margin: 0; }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">電子印鑑 作成（無料・広告なし・登録不要）</h1>
+  <p class="lead" id="leadT">丸印・日付印・角印を作って、背景が透明な画像で保存できます。広告なし・登録なし。入れた名前もできた印影も、このブラウザの中だけで扱い、どこにも送信しません。</p>
+
+  <div class="tool">
+    <div class="panel">
+      <div class="field">
+        <span class="lbl" id="lblKind">種類</span>
+        <div class="seg" id="segKind">
+          <button type="button" data-v="maru">丸印</button>
+          <button type="button" data-v="date">日付印</button>
+          <button type="button" data-v="kaku">角印</button>
+        </div>
+        <div class="hint" id="hintKind"></div>
+      </div>
+      <div class="field" id="fName">
+        <label for="name" id="lblName">名前</label>
+        <input type="text" id="name" maxlength="5">
+      </div>
+      <div class="field" id="fTop">
+        <label for="top" id="lblTop">上の段（会社名・部署など）</label>
+        <input type="text" id="top" maxlength="10">
+      </div>
+      <div class="field" id="fDate">
+        <label for="date" id="lblDate">真ん中の段（日付）</label>
+        <input type="text" id="date" maxlength="12">
+        <div class="row" style="margin-top:6px"><button class="btn ghost" type="button" id="todayBtn" style="padding:5px 12px;font-size:12px">今日の日付</button></div>
+      </div>
+      <div class="field" id="fCorp">
+        <label for="corp" id="lblCorp">会社名など（角印）</label>
+        <input type="text" id="corp" maxlength="16">
+        <div class="hint" id="hintCorp"></div>
+      </div>
+      <div class="field">
+        <span class="lbl" id="lblFont">書体</span>
+        <div class="seg" id="segFont">
+          <button type="button" data-v="mincho">明朝</button>
+          <button type="button" data-v="brush">毛筆</button>
+          <button type="button" data-v="gothic">ゴシック</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl" id="lblColor">色</span>
+        <div class="seg" id="segColor">
+          <button type="button" class="sw" data-v="#D7372D" style="background:#D7372D" title="朱"></button>
+          <button type="button" class="sw" data-v="#B0161E" style="background:#B0161E" title="赤"></button>
+          <button type="button" class="sw" data-v="#2B2B2B" style="background:#2B2B2B" title="黒"></button>
+          <button type="button" class="sw" data-v="#1F4E9C" style="background:#1F4E9C" title="青"></button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="chk"><input type="checkbox" id="kasure"> <span id="lblKasure">かすれ</span></label>
+        <label class="chk"><input type="checkbox" id="tilt"> <span id="lblTilt">少し傾ける</span></label>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="stampBox"><canvas id="cv" width="1024" height="1024"></canvas></div>
+      <div class="btns">
+        <button class="btn primary" id="dlBtn" type="button">PNGで保存</button>
+        <button class="btn ghost" id="copyBtn" type="button">コピー</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+  <div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "電子印鑑 作成（無料・広告なし・登録不要）| tukurimichi.com",
+      docDesc: "丸印・日付印・角印の電子印鑑を無料で作れます。広告なし・登録なし・インストール不要。背景が透明なPNGで保存、コピーしてWord・Excel・PDFに貼れます。入れた名前や印影はどこにも送りません。",
+      back: "← つくるみち の道具箱へ",
+      h1: "電子印鑑 作成（無料・広告なし・登録不要）",
+      lead: "丸印・日付印・角印を作って、背景が透明な画像で保存できます。広告なし・登録なし。入れた名前もできた印影も、このブラウザの中だけで扱い、どこにも送信しません。",
+      lblKind: "種類", maru: "丸印", date: "日付印", kaku: "角印",
+      hintMaru: "名字の認印です。1〜5文字（4文字以上は2列になります）。",
+      hintDate: "回覧・受付・承認に使う、日付の入ったハンコです。",
+      hintKaku: "会社の角印です。右の列から縦に並びます。",
+      lblName: "名前", lblTop: "上の段（会社名・部署など）", lblDate: "真ん中の段（日付）", today: "今日の日付",
+      lblCorp: "会社名など（角印）", hintCorp: "最後に「之印」や「印」を付けるのが一般的です。16文字まで。",
+      lblFont: "書体", mincho: "明朝", brush: "毛筆", gothic: "ゴシック", lblColor: "色", lblKasure: "かすれ", lblTilt: "少し傾ける",
+      dl: "PNGで保存", copy: "コピー", copied: "コピーしました。Word・Excel などに貼り付けられます", copyNg: "このブラウザではコピーできません。PNGで保存してください",
+      loading: "書体を読み込んでいます…（初回だけ数秒かかります）",
+      defName: "山田", defTop: "総務部", defCorp: "株式会社見本之印",
+      fileBase: "電子印鑑",
+      notes: "・書体：Zen Old Mincho（明朝）・Yuji Syuku（毛筆）、どちらも SIL Open Font License 1.1（<a href=\"fonts/OFL-ZenOldMincho.txt\">全文</a>・<a href=\"fonts/OFL-YujiSyuku.txt\">全文</a>）。このサイトに置いたものを読み込むので、外のフォント配信には何も送りません<br>"
+        + "・入れた文字と設定はこの端末に覚えておくので、ページを開き直しても続きから使えます",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>入れた名前や作った印影は、どこかに送られますか？</h3>"
+        + "<p>送られません。印影はいま開いているブラウザの中で描いています。ハンコの書体もこのサイトに置いたものを読むので、外のフォント配信に文字を問い合わせることもありません。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3>"
+        + "<p>広告は出ません。無料で、会員登録もインストールも要りません。何個作っても無料で、商用でも使えます。</p>"
+        + "<h3>Word・Excel・PDFに押すには？</h3>"
+        + "<p>「コピー」を押して、書類の上で貼り付けます（Ctrl+V）。背景が透明なので、文字の上に重ねても下が透けます。大きさは、認印なら幅1〜1.2cm、角印なら2〜2.5cmくらいが紙のハンコに近い大きさです。PDFには、PDFの編集ソフトの「画像を追加」から PNG を入れてください。</p>"
+        + "<h3>この電子印鑑に法的な効力はありますか？</h3>"
+        + "<p>これはハンコの見た目を画像にしたもので、誰が押したかを証明する仕組み（電子署名）はありません。社内の回覧や、認印で足りる書類の代わりに使うものです。実印・銀行印の代わりにはなりません。押してよいかは、出す先のルールに従ってください。</p>"
+        + "<h3>難しい漢字が出ません</h3>"
+        + "<p>明朝・毛筆の書体に入っていない漢字（旧字体の一部など）は、パソコンに入っている書体で代わりに描かれます。その場合は「ゴシック」に切り替えるか、別の書体を選んでください。</p>"
+        + "<h3>スマホ（iPhone・Android）でも作れますか？</h3>"
+        + "<p>作れます。「PNGで保存」で画像として保存できます。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Free Digital Hanko Stamp Maker – No Ads, No Sign-up | tukurimichi.com",
+      docDesc: "Make a Japanese digital seal (hanko) for free: round name seal, date seal or square company seal. No ads, no sign-up. Save as a transparent PNG and paste into Word, Excel or PDF. Nothing you type leaves your browser.",
+      back: "← Back to the tukurimichi toolbox",
+      h1: "Digital Hanko Stamp Maker (free, no ads)",
+      lead: "Make a round, date or square Japanese seal and save it as a transparent image. No ads, no sign-up. Your text and the finished seal stay in this browser and are never sent anywhere.",
+      lblKind: "Type", maru: "Round", date: "Date", kaku: "Square",
+      hintMaru: "A personal name seal. 1–5 characters (4 or more wrap into two columns).",
+      hintDate: "A date seal used for circulation, receipt and approval.",
+      hintKaku: "A company seal. Characters run top to bottom, right column first.",
+      lblName: "Name", lblTop: "Top row (company, department)", lblDate: "Middle row (date)", today: "Today",
+      lblCorp: "Company name (square seal)", hintCorp: "Japanese company seals usually end with 之印 or 印. Up to 16 characters.",
+      lblFont: "Typeface", mincho: "Mincho", brush: "Brush", gothic: "Gothic", lblColor: "Color", lblKasure: "Worn ink", lblTilt: "Slight tilt",
+      dl: "Save as PNG", copy: "Copy", copied: "Copied. Paste it into Word, Excel and so on", copyNg: "This browser cannot copy images. Please save as PNG",
+      loading: "Loading the typeface… (a few seconds the first time)",
+      defName: "Tanaka", defTop: "Sales", defCorp: "Sample Co. Seal",
+      fileBase: "hanko",
+      notes: "・Typefaces: Zen Old Mincho and Yuji Syuku, both under the SIL Open Font License 1.1 (<a href=\"fonts/OFL-ZenOldMincho.txt\">text</a> · <a href=\"fonts/OFL-YujiSyuku.txt\">text</a>). They are served from this site, so nothing is sent to an outside font service<br>"
+        + "・Your text and settings are remembered on this device",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is my name or seal sent anywhere?</h3>"
+        + "<p>No. The seal is drawn inside the browser you have open. Even the typefaces are served from this site, so no outside font service sees your text.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3>"
+        + "<p>No ads. Free, no account, nothing to install, commercial use is fine.</p>"
+        + "<h3>How do I put it on a Word, Excel or PDF document?</h3>"
+        + "<p>Press “Copy” and paste (Ctrl+V). The background is transparent. A real name seal is about 1–1.2 cm wide; a company seal about 2–2.5 cm. For PDF, add the PNG as an image in your PDF editor.</p>"
+        + "<h3>Is it legally binding?</h3>"
+        + "<p>It is an image of a seal, not an electronic signature that proves who stamped it. Use it where a simple seal is accepted; it does not replace a registered seal. Follow the rules of whoever receives the document.</p>"
+        + "<h3>Some kanji do not appear</h3>"
+        + "<p>Characters missing from the Mincho or Brush typefaces fall back to a font on your device. Try the Gothic option in that case.</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.inkan.v1";
+  var st = { kind: "maru", name: "", top: "", date: "", corp: "", font: "mincho", color: "#D7372D", kasure: false, tilt: false };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  function todayStr() { var d = new Date(); return ("" + d.getFullYear()).slice(2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + ("0" + d.getDate()).slice(-2); }
+  if (!st.name) st.name = T().defName;
+  if (!st.top) st.top = T().defTop;
+  if (!st.date) st.date = todayStr();
+  if (!st.corp) st.corp = T().defCorp;
+
+  var FONTS = {
+    mincho: '"InkanMincho","Yu Mincho","Hiragino Mincho ProN",serif',
+    brush: '"InkanBrush","Yu Mincho","Hiragino Mincho ProN",serif',
+    gothic: '"Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif'
+  };
+  var WEIGHT = { mincho: "400", brush: "400", gothic: "800" };
+  var cv = $("cv"), g = cv.getContext("2d"), S = cv.width;
+
+  // 字の黒い部分の範囲を、実際に描いて点を数えて測る（書体の数字はあてにならないことがある）
+  var probe = document.createElement("canvas"), pg = probe.getContext("2d", { willReadFrequently: true }), PB = 240, boxCache = {};
+  probe.width = probe.height = PB * 2;
+  function inkBox(text, font) {
+    var key = font + "|" + text; if (boxCache[key]) return boxCache[key];
+    pg.clearRect(0, 0, probe.width, probe.height);
+    pg.font = font; pg.textAlign = "left"; pg.textBaseline = "alphabetic"; pg.fillStyle = "#000";
+    var tw = pg.measureText(text).width, sc = Math.min(1, (probe.width - 40) / Math.max(1, tw));
+    pg.save(); pg.scale(sc, 1); pg.fillText(text, 20 / sc, PB * 1.3); pg.restore();
+    var d = pg.getImageData(0, 0, probe.width, probe.height).data, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+    for (var y = 0; y < probe.height; y += 1) for (var x = 0; x < probe.width; x += 1) {
+      if (d[(y * probe.width + x) * 4 + 3] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    var r = x1 < 0 ? null : { x: x0 / sc - 20 / sc, y: y0 - PB * 1.3, w: (x1 - x0 + 1) / sc, h: y1 - y0 + 1 };
+    boxCache[key] = r; return r;
+  }
+  function fontStr(px) { return WEIGHT[st.font] + " " + px + "px " + FONTS[st.font]; }
+  // 1文字を、箱 (cx,cy,w,h) にぴったり収まるように描く。縦横どちらかへの伸ばしは1.25倍まで
+  function glyph(ch, cx, cy, w, h) {
+    var f = fontStr(PB), bx = inkBox(ch, f); if (!bx) return;
+    var sx = w / bx.w, sy = h / bx.h, s = Math.min(sx, sy);
+    sx = Math.min(sx, s * 1.25); sy = Math.min(sy, s * 1.25);
+    g.save(); g.translate(cx, cy); g.scale(sx, sy);
+    g.font = f; g.textAlign = "left"; g.textBaseline = "alphabetic";
+    g.fillText(ch, -bx.x - bx.w / 2, -bx.y - bx.h / 2);
+    g.restore();
+  }
+  // 1行を同じ大きさの字でそろえて、幅 w・高さ h に収める（「.」などを引き伸ばさない）
+  function line(text, cx, cy, w, h) {
+    if (!text) return;
+    var f = fontStr(PB), full = inkBox(text, f), ref = inkBox("国", f); if (!full || !ref) return;
+    var s = h / ref.h, sx = Math.min(s, w / full.w);
+    g.save(); g.translate(cx, cy); g.scale(sx, s);
+    g.font = f; g.textAlign = "left"; g.textBaseline = "alphabetic";
+    g.fillText(text, -full.x - full.w / 2, -ref.y - ref.h / 2);
+    g.restore();
+  }
+
+  function draw() {
+    var col = st.color, R = S / 2;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, S, S);
+    g.save();
+    if (st.tilt) { g.translate(R, R); g.rotate(-4 * Math.PI / 180); g.translate(-R, -R); }
+    g.fillStyle = col; g.strokeStyle = col;
+    if (st.kind === "maru") {
+      var bw = S * 0.045, r = R - bw / 2 - S * 0.02;
+      g.lineWidth = bw; g.beginPath(); g.arc(R, R, r, 0, Math.PI * 2); g.stroke();
+      var ch = Array.from(st.name).slice(0, 5), n = ch.length, ri = r - bw * 1.6;
+      if (n <= 3) {
+        var hh = ri * 2 * (n === 1 ? .62 : n === 2 ? .80 : .86) / n, ww = n === 1 ? ri * 1.15 : ri * (n === 2 ? 1.0 : .82);
+        ch.forEach(function (c, i) { glyph(c, R, R - hh * n / 2 + hh * (i + .5), ww * .9, hh * (n === 2 ? .80 : .86)); });
+      } else {
+        // 2列。右の列から上→下
+        var rows = Math.ceil(n / 2), cw = ri * .78, chh = ri * 1.62 / rows;
+        ch.forEach(function (c, i) {
+          var colI = i < rows ? 0 : 1, rowI = i < rows ? i : i - rows;
+          var rowsHere = colI === 0 ? rows : n - rows;
+          var y0 = R - chh * rowsHere / 2;
+          glyph(c, R + (colI === 0 ? cw / 2 : -cw / 2), y0 + chh * (rowI + .5), cw * .9, chh * .9);
+        });
+      }
+    } else if (st.kind === "date") {
+      var bw2 = S * 0.04, r2 = R - bw2 / 2 - S * 0.02, band = r2 * .3;
+      g.lineWidth = bw2; g.beginPath(); g.arc(R, R, r2, 0, Math.PI * 2); g.stroke();
+      g.lineWidth = bw2 * .7;
+      [-band, band].forEach(function (dy) {
+        var half = Math.sqrt(r2 * r2 - dy * dy);
+        g.beginPath(); g.moveTo(R - half, R + dy); g.lineTo(R + half, R + dy); g.stroke();
+      });
+      var inner = r2 - bw2;
+      line(st.top, R, R - band - (inner - band) * .48, Math.sqrt(inner * inner - (band + (inner - band) * .35) ** 2) * 1.5, (inner - band) * .5);
+      line(st.date, R, R, inner * 1.62, band * 1.25);
+      line(st.name, R, R + band + (inner - band) * .48, Math.sqrt(inner * inner - (band + (inner - band) * .35) ** 2) * 1.4, (inner - band) * .56);
+    } else {
+      var bw3 = S * 0.05, pad = S * 0.035, side = S - pad * 2;
+      g.lineWidth = bw3; g.strokeRect(pad + bw3 / 2, pad + bw3 / 2, side - bw3, side - bw3);
+      var cs = Array.from(st.corp).slice(0, 16), n3 = cs.length;
+      if (n3) {
+        var cols = Math.ceil(Math.sqrt(n3)), rows3 = Math.ceil(n3 / cols);
+        var inner3 = side - bw3 * 2 - S * 0.05, cellW = inner3 / cols, cellH = inner3 / rows3, x0 = S / 2 + inner3 / 2, y0 = S / 2 - inner3 / 2;
+        cs.forEach(function (c, i) {
+          var cI = Math.floor(i / rows3), rI = i % rows3;
+          glyph(c, x0 - cellW * (cI + .5), y0 + cellH * (rI + .5), cellW * .9, cellH * .9);
+        });
+      }
+    }
+    g.restore();
+    if (st.kasure) wear();
+  }
+
+  // かすれ：文字から決まる乱数で、毎回同じかすれ方にする
+  function wear() {
+    var seed = 0, s = st.kind + st.name + st.top + st.date + st.corp + st.font;
+    for (var i = 0; i < s.length; i++) seed = (seed * 31 + s.charCodeAt(i)) >>> 0;
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+    g.save(); g.globalCompositeOperation = "destination-out";
+    for (var k = 0; k < 2600; k++) {
+      g.globalAlpha = .35 + rnd() * .65;
+      g.beginPath(); g.arc(rnd() * S, rnd() * S, .8 + rnd() * rnd() * 5, 0, Math.PI * 2); g.fill();
+    }
+    for (var j = 0; j < 14; j++) {  // うすくなった所
+      var x = rnd() * S, y = rnd() * S, rr = 30 + rnd() * 90, gr = g.createRadialGradient(x, y, 0, x, y, rr);
+      gr.addColorStop(0, "rgba(0,0,0,.45)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.globalAlpha = 1; g.fillStyle = gr; g.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+    }
+    g.restore();
+  }
+
+  var pending = 0;
+  function render(anim) {
+    var my = ++pending;
+    var text = st.name + st.top + st.date + st.corp + "印";
+    var fam = st.font === "mincho" ? "InkanMincho" : st.font === "brush" ? "InkanBrush" : null;
+    function go() {
+      if (my !== pending) return;
+      boxCache = {}; draw(); $("status").textContent = "";
+      if (anim) { cv.classList.remove("press"); void cv.offsetWidth; cv.classList.add("press"); }
+    }
+    if (!fam || !document.fonts) return go();
+    var spec = "100px " + fam;
+    if (document.fonts.check(spec, text)) return go();
+    $("status").textContent = T().loading;
+    document.fonts.load(spec, text).then(go, go);
+  }
+
+  function seg(id, key) {
+    var box = $(id);
+    function mark() { [].forEach.call(box.children, function (b) { b.classList.toggle("on", b.dataset.v === st[key]); }); }
+    box.onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st[key] = b.dataset.v; mark(); save(); showFields(); render(true); };
+    mark();
+  }
+  seg("segKind", "kind"); seg("segFont", "font"); seg("segColor", "color");
+  function showFields() {
+    $("fName").hidden = st.kind === "kaku"; $("fTop").hidden = $("fDate").hidden = st.kind !== "date"; $("fCorp").hidden = st.kind !== "kaku";
+    $("name").maxLength = st.kind === "date" ? 6 : 5;
+    var L = T(); $("hintKind").textContent = st.kind === "maru" ? L.hintMaru : st.kind === "date" ? L.hintDate : L.hintKaku;
+  }
+  ["name", "top", "date", "corp"].forEach(function (k) {
+    var el = $(k); el.value = st[k];
+    var timer; el.oninput = function () { st[k] = el.value; save(); clearTimeout(timer); timer = setTimeout(function () { render(true); }, 250); };
+  });
+  $("todayBtn").onclick = function () { st.date = $("date").value = todayStr(); save(); render(true); };
+  $("kasure").checked = st.kasure; $("tilt").checked = st.tilt;
+  $("kasure").onchange = function () { st.kasure = this.checked; save(); render(true); };
+  $("tilt").onchange = function () { st.tilt = this.checked; save(); render(true); };
+
+  function fileName() { var w = st.kind === "kaku" ? st.corp : st.name; return T().fileBase + "_" + (w || "") + ".png"; }
+  $("dlBtn").onclick = function () {
+    cv.toBlob(function (b) {
+      var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = fileName();
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }, "image/png");
+    if (window.gtag) gtag("event", "inkan_download", { kind: st.kind, font: st.font });
+  };
+  $("copyBtn").onclick = function () {
+    if (!navigator.clipboard || !window.ClipboardItem) { $("status").textContent = T().copyNg; return; }
+    cv.toBlob(function (b) {
+      navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).then(function () { $("status").textContent = T().copied; }, function () { $("status").textContent = T().copyNg; });
+    }, "image/png");
+    if (window.gtag) gtag("event", "inkan_copy", { kind: st.kind });
+  };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    ["lblKind", "lblName", "lblTop", "lblDate", "lblCorp", "hintCorp", "lblFont", "lblColor", "lblKasure", "lblTilt"].forEach(function (k) { $(k).textContent = L[k]; });
+    var kb = $("segKind").children; kb[0].textContent = L.maru; kb[1].textContent = L.date; kb[2].textContent = L.kaku;
+    var fb = $("segFont").children; fb[0].textContent = L.mincho; fb[1].textContent = L.brush; fb[2].textContent = L.gothic;
+    $("todayBtn").textContent = L.today; $("dlBtn").textContent = L.dl; $("copyBtn").textContent = L.copy;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    showFields(); render(false);
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__inkan = { st: st, render: render }; // 試験用
+})();
+</script>
+</body>
+</html>

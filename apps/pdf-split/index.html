@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">PDF分割（無料・広告なし・アップロード不要）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="PDFを無料で分割するツール。1ページずつ・ページ範囲・Nページごと・選んだページの抜き出しができます。広告なし・登録なし・インストール不要。ファイルはサーバーに送られず、ブラウザの中だけで処理されます。">
+<meta property="og:title" content="PDF分割（無料・広告なし・アップロード不要）">
+<meta property="og:description" content="PDFを無料で分割。1ページずつ・範囲・Nページごと・選んだページの抜き出し。ファイルはどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/pdf-split/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDF分割（無料・広告なし・アップロード不要）">
+<meta name="twitter:description" content="PDFを無料で分割。1ページずつ・範囲・Nページごと・選んだページの抜き出し。ファイルはどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/pdf-split/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .drop { border: 2px dashed var(--border); border-radius: 18px; background: var(--surface); padding: 34px 20px; text-align: center; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: #fff; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+  .file { display: flex; align-items: center; gap: 10px; margin: 16px 0 8px; font-size: 14px; flex-wrap: wrap; }
+  .file b { word-break: break-all; }
+  .file .meta { color: var(--ink-muted); font-size: 12.5px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-top: 10px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .opt { margin-top: 12px; font-size: 13px; }
+  .opt input[type=text], .opt input[type=number] { font-family: inherit; font-size: 14px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+  .opt input[type=text] { width: 100%; max-width: 420px; }
+  .opt input[type=number] { width: 90px; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 14px; }
+  .pg { position: relative; background: #fff; border: 2px solid var(--border); border-radius: 8px; padding: 4px; text-align: center; cursor: default; user-select: none; }
+  .pg img, .pg .ph { width: 100%; aspect-ratio: 210/297; object-fit: contain; display: block; background: #f6f3ee; border-radius: 4px; }
+  .pg .no { font-size: 11.5px; color: var(--ink-muted); margin-top: 3px; }
+  .pg .grp { position: absolute; left: 6px; top: 6px; font-size: 10.5px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+  .pick .pg { cursor: pointer; }
+  .pg.sel { border-color: var(--accent-warm); box-shadow: 0 0 0 2px var(--accent-warm); }
+  .pg.sel::after { content: "✓"; position: absolute; right: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-warm); color: #fff; font-size: 13px; line-height: 20px; }
+  .pg.off { opacity: .35; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .plan { font-size: 13px; color: var(--ink-muted); flex: 1; min-width: 180px; }
+  .status { margin-top: 12px; font-size: 13px; min-height: 1.6em; line-height: 1.6; }
+  .status.ok { color: var(--accent); font-weight: 700; } .status.ng { color: var(--accent-warm); font-weight: 700; }
+  .results { margin-top: 8px; font-size: 13px; line-height: 2; }
+  .results a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .faq code { background: rgba(43,35,24,0.07); padding: 0 4px; border-radius: 4px; }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">PDF分割（無料・広告なし）</h1>
+  <p class="lead" id="leadT">PDFを、1ページずつ・ページの範囲ごと・Nページごとに分けたり、選んだページだけを抜き出したりできます。広告なし・登録なし。ファイルはこのブラウザの中だけで処理され、どこにも送信されません。</p>
+
+  <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
+  <input type="file" id="picker" accept="application/pdf,.pdf">
+
+  <div id="work" hidden>
+    <div class="file"><span>📄</span><b id="fname"></b><span class="meta" id="fmeta"></span><button class="btn ghost" id="clearBtn" type="button"></button></div>
+    <div class="panel">
+      <span class="lbl" id="lblMode"></span>
+      <div class="seg" id="segMode">
+        <button type="button" data-v="each"></button>
+        <button type="button" data-v="ranges"></button>
+        <button type="button" data-v="every"></button>
+        <button type="button" data-v="pick"></button>
+      </div>
+      <div class="opt" id="optRanges"><input type="text" id="ranges" placeholder="1-3, 4-6, 7-"><div class="hint" id="hintRanges"></div></div>
+      <div class="opt" id="optEvery"><span id="lblEvery1"></span> <input type="number" id="every" min="1" value="2"> <span id="lblEvery2"></span></div>
+      <div class="opt" id="optPick"><div class="hint" id="hintPick"></div>
+        <div class="seg" style="margin-top:8px"><button type="button" class="btn ghost" id="pickAll"></button><button type="button" class="btn ghost" id="pickNone"></button><button type="button" class="btn ghost" id="pickOdd"></button><button type="button" class="btn ghost" id="pickEven"></button></div>
+        <label style="display:inline-flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="pickInvert"> <span id="lblInvert"></span></label>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="bar">
+      <span class="plan" id="plan"></span>
+      <button class="btn primary" id="goBtn" type="button" disabled></button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+  <div class="note"><span id="notesT"></span><br>
+    <span class="credit" id="creditT"></span>
+  </div>
+</div>
+
+<script src="../pdf/pdf-lib.min.js"></script>
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "PDF分割（無料・広告なし・アップロード不要）| tukurimichi.com",
+      docDesc: "PDFを無料で分割するツール。1ページずつ・ページ範囲・Nページごと・選んだページの抜き出しができます。広告なし・登録なし・インストール不要。ファイルはサーバーに送られず、ブラウザの中だけで処理されます。",
+      back: "← つくるみち の道具箱へ", h1: "PDF分割（無料・広告なし）",
+      lead: "PDFを、1ページずつ・ページの範囲ごと・Nページごとに分けたり、選んだページだけを抜き出したりできます。広告なし・登録なし。ファイルはこのブラウザの中だけで処理され、どこにも送信されません。",
+      dropTitle: "PDFをここにドラッグ＆ドロップ", dropSub: "またはクリックしてファイルを選ぶ（1つ）",
+      clear: "別のPDFにする", meta: function (n, sz) { return n + "ページ・" + sz; },
+      lblMode: "分け方", modes: ["1ページずつ", "範囲で分ける", "Nページごと", "選んだページを抜き出す"],
+      hintRanges: "カンマで区切った1つずつが、1つのPDFになります。例：1-3, 4-6, 7-（7-は7ページ目から最後まで）。1, 3, 5 のように1ページずつも書けます",
+      every1: "", every2: "ページずつに分ける",
+      hintPick: "ページの絵を押して選びます（もう一度押すと外れます）。選んだページが、並び順のまま1つのPDFになります",
+      pickAll: "全部", pickNone: "なし", pickOdd: "奇数ページ", pickEven: "偶数ページ", invert: "選んだページを消して、残りを1つのPDFにする",
+      go: "分けて保存", goZip: "分けてZIPで保存",
+      plan: function (n) { return n + "個のPDFになります"; },
+      badRanges: "範囲の書き方を確かめてください（例：1-3, 4-6, 7-）",
+      noPick: "ページを1つ以上選んでください",
+      loading: "読み込み中…", encrypted: "パスワードで保護されたPDFは読み込めません（解除してから入れてください）", broken: "読み込めませんでした（壊れているか、PDFではない可能性）",
+      notPdf: "PDFファイルを選んでください", working: function (i, n) { return "作っています… " + i + "/" + n; },
+      done: function (n) { return n + "個のPDFを作りました"; }, failed: function (e) { return "うまくいきませんでした：" + e; },
+      dlEach: "1つずつ保存：", grp: function (k) { return "#" + k; },
+      notes: "・元のPDFは書き換えません。分けたものは新しいファイルとして保存されます<br>・しおり（目次）やフォームの入力内容は引き継がれない場合があります<br>・分け方の設定はこの端末に覚えておきます（PDFそのものは覚えません）",
+      credit: "PDFの処理に <a href=\"https://github.com/Hopding/pdf-lib\" target=\"_blank\" rel=\"noopener\">pdf-lib</a> v1.17.1（MIT / © 2019 Andrew Dillon、<a href=\"../pdf/LICENSE-pdf-lib.txt\">全文</a>）、ページの表示に <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108（Apache-2.0 / © Mozilla、<a href=\"../pdf/LICENSE-pdf.js.txt\">全文</a>）を使用しています。",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>安全ですか？PDFはどこかに送られますか？</h3><p>送られません。PDFの読み込みも分割も、いま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがそもそも無いので、社外秘の書類や個人情報の入ったPDFでも使えます。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3><p>広告は出ません。無料で、会員登録も要りません。回数やページ数の制限もありません（とても大きいファイルはブラウザの力が足りずに失敗することがあります）。</p>"
+        + "<h3>インストールは要りますか？オフラインでも使えますか？</h3><p>インストールは要りません。このページを一度開けば、そのあとネットを切っても分割できます。</p>"
+        + "<h3>スマホ（iPhone・Android）でも使えますか？</h3><p>使えます。ファイルを選ぶ画面から、スマホに保存してあるPDFを選んでください。分けたPDFが複数あるときはZIPにまとめて保存します（「1つずつ保存」からも保存できます）。</p>"
+        + "<h3>1ページだけ取り出したい・いらないページを消したい</h3><p>「選んだページを抜き出す」で、ページの絵を押して選んでください。いらないページを消したいときは、消したいページを選んで「選んだページを消して、残りを1つのPDFにする」にチェックを入れます。</p>"
+        + "<h3>逆に、PDFを1つにまとめたい</h3><p><a href=\"../pdf/\">PDF結合</a>を使ってください。こちらもファイルはどこにも送りません。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Split PDF Free – No Ads, No Upload | tukurimichi.com",
+      docDesc: "Split a PDF for free: every page, by page ranges, every N pages, or extract the pages you pick. No ads, no sign-up, nothing to install. Your file never leaves your browser.",
+      back: "← Back to the tukurimichi toolbox", h1: "Split PDF (free, no ads)",
+      lead: "Split a PDF into single pages, by page ranges or every N pages, or pull out just the pages you pick. No ads, no sign-up. Your file is processed inside this browser and never sent anywhere.",
+      dropTitle: "Drop a PDF here", dropSub: "or click to choose a file (one)",
+      clear: "Use another PDF", meta: function (n, sz) { return n + " pages · " + sz; },
+      lblMode: "How to split", modes: ["Every page", "By ranges", "Every N pages", "Extract picked pages"],
+      hintRanges: "Each comma-separated part becomes one PDF. e.g. 1-3, 4-6, 7- (7- means page 7 to the end). Single pages like 1, 3, 5 work too",
+      every1: "Split every", every2: "pages",
+      hintPick: "Click page thumbnails to pick them (click again to unpick). Picked pages become one PDF, in order",
+      pickAll: "All", pickNone: "None", pickOdd: "Odd pages", pickEven: "Even pages", invert: "Delete the picked pages and keep the rest as one PDF",
+      go: "Split and save", goZip: "Split and save as ZIP",
+      plan: function (n) { return "Makes " + n + " PDF" + (n > 1 ? "s" : ""); },
+      badRanges: "Check the ranges (e.g. 1-3, 4-6, 7-)", noPick: "Pick at least one page",
+      loading: "Loading…", encrypted: "Password-protected PDFs cannot be opened (remove the password first)", broken: "Could not read this file (it may be damaged or not a PDF)",
+      notPdf: "Please choose a PDF file", working: function (i, n) { return "Working… " + i + "/" + n; },
+      done: function (n) { return "Made " + n + " PDF" + (n > 1 ? "s" : ""); }, failed: function (e) { return "Something went wrong: " + e; },
+      dlEach: "Save one by one:", grp: function (k) { return "#" + k; },
+      notes: "・Your original PDF is not changed; split parts are saved as new files<br>・Bookmarks and form data may not carry over<br>・Your split settings are remembered on this device (the PDF itself is not)",
+      credit: "Uses <a href=\"https://github.com/Hopding/pdf-lib\" target=\"_blank\" rel=\"noopener\">pdf-lib</a> v1.17.1 (MIT / © 2019 Andrew Dillon, <a href=\"../pdf/LICENSE-pdf-lib.txt\">text</a>) and <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108 (Apache-2.0 / © Mozilla, <a href=\"../pdf/LICENSE-pdf.js.txt\">text</a>).",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is it safe? Is my PDF uploaded?</h3><p>No. Reading and splitting happen inside the browser you have open. There is no upload step, so confidential documents are fine.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3><p>No ads, free, no account, no limits (very large files may fail if the browser runs out of memory).</p>"
+        + "<h3>Does it work offline?</h3><p>Once this page has loaded you can disconnect and still split.</p>"
+        + "<h3>Does it work on iPhone or Android?</h3><p>Yes. Several output files are saved together as a ZIP (or one by one).</p>"
+        + "<h3>I want to remove a few pages</h3><p>Choose “Extract picked pages”, pick the pages to remove and tick “Delete the picked pages”.</p>"
+        + "<h3>I want to combine PDFs instead</h3><p>Use <a href=\"../pdf/\">Merge PDFs</a>. It doesn't upload anything either.</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.pdfsplit.v1";
+  var st = { mode: "each", ranges: "", every: 2, invert: false };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null; // { name, bytes, pages, thumbs[] }
+  var picked = {};
+  var lastUrls = [];
+
+  function fmtSize(b) { return b < 1048576 ? Math.round(b / 1024) + " KB" : (b / 1048576).toFixed(1) + " MB"; }
+  function baseName() { return (file && file.name || "document.pdf").replace(/\.pdf$/i, ""); }
+  function setStatus(t, k) { var s = $("status"); s.textContent = t || ""; s.className = "status" + (k ? " " + k : ""); }
+
+  // ---- 範囲の読み取り：["1-3","4-6","7-"] → [[0,1,2],[3,4,5],[6..]] ----
+  function parseRanges(text, n) {
+    var parts = text.split(/[,、，\s]+/).map(function (s) { return s.replace(/[－ー〜~～]/g, "-").trim(); }).filter(Boolean);
+    if (!parts.length) return null;
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var m = parts[i].match(/^(\d+)?(-)?(\d+)?$/);
+      if (!m || (!m[1] && !m[3])) return null;
+      var a = m[1] ? +m[1] : 1, b = m[2] ? (m[3] ? +m[3] : n) : a;
+      if (a < 1 || b > n || a > b) return null;
+      var g = []; for (var p = a; p <= b; p++) g.push(p - 1); out.push(g);
+    }
+    return out;
+  }
+  function groups() {
+    if (!file) return null;
+    var n = file.pages, g = [], i;
+    if (st.mode === "each") { for (i = 0; i < n; i++) g.push([i]); return g; }
+    if (st.mode === "every") { var k = Math.max(1, Math.floor(+st.every) || 1); for (i = 0; i < n; i += k) { var x = []; for (var j = i; j < Math.min(n, i + k); j++) x.push(j); g.push(x); } return g; }
+    if (st.mode === "ranges") return parseRanges(st.ranges, n);
+    var sel = []; for (i = 0; i < n; i++) if (!!picked[i] !== !!st.invert) sel.push(i);
+    return sel.length ? [sel] : [];
+  }
+
+  function renderGrid() {
+    var grid = $("grid"); if (!file) { grid.innerHTML = ""; return; }
+    var g = groups() || [], tag = {};
+    g.forEach(function (arr, k) { arr.forEach(function (p) { if (!(p in tag)) tag[p] = k + 1; }); });
+    var html = "";
+    for (var i = 0; i < file.pages; i++) {
+      var cls = "pg" + (st.mode === "pick" && picked[i] ? " sel" : "") + (st.mode !== "each" && !(i in tag) ? " off" : "");
+      html += '<div class="' + cls + '" data-i="' + i + '">' + (file.thumbs[i] ? '<img src="' + file.thumbs[i] + '" alt="">' : '<div class="ph"></div>')
+        + (st.mode !== "pick" && st.mode !== "each" && (i in tag) ? '<span class="grp">' + T().grp(tag[i]) + "</span>" : "")
+        + '<div class="no">' + (i + 1) + "</div></div>";
+    }
+    grid.innerHTML = html;
+    grid.className = "grid" + (st.mode === "pick" ? " pick" : "");
+    updatePlan();
+  }
+  function updatePlan() {
+    var L = T(), g = groups(), go = $("goBtn");
+    $("optRanges").hidden = st.mode !== "ranges"; $("optEvery").hidden = st.mode !== "every"; $("optPick").hidden = st.mode !== "pick";
+    if (!file) { go.disabled = true; $("plan").textContent = ""; return; }
+    if (g === null) { $("plan").textContent = L.badRanges; go.disabled = true; return; }
+    if (!g.length) { $("plan").textContent = L.noPick; go.disabled = true; return; }
+    $("plan").textContent = L.plan(g.length);
+    go.disabled = false; go.textContent = g.length > 1 ? L.goZip : L.go;
+  }
+
+  // ---- 読み込みと小さな絵 ----
+  function loadFile(f) {
+    if (!f || !(/\.pdf$/i.test(f.name) || f.type === "application/pdf")) { setStatus(T().notPdf, "ng"); return; }
+    clearResults(); picked = {};
+    setStatus(T().loading);
+    f.arrayBuffer().then(function (buf) {
+      var bytes = new Uint8Array(buf);
+      return PDFLib.PDFDocument.load(bytes, { ignoreEncryption: false }).then(function (doc) {
+        file = { name: f.name, size: f.size, bytes: bytes, pages: doc.getPageCount(), thumbs: [] };
+        $("work").hidden = false; $("fname").textContent = f.name; $("fmeta").textContent = T().meta(file.pages, fmtSize(f.size));
+        setStatus(""); renderGrid(); makeThumbs(file);
+      });
+    }).catch(function (e) {
+      setStatus(/encrypt/i.test(String(e && e.message || e)) ? T().encrypted : T().broken, "ng");
+    });
+  }
+  function makeThumbs(fl) {
+    var pdfjs = window.__pdfjsLib;
+    if (!pdfjs) { window.addEventListener("pdfjs-ready", function () { makeThumbs(fl); }, { once: true }); return; }
+    var task = pdfjs.getDocument({ data: fl.bytes.slice(), isEvalSupported: false });
+    task.promise.then(function (doc) {
+      var i = 0;
+      function next() {
+        if (file !== fl || i >= fl.pages) { try { task.destroy(); } catch (e) {} return; }
+        var idx = i++;
+        return doc.getPage(idx + 1).then(function (page) {
+          var v0 = page.getViewport({ scale: 1 }), sc = Math.min(160 / v0.width, 226 / v0.height), vp = page.getViewport({ scale: sc });
+          var c = document.createElement("canvas"); c.width = Math.max(1, Math.round(vp.width)); c.height = Math.max(1, Math.round(vp.height));
+          var ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+          return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () {
+            fl.thumbs[idx] = c.toDataURL("image/jpeg", .7);
+            var el = document.querySelector('.pg[data-i="' + idx + '"]');
+            if (el && file === fl) { var ph = el.querySelector(".ph"); if (ph) { var im = new Image(); im.src = fl.thumbs[idx]; ph.replaceWith(im); } }
+          });
+        }).then(next, next);
+      }
+      next();
+    }).catch(function () {});
+  }
+
+  // ---- 分けて保存 ----
+  function clearResults() { lastUrls.forEach(function (u) { URL.revokeObjectURL(u); }); lastUrls = []; $("results").innerHTML = ""; }
+  function grpName(arr) {
+    var a = arr[0] + 1, b = arr[arr.length - 1] + 1, cont = arr.length === b - a + 1;
+    return baseName() + "_" + (arr.length === 1 ? "p" + a : cont ? "p" + a + "-" + b : "p" + a + "ほか" + arr.length + "枚") + ".pdf";
+  }
+  function download(blob, name) {
+    var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  $("goBtn").onclick = function () {
+    var L = T(), g = groups(); if (!g || !g.length || !file) return;
+    clearResults(); $("goBtn").disabled = true;
+    var outs = [], src;
+    PDFLib.PDFDocument.load(file.bytes).then(function (s) {
+      src = s; var i = 0;
+      function one() {
+        if (i >= g.length) return;
+        var arr = g[i++]; setStatus(L.working(i, g.length));
+        return PDFLib.PDFDocument.create().then(function (out) {
+          return out.copyPages(src, arr).then(function (pages) { pages.forEach(function (p) { out.addPage(p); }); return out.save(); });
+        }).then(function (b) { outs.push({ name: L === LANG.en ? grpName(arr).replace("ほか", "_plus") : grpName(arr), bytes: b }); return one(); });
+      }
+      return one();
+    }).then(function () {
+      if (st.mode === "pick" && st.invert) outs[0].name = baseName() + (lang === "en" ? "_removed.pdf" : "_ページ削除.pdf");
+      if (st.mode === "pick" && !st.invert) outs[0].name = baseName() + (lang === "en" ? "_extracted.pdf" : "_抜き出し.pdf");
+      if (outs.length === 1) download(new Blob([outs[0].bytes], { type: "application/pdf" }), outs[0].name);
+      else download(zip(outs), baseName() + (lang === "en" ? "_split.zip" : "_分割.zip"));
+      // 1つずつも保存できるように並べる
+      var html = outs.length > 1 ? "<b>" + L.dlEach + "</b> " : "";
+      if (outs.length > 1) outs.forEach(function (o) { var u = URL.createObjectURL(new Blob([o.bytes], { type: "application/pdf" })); lastUrls.push(u); html += '<a href="' + u + '" download="' + o.name.replace(/"/g, "") + '">' + o.name.replace(/</g, "&lt;") + "</a>"; });
+      $("results").innerHTML = html;
+      setStatus(L.done(outs.length), "ok");
+      if (window.gtag) gtag("event", "pdf_split", { mode: st.mode, parts: outs.length, pages: file.pages });
+    }).catch(function (e) { setStatus(L.failed(String(e && e.message || e)), "ng"); }).then(function () { updatePlan(); });
+  };
+
+  // ---- ZIP（圧縮なしでまとめる。外の部品を使わない）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date();
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+      h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+      c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0);
+    var e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+
+  // ---- 操作 ----
+  var drop = $("drop"), picker = $("picker");
+  drop.onclick = function () { picker.click(); };
+  picker.onchange = function () { if (picker.files[0]) loadFile(picker.files[0]); picker.value = ""; };
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  $("clearBtn").onclick = function () { file = null; picked = {}; clearResults(); $("work").hidden = true; setStatus(""); };
+  $("segMode").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.mode = b.dataset.v; save(); markMode(); renderGrid(); };
+  function markMode() { [].forEach.call($("segMode").children, function (b) { b.classList.toggle("on", b.dataset.v === st.mode); }); }
+  $("ranges").value = st.ranges; $("ranges").oninput = function () { st.ranges = this.value; save(); renderGrid(); };
+  $("every").value = st.every; $("every").oninput = function () { st.every = this.value; save(); renderGrid(); };
+  $("pickInvert").checked = st.invert; $("pickInvert").onchange = function () { st.invert = this.checked; save(); renderGrid(); };
+  $("grid").onclick = function (e) { if (st.mode !== "pick") return; var el = e.target.closest(".pg"); if (!el) return; var i = +el.dataset.i; picked[i] = !picked[i]; renderGrid(); };
+  function pickBy(fn) { picked = {}; if (file) for (var i = 0; i < file.pages; i++) if (fn(i)) picked[i] = true; renderGrid(); }
+  $("pickAll").onclick = function () { pickBy(function () { return true; }); };
+  $("pickNone").onclick = function () { pickBy(function () { return false; }); };
+  $("pickOdd").onclick = function () { pickBy(function (i) { return i % 2 === 0; }); };
+  $("pickEven").onclick = function () { pickBy(function (i) { return i % 2 === 1; }); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    $("dropTitle").textContent = L.dropTitle; $("dropSub").textContent = L.dropSub; $("clearBtn").textContent = L.clear;
+    $("lblMode").textContent = L.lblMode; [].forEach.call($("segMode").children, function (b, i) { b.textContent = L.modes[i]; });
+    $("hintRanges").textContent = L.hintRanges; $("lblEvery1").textContent = L.every1; $("lblEvery2").textContent = L.every2; $("hintPick").textContent = L.hintPick;
+    $("pickAll").textContent = L.pickAll; $("pickNone").textContent = L.pickNone; $("pickOdd").textContent = L.pickOdd; $("pickEven").textContent = L.pickEven; $("lblInvert").textContent = L.invert;
+    if (file) $("fmeta").textContent = L.meta(file.pages, fmtSize(file.size));
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("creditT").innerHTML = L.credit; $("langBtn").textContent = L.toggleTo;
+    markMode(); renderGrid();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__split = { st: st, groups: groups, parseRanges: parseRanges, load: loadFile }; // 試験用
+})();
+</script>
+<script type="module">
+  // PDF.js は PDF結合（../pdf/）と同じもの（CVE-2024-4367 修正済みの 6.2.108、isEvalSupported も切る）
+  import * as pdfjsLib from "../pdf/pdf.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "../pdf/pdf.worker.min.mjs";
+  window.__pdfjsLib = pdfjsLib;
+  window.dispatchEvent(new Event("pdfjs-ready"));
+</script>
+</body>
+</html>
