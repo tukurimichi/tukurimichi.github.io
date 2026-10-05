@@ -102,7 +102,7 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/tools.html</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -148,6 +148,11 @@
   <url>
     <loc>https://tukurimichi.com/apps/image/</loc>
     <lastmod>2026-10-05</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/sfx/</loc>
+    <lastmod>2026-10-06</lastmod>
     <priority>0.8</priority>
   </url>
 </urlset>
