@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">画像の圧縮・リサイズ（無料・一括・位置情報も消える）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="写真や画像を無料でまとめて圧縮・リサイズ。長い辺のサイズ・画質・目標のファイルサイズ（○KB以下）を選べます。スマホ写真の位置情報（Exif）も消えます。広告なし・登録なし。画像はどこにも送られず、ブラウザの中だけで処理されます。">
+<meta property="og:title" content="画像の圧縮・リサイズ（無料・一括・位置情報も消える）">
+<meta property="og:description" content="写真をまとめて圧縮・リサイズ。○KB以下にもできます。位置情報も消えて、画像はどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/image/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="画像の圧縮・リサイズ（無料・一括・位置情報も消える）">
+<meta name="twitter:description" content="写真をまとめて圧縮・リサイズ。○KB以下にもできます。位置情報も消えて、画像はどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/image/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px 22px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  select, input[type=number] { font-family: inherit; font-size: 14px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--border); background: #fff; }
+  input[type=number] { width: 100px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .drop { margin-top: 16px; border: 2px dashed var(--border); border-radius: 18px; background: var(--surface); padding: 34px 20px; text-align: center; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: #fff; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .sum { flex: 1; min-width: 200px; font-size: 13px; color: var(--ink-muted); }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+  .item { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+  .item img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; background: #f3f0ea; flex: none; }
+  .item .info { flex: 1; min-width: 0; font-size: 13px; line-height: 1.6; }
+  .item .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .sz { color: var(--ink-muted); }
+  .item .down { color: var(--accent); font-weight: 700; }
+  .item .up { color: var(--accent-warm); font-weight: 700; }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: #FDEFE3; color: #8A4A15; margin-left: 6px; }
+  .item a.dl { color: var(--accent); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .item .err { color: var(--accent-warm); }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">画像の圧縮・リサイズ（無料・一括）</h1>
+  <p class="lead" id="leadT"></p>
+
+  <div class="panel">
+    <div><span class="lbl" id="lblSize"></span>
+      <select id="maxSide"><option value="0"></option><option>3840</option><option>2560</option><option>1920</option><option>1600</option><option>1280</option><option>1080</option><option>800</option><option>640</option><option value="custom"></option></select>
+      <input type="number" id="customSide" min="16" max="10000" value="1500" style="display:none"> <span id="pxT">px</span>
+      <div class="hint" id="hintSize"></div></div>
+    <div><span class="lbl" id="lblFmt"></span>
+      <div class="seg" id="segFmt"><button type="button" data-v="jpeg">JPG</button><button type="button" data-v="webp">WebP</button><button type="button" data-v="png">PNG</button><button type="button" data-v="same"></button></div>
+      <div class="hint" id="hintFmt"></div></div>
+    <div><span class="lbl" id="lblHow"></span>
+      <div class="seg" id="segHow"><button type="button" data-v="quality"></button><button type="button" data-v="target"></button></div>
+      <div id="qBox" style="margin-top:8px"><input type="range" id="quality" min="40" max="95" step="1"><div class="hint" id="qT"></div></div>
+      <div id="tBox" style="margin-top:8px"><input type="number" id="targetKB" min="20" max="20000" step="10"> KB <span id="tT"></span></div>
+    </div>
+  </div>
+
+  <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
+  <input type="file" id="picker" accept="image/*" multiple>
+
+  <div class="bar" id="bar" hidden>
+    <span class="sum" id="sum"></span>
+    <button class="btn ghost" id="clearBtn" type="button"></button>
+    <button class="btn primary" id="zipBtn" type="button" disabled></button>
+  </div>
+  <ul class="list" id="list"></ul>
+
+  <section class="faq" id="faqT"></section>
+  <div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "画像の圧縮・リサイズ（無料・一括・位置情報も消える）| tukurimichi.com",
+      docDesc: "写真や画像を無料でまとめて圧縮・リサイズ。長い辺のサイズ・画質・目標のファイルサイズ（○KB以下）を選べます。スマホ写真の位置情報（Exif）も消えます。広告なし・登録なし。画像はどこにも送られず、ブラウザの中だけで処理されます。",
+      back: "← つくるみち の道具箱へ", h1: "画像の圧縮・リサイズ（無料・一括）",
+      lead: "写真や画像をまとめて小さくします。長い辺のサイズ・画質・「○KB以下」を選べて、スマホの写真に入っている撮った場所（位置情報）も消えます。広告なし・登録なし。画像はこのブラウザの中だけで処理され、どこにも送信されません。",
+      lblSize: "長い辺のサイズ", sizeKeep: "そのまま（小さくしない）", sizeCustom: "自由に入れる", hintSize: "長い辺がこの大きさになるように縮めます。元より大きくはしません。SNS・メールなら1080〜1920pxで十分です。",
+      lblFmt: "保存する形式", same: "元と同じ", hintFmt: "写真はJPGかWebPが小さくなります。PNGは図や透明な画像向けで、小さくなりにくいです。",
+      lblHow: "小さくする方法", quality: "画質で決める", target: "大きさで決める",
+      qT: function (q) { return "画質 " + q + "（80前後がおすすめ。低いほど小さく、粗くなります）"; }, tT: "以下にする（届かないときは少しずつ縮めます）",
+      dropTitle: "画像をここにドラッグ＆ドロップ", dropSub: "またはクリックして選ぶ（何枚でも・JPG / PNG / WebP / GIF など）",
+      clear: "すべて消す", zip: "まとめてZIPで保存",
+      sum: function (n, a, b) { return n + "枚：" + a + " → " + b + "（" + pct(a, b) + "）"; },
+      working: "処理中…", failed: "この画像は読み込めませんでした（形式が対応していない可能性）", dl: "保存",
+      gps: "位置情報を消しました", down: "小さく", up: "大きく",
+      notes: "・元の画像は書き換えません。小さくしたものは新しいファイルとして保存されます<br>・作り直した画像には、撮った場所・日時・機種などの情報（Exif）は残りません。写真の向きは見たままの向きで保存します<br>・設定はこの端末に覚えておきます（画像そのものは覚えません）",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>画像はどこかに送られますか？</h3><p>送られません。読み込みも圧縮も、いま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがありません。</p>"
+        + "<h3>写真の位置情報（Exif）は消えますか？</h3><p>消えます。この道具で作り直した画像には、撮った場所・日時・カメラの機種などの情報は入りません。元の写真に位置情報が入っていたときは「位置情報を消しました」と表示します。SNSやフリマアプリに上げる前の写真にどうぞ。</p>"
+        + "<h3>「○KB以下」にしたい</h3><p>「大きさで決める」を選んで、数字を入れてください。画質を少しずつ下げて、その大きさに収まる中でいちばんきれいなものを探します。画質を下げても届かないときは、画像の大きさを少しずつ縮めます。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3><p>広告は出ません。無料で、会員登録も要りません。枚数の制限もありません。</p>"
+        + "<h3>iPhone の写真（HEIC）は使えますか？</h3><p>Safari（iPhone・Mac）なら読み込めます。Chrome など、ブラウザが HEIC を読めないときは「読み込めませんでした」と出ます。iPhone の設定で「カメラ → フォーマット → 互換性優先」にすると、最初から JPG で撮れます。</p>"
+        + "<h3>スマホ（iPhone・Android）でも使えますか？</h3><p>使えます。複数の画像はZIPにまとめて保存するか、1枚ずつ「保存」を押してください。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Compress & Resize Images Free – Batch, Removes Location Data | tukurimichi.com",
+      docDesc: "Compress and resize photos in bulk for free. Choose the long side, quality, or a target file size (under N KB). Location data (EXIF) is removed too. No ads, no sign-up. Images never leave your browser.",
+      back: "← Back to the tukurimichi toolbox", h1: "Compress & Resize Images (free, batch)",
+      lead: "Make photos and images smaller in bulk. Pick the long side, the quality or an “under N KB” target, and the location where a phone photo was taken is removed too. No ads, no sign-up. Images are processed inside this browser and never sent anywhere.",
+      lblSize: "Long side", sizeKeep: "Keep (don't shrink)", sizeCustom: "Custom", hintSize: "Shrinks so the long side is at most this size. Never enlarges. 1080–1920px is plenty for social media and email.",
+      lblFmt: "Save as", same: "Same as original", hintFmt: "JPG or WebP make photos smallest. PNG suits diagrams and transparency but stays larger.",
+      lblHow: "How to shrink", quality: "By quality", target: "By file size",
+      qT: function (q) { return "Quality " + q + " (around 80 is a good balance)"; }, tT: "or smaller (shrinks dimensions if needed)",
+      dropTitle: "Drop images here", dropSub: "or click to choose (any number · JPG / PNG / WebP / GIF…)",
+      clear: "Clear all", zip: "Save all as ZIP",
+      sum: function (n, a, b) { return n + " images: " + a + " → " + b + " (" + pct(a, b) + ")"; },
+      working: "Working…", failed: "Could not read this image (format may not be supported)", dl: "Save",
+      gps: "Location removed", down: "smaller", up: "larger",
+      notes: "・Originals are not changed; results are saved as new files<br>・Results carry no EXIF data (location, date, camera). Orientation is kept as displayed<br>・Settings are remembered on this device (images are not)",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Are my images uploaded?</h3><p>No. Everything happens inside the browser you have open.</p>"
+        + "<h3>Is location data (EXIF) removed?</h3><p>Yes. Rebuilt images contain no location, date or camera data. If the original had GPS data you will see “Location removed”.</p>"
+        + "<h3>I need it under N KB</h3><p>Choose “By file size” and enter a number. The best quality that fits is found automatically; if needed the image is scaled down step by step.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3><p>No ads, free, no account, no limit.</p>"
+        + "<h3>Can I use iPhone HEIC photos?</h3><p>Safari can read them. Other browsers that cannot read HEIC will show an error.</p>"
+    }
+  };
+  function fmt(b) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + " KB" : (b / 1048576).toFixed(1) + " MB"; }
+  function pct(a, b) { var A = parse(a), B = parse(b); if (!A) return ""; var p = Math.round((1 - B / A) * 100); return p >= 0 ? "-" + p + "%" : "+" + (-p) + "%"; }
+  function parse(s) { var m = String(s).match(/([\d.]+)\s*(B|KB|MB)/); return m ? +m[1] * (m[2] === "MB" ? 1048576 : m[2] === "KB" ? 1024 : 1) : 0; }
+
+  var KEY = "tukurimichi.image.v1";
+  var st = { maxSide: "1920", custom: 1500, fmt: "jpeg", how: "quality", quality: 80, targetKB: 500 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var items = [], nextId = 1, queue = Promise.resolve(), gen = 0;
+
+  // ---- JPEG に位置情報（GPS）が入っているか（Exif の IFD0 に 0x8825 があるか）----
+  function hasGPS(buf) {
+    try {
+      var d = new DataView(buf); if (d.getUint16(0) !== 0xFFD8) return false;
+      var o = 2;
+      while (o + 4 < d.byteLength) {
+        var mk = d.getUint16(o), len = d.getUint16(o + 2);
+        if (mk === 0xFFE1 && d.getUint32(o + 4) === 0x45786966) {
+          var t = o + 10, le = d.getUint16(t) === 0x4949, ifd = t + d.getUint32(t + 4, le), n = d.getUint16(ifd, le);
+          for (var i = 0; i < n; i++) if (d.getUint16(ifd + 2 + i * 12, le) === 0x8825) return true;
+          return false;
+        }
+        if ((mk & 0xFF00) !== 0xFF00 || mk === 0xFFDA) break;
+        o += 2 + len;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function outType(file) {
+    if (st.fmt !== "same") return "image/" + st.fmt;
+    return /png/.test(file.type) ? "image/png" : /webp/.test(file.type) ? "image/webp" : "image/jpeg";
+  }
+  function ext(type) { return type === "image/png" ? ".png" : type === "image/webp" ? ".webp" : ".jpg"; }
+  function side() { return st.maxSide === "custom" ? Math.max(16, +st.custom || 0) : +st.maxSide; }
+
+  function draw(bmp, scale, type) {
+    var w = Math.max(1, Math.round(bmp.width * scale)), h = Math.max(1, Math.round(bmp.height * scale));
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var g = c.getContext("2d");
+    if (type === "image/jpeg") { g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); }  // 透明な所は白に
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+    g.drawImage(bmp, 0, 0, w, h);
+    return c;
+  }
+  function toBlob(c, type, q) { return new Promise(function (res) { c.toBlob(function (b) { res(b); }, type, q); }); }
+
+  function processOne(it, myGen) {
+    return it.file.arrayBuffer().then(function (buf) {
+      it.gps = hasGPS(buf);
+      return createImageBitmap(new Blob([buf], { type: it.file.type }), { imageOrientation: "from-image" });
+    }).then(function (bmp) {
+      if (myGen !== gen) return;
+      var type = outType(it.file), lim = side(), long = Math.max(bmp.width, bmp.height);
+      var scale = lim && long > lim ? lim / long : 1;
+      var lossy = type !== "image/png";
+      if (st.how === "quality" || !lossy) {
+        return toBlob(draw(bmp, scale, type), type, lossy ? st.quality / 100 : undefined).then(function (b) { return { b: b, scale: scale, bmp: bmp }; });
+      }
+      // 大きさで決める：画質を二分探索、届かなければ縮める
+      var target = st.targetKB * 1024;
+      // 同じ形式に保存するときは、元のファイルより大きくしない（もともと小さい写真が増えるのを防ぐ）
+      if (outType(it.file) === it.file.type) target = Math.min(target, it.file.size);
+      function tryScale(sc, tries) {
+        var c = draw(bmp, sc, type), lo = 0.3, hi = 0.95, best = null, i = 0;
+        function step() {
+          if (i++ >= 7) return Promise.resolve();
+          var q = (lo + hi) / 2;
+          return toBlob(c, type, q).then(function (b) { if (b.size <= target) { best = b; lo = q; } else hi = q; return step(); });
+        }
+        return toBlob(c, type, 0.95).then(function (b) {
+          if (b.size <= target) return { b: b, scale: sc, bmp: bmp };
+          return step().then(function () {
+            if (best || tries > 12) return { b: best || b, scale: sc, bmp: bmp };
+            return tryScale(sc * 0.85, tries + 1);
+          });
+        });
+      }
+      return tryScale(scale, 0);
+    }).then(function (r) {
+      if (!r || myGen !== gen) return;
+      var type = outType(it.file);
+      it.out = r.b; it.w = Math.round(r.bmp.width * r.scale); it.h = Math.round(r.bmp.height * r.scale);
+      it.name = it.file.name.replace(/\.[^.]+$/, "") + (lang === "en" ? "_small" : "_小") + ext(type);
+      if (it.url) URL.revokeObjectURL(it.url); it.url = URL.createObjectURL(r.b);
+      try { r.bmp.close(); } catch (e) {}
+      it.state = "done";
+    }).catch(function () { if (myGen === gen) it.state = "error"; }).then(function () { if (myGen === gen) render(); });
+  }
+
+  function addFiles(list) {
+    var files = Array.prototype.filter.call(list, function (f) { return /^image\//.test(f.type) || /\.(heic|heif|jpe?g|png|webp|gif|bmp|avif)$/i.test(f.name); });
+    files.forEach(function (f) {
+      var it = { id: nextId++, file: f, state: "work", thumb: URL.createObjectURL(f) };
+      items.push(it);
+      var g = gen; queue = queue.then(function () { return processOne(it, g); });
+    });
+    render();
+    if (window.gtag && files.length) gtag("event", "image_add", { count: files.length });
+  }
+  function redoAll() {
+    gen++; var g = gen; queue = Promise.resolve();
+    items.forEach(function (it) { it.state = "work"; queue = queue.then(function () { return processOne(it, g); }); });
+    render();
+  }
+
+  function render() {
+    var L = T(), done = items.filter(function (i) { return i.state === "done"; });
+    $("bar").hidden = !items.length;
+    var a = 0, b = 0; done.forEach(function (i) { a += i.file.size; b += i.out.size; });
+    $("sum").textContent = done.length ? L.sum(done.length, fmt(a), fmt(b)) : "";
+    $("zipBtn").disabled = !done.length || done.length !== items.length;
+    $("list").innerHTML = items.map(function (it) {
+      var info;
+      if (it.state === "work") info = '<span class="sz">' + L.working + "</span>";
+      else if (it.state === "error") info = '<span class="err">' + L.failed + "</span>";
+      else {
+        var p = Math.round((1 - it.out.size / it.file.size) * 100);
+        info = '<span class="sz">' + fmt(it.file.size) + " → " + fmt(it.out.size) + "（" + it.w + "×" + it.h + "）</span> "
+          + (p >= 0 ? '<span class="down">-' + p + "%</span>" : '<span class="up">+' + (-p) + "%</span>")
+          + (it.gps ? '<span class="badge">📍 ' + L.gps + "</span>" : "");
+      }
+      return '<li class="item"><img src="' + it.thumb + '" alt=""><div class="info"><div class="nm">' + esc(it.file.name) + "</div>" + info + "</div>"
+        + (it.state === "done" ? '<a class="dl" href="' + it.url + '" download="' + esc(it.name) + '">' + L.dl + "</a>" : "") + "</li>";
+    }).join("");
+  }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+
+  // ---- ZIP（圧縮なし。画像はもう小さいので、まとめるだけ）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date(), used = {};
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var nm = f.name, k = 2; while (used[nm]) nm = f.name.replace(/(\.[^.]+)$/, "(" + (k++) + ")$1"); used[nm] = 1;
+      var name = enc.encode(nm), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name); off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+  $("zipBtn").onclick = function () {
+    var done = items.filter(function (i) { return i.state === "done"; });
+    Promise.all(done.map(function (i) { return i.out.arrayBuffer().then(function (ab) { return { name: i.name, bytes: new Uint8Array(ab) }; }); })).then(function (fs) {
+      var a = document.createElement("a"), u = URL.createObjectURL(zip(fs)); a.href = u; a.download = (lang === "en" ? "images_small" : "画像_小さくした") + ".zip";
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+      if (window.gtag) gtag("event", "image_zip", { count: fs.length, fmt: st.fmt, how: st.how });
+    });
+  };
+
+  // ---- 操作 ----
+  var drop = $("drop"), picker = $("picker");
+  drop.onclick = function () { picker.click(); };
+  picker.onchange = function () { addFiles(picker.files); picker.value = ""; };
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { addFiles(e.dataTransfer.files); });
+  $("clearBtn").onclick = function () { gen++; items.forEach(function (i) { if (i.url) URL.revokeObjectURL(i.url); URL.revokeObjectURL(i.thumb); }); items = []; render(); };
+  function seg(id, key) {
+    var box = $(id);
+    function mark() { [].forEach.call(box.children, function (b) { b.classList.toggle("on", b.dataset.v === st[key]); }); }
+    box.onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st[key] = b.dataset.v; mark(); save(); showOpts(); redoAll(); };
+    mark();
+  }
+  seg("segFmt", "fmt"); seg("segHow", "how");
+  function showOpts() {
+    $("customSide").style.display = st.maxSide === "custom" ? "" : "none";
+    $("pxT").style.display = st.maxSide === "custom" ? "" : "none";
+    var lossyOff = st.fmt === "png";
+    $("qBox").hidden = st.how !== "quality" || lossyOff; $("tBox").hidden = st.how !== "target" || lossyOff;
+    $("qT").textContent = T().qT(st.quality);
+  }
+  var t1; function later() { clearTimeout(t1); t1 = setTimeout(redoAll, 300); }
+  $("maxSide").value = st.maxSide; $("maxSide").onchange = function () { st.maxSide = this.value; save(); showOpts(); redoAll(); };
+  $("customSide").value = st.custom; $("customSide").oninput = function () { st.custom = +this.value; save(); later(); };
+  $("quality").value = st.quality; $("quality").oninput = function () { st.quality = +this.value; save(); showOpts(); later(); };
+  $("targetKB").value = st.targetKB; $("targetKB").oninput = function () { st.targetKB = Math.max(5, +this.value || 0); save(); later(); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    ["lblSize", "hintSize", "lblFmt", "hintFmt", "lblHow", "dropTitle", "dropSub"].forEach(function (k) { $(k).textContent = L[k]; });
+    $("tT").textContent = L.tT; $("clearBtn").textContent = L.clear; $("zipBtn").textContent = L.zip;
+    var op = $("maxSide").options; op[0].textContent = L.sizeKeep; op[op.length - 1].textContent = L.sizeCustom;
+    $("segFmt").querySelector('[data-v="same"]').textContent = L.same;
+    $("segHow").children[0].textContent = L.quality; $("segHow").children[1].textContent = L.target;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    showOpts(); render();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__img = { st: st, items: function () { return items; }, redo: redoAll }; // 試験用
+})();
+</script>
+</body>
+</html>
