@@ -2,12 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tukurimichi.com/apps/frames/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-10-05</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tukurimichi.com/apps/pdf/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-10-05</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
@@ -102,7 +102,7 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/tools.html</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-10-05</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -119,5 +119,10 @@
     <loc>https://tukurimichi.com/natsu.html</loc>
     <lastmod>2026-10-05</lastmod>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/qr/</loc>
+    <lastmod>2026-10-05</lastmod>
+    <priority>0.8</priority>
   </url>
 </urlset>
