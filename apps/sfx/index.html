@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">効果音 無料（商用利用OK・クレジット不要・WAVダウンロード）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="ボタン・決定・正解・不正解・ファンファーレ・ドン・キラキラなど、無料で使える効果音。商用利用OK・クレジット表記不要・加工OK。押して試聴して、高さや長さを変えてWAVでダウンロードできます。広告なし・登録なし。">
+<meta property="og:title" content="効果音 無料（商用利用OK・クレジット不要）">
+<meta property="og:description" content="ボタン・正解・不正解・ファンファーレ・キラキラなど26音。商用OK・クレジット不要。高さや長さを変えてWAVで保存。">
+<meta property="og:url" content="https://tukurimichi.com/apps/sfx/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="効果音 無料（商用利用OK・クレジット不要）">
+<meta name="twitter:description" content="ボタン・正解・不正解・ファンファーレ・キラキラなど26音。商用OK・クレジット不要。高さや長さを変えてWAVで保存。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/sfx/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 18px; line-height: 1.7; }
+  .license { background: #fff; border: 2px solid var(--accent); border-radius: 14px; padding: 12px 16px; font-size: 13px; line-height: 1.7; margin-bottom: 16px; }
+  .license b { color: var(--accent); }
+  .ctrl { position: sticky; top: 0; z-index: 3; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 20px; align-items: end; box-shadow: 0 4px 12px rgba(0,0,0,.05); }
+  .ctrl label { font-size: 12px; color: var(--ink-muted); font-weight: 700; display: block; }
+  .ctrl input[type=range] { width: 100%; accent-color: var(--accent); }
+  .ctrl .val { font-weight: 400; color: var(--ink); }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); }
+  h2.cat { font-size: 16px; margin: 26px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+  .card.playing { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .play { flex: none; width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 16px; cursor: pointer; }
+  .card .t { flex: 1; min-width: 0; }
+  .card b { display: block; font-size: 14px; }
+  .card small { display: block; font-size: 11.5px; color: var(--ink-muted); }
+  .card .dl { flex: none; font-size: 11.5px; color: var(--accent); background: none; border: 1px solid var(--border); border-radius: 999px; padding: 4px 9px; cursor: pointer; font-family: inherit; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+</style>
+
+<style>
+.more-tools{margin-top:34px;padding:18px;border:1px solid rgba(128,128,128,.35);border-radius:16px;background:rgba(128,128,128,.07);color:inherit}
+.more-tools h2{font-size:16px;margin:0 0 4px}
+.more-tools .mt-sub{font-size:12px;opacity:.75;margin:0 0 12px}
+.more-tools ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.more-tools a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);text-decoration:none;color:inherit;background:rgba(255,255,255,.04)}
+.more-tools a:hover{border-color:rgba(128,128,128,.7)}
+.more-tools .mt-i{font-size:20px;flex:none}
+.more-tools b{display:block;font-size:13.5px}
+.more-tools small{display:block;font-size:11.5px;opacity:.7}
+html[lang="en"] .more-tools .ja{display:none}
+html:not([lang="en"]) .more-tools .en{display:none}
+@media print{.more-tools{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t"></h1>
+  <p class="lead" id="leadT"></p>
+  <div class="license" id="licT"></div>
+
+  <div class="ctrl">
+    <div><label><span id="lblPitch"></span> <span class="val" id="vPitch"></span></label><input type="range" id="pitch" min="-12" max="12" step="1"></div>
+    <div><label><span id="lblLen"></span> <span class="val" id="vLen"></span></label><input type="range" id="len" min="0.5" max="2" step="0.05"></div>
+    <div><label><span id="lblVol"></span> <span class="val" id="vVol"></span></label><input type="range" id="vol" min="0.1" max="1" step="0.05"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="resetBtn" type="button"></button><button class="btn primary" id="zipBtn" type="button"></button></div>
+  </div>
+
+  <div id="list"></div>
+
+  <section class="faq" id="faqT"></section>
+  <nav class="more-tools" aria-label="ほかの道具"><h2><span class="ja">ほかの道具</span><span class="en">More tools</span></h2><p class="mt-sub"><span class="ja">どれも無料・広告なし。ブラウザの中だけで動き、ファイルはどこにも送りません。</span><span class="en">All free, no ads. Everything runs in your browser and nothing is uploaded.</span></p><ul><li><a href="../pdf/"><span class="mt-i">📄</span><span><b><span class="ja">PDF結合</span><span class="en">Merge PDFs</span></b><small><span class="ja">複数のPDFを1つに</span><span class="en">Join PDFs into one</span></small></span></a></li><li><a href="../pdf-split/"><span class="mt-i">✂️</span><span><b><span class="ja">PDF分割</span><span class="en">Split PDF</span></b><small><span class="ja">ページを分ける・抜き出す</span><span class="en">Split or extract pages</span></small></span></a></li><li><a href="../image/"><span class="mt-i">🖼️</span><span><b><span class="ja">画像の圧縮・リサイズ</span><span class="en">Compress Images</span></b><small><span class="ja">写真をまとめて小さく</span><span class="en">Shrink photos in bulk</span></small></span></a></li><li><a href="../qr/"><span class="mt-i">🔳</span><span><b><span class="ja">QRコード作成</span><span class="en">QR Code Generator</span></b><small><span class="ja">期限なし・チビロボ入り</span><span class="en">Never expires</span></small></span></a></li><li><a href="../inkan/"><span class="mt-i">🔴</span><span><b><span class="ja">電子印鑑</span><span class="en">Digital Hanko</span></b><small><span class="ja">丸印・日付印・角印</span><span class="en">Round, date & square seals</span></small></span></a></li><li><a href="../calendar/"><span class="mt-i">📅</span><span><b><span class="ja">カレンダー印刷</span><span class="en">Printable Calendar</span></b><small><span class="ja">祝日入り・A4</span><span class="en">Holidays included, A4</span></small></span></a></li><li><a href="../roulette/"><span class="mt-i">🎡</span><span><b><span class="ja">ルーレット</span><span class="en">Spinner Wheel</span></b><small><span class="ja">順番決め・抽選に</span><span class="en">For turns and raffles</span></small></span></a></li><li><a href="../frames/"><span class="mt-i">🎞️</span><span><b><span class="ja">動画をコマにする</span><span class="en">Video to Frames</span></b><small><span class="ja">動画から静止画を切り出す</span><span class="en">Pull stills from a video</span></small></span></a></li></ul><p class="mt-sub" style="margin:12px 0 0"><a href="../../tools.html" style="display:inline;border:none;padding:0;background:none;text-decoration:underline"><span class="ja">道具の一覧へ →</span><span class="en">See all tools →</span></a></p></nav>
+<div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  // ================= 合成（正弦波・三角波・ノイズだけ。矩形波・のこぎり波は使わない） =================
+  var SR = 44100;
+  function N(d) { return new Float32Array(Math.max(1, Math.round(d * SR))); }
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function noise(d, seed) { var r = rng(seed || 7), o = N(d); for (var i = 0; i < o.length; i++) o[i] = r() * 2 - 1; return o; }
+  function lp(x, a) { var p = 0; for (var i = 0; i < x.length; i++) { p += a * (x[i] - p); x[i] = p; } return x; }
+  function hp(x, a) { var y = Float32Array.from(x); lp(y, a); for (var i = 0; i < x.length; i++) x[i] -= y[i]; return x; }
+  function tri(ph) { return 2 / Math.PI * Math.asin(Math.sin(ph)); }
+  // 周波数が時間で変わる正弦波。f(t) は Hz、e(t) は音量
+  function osc(d, f, e, shape) { var o = N(d), ph = 0; for (var i = 0; i < o.length; i++) { var t = i / SR; ph += 2 * Math.PI * f(t) / SR; o[i] = (shape === "tri" ? tri(ph) : Math.sin(ph)) * e(t); } return o; }
+  function dec(k, a) { a = a || 0.002; return function (t) { return Math.min(1, t / a) * Math.exp(-t * k); }; }
+  function add(dst, src, at, g) { var i0 = Math.round((at || 0) * SR); for (var i = 0; i < src.length && i0 + i < dst.length; i++) dst[i0 + i] += src[i] * (g == null ? 1 : g); return dst; }
+  function bell(f, d, k) { var a = osc(d, function () { return f; }, dec(k || 6, .001)); add(a, osc(d, function () { return f * 2.76; }, function (t) { return .3 * Math.exp(-t * (k || 6) * 2.5); })); return a; }
+  function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+  // p＝高さ（倍率）、l＝長さ（倍率）。どれも「同じ設定なら同じ音」になるよう乱数の種を固定している
+  var SOUNDS = [
+    // ---- ボタン・操作 ----
+    { cat: "ui", id: "click", ja: "クリック", en: "Click", sja: "カチッ。小さなボタン", sen: "A small button tick",
+      f: function (p, l) { var d = .03 * l; var a = osc(d, function () { return 2200 * p; }, dec(160 / l, .0005), "tri"); add(a, osc(d, function () { return 3300 * p; }, dec(160 / l, .0005)), 0, .4); return a; } },
+    { cat: "ui", id: "pop", ja: "ポン", en: "Pop", sja: "ボタン・吹き出しが出る", sen: "A button or bubble appears",
+      f: function (p, l) { var d = .1 * l; return osc(d, function (t) { return (650 + 650 * t / d) * p; }, dec(25 / l)); } },
+    { cat: "ui", id: "select", ja: "ピッ（決定）", en: "Beep (select)", sja: "決定・選んだ", sen: "Confirm / select",
+      f: function (p, l) { var d = .14 * l, a = osc(d, function () { return 1760 * p; }, dec(18 / l, .002)); add(a, osc(d, function () { return 3520 * p; }, dec(40 / l, .002)), 0, .2); return a; } },
+    { cat: "ui", id: "cancel", ja: "キャンセル", en: "Cancel", sja: "下がる2音", sen: "Two falling notes",
+      f: function (p, l) { var o = N(.36 * l); add(o, osc(.18 * l, function () { return 660 * p; }, dec(14 / l))); add(o, osc(.2 * l, function () { return 440 * p; }, dec(12 / l)), .14 * l); return o; } },
+    { cat: "ui", id: "toggle", ja: "スイッチ", en: "Switch", sja: "カチャッと切り替え", sen: "A toggle flips",
+      f: function (p, l) { var o = osc(.08 * l, function (t) { return (140 + 160 * Math.exp(-t * 40)) * p; }, dec(30 / l, .001)); add(o, osc(.03 * l, function () { return 2600 * p; }, dec(150 / l, .0005), "tri"), .01, .5); return o; } },
+    { cat: "ui", id: "notify", ja: "通知", en: "Notification", sja: "ピロン", sen: "A gentle ding-dong",
+      f: function (p, l) { var o = N(.9 * l); add(o, bell(1046.5 * p, .7 * l, 6 / l)); add(o, bell(1568 * p, .7 * l, 6 / l), .12 * l); return o; } },
+    // ---- クイズ ----
+    { cat: "quiz", id: "correct", ja: "ピンポン（正解）", en: "Ding-dong (correct)", sja: "高い音から低い音へ", sen: "High then low chime",
+      f: function (p, l) { var o = N(1.1 * l); add(o, bell(1318.5 * p, .6 * l, 4 / l)); add(o, bell(1046.5 * p, .9 * l, 3.5 / l), .3 * l); return o; } },
+    { cat: "quiz", id: "wrong", ja: "ブブー（不正解）", en: "Buzz (wrong)", sja: "低くにごった2回", sen: "Two low buzzes",
+      f: function (p, l) { var o = N(.62 * l); [0, .32].forEach(function (s) { var d = .26 * l, f = 196 * p; var b = N(d); for (var h = 1; h <= 7; h += 2) add(b, osc(d, function (t) { return f * h * (1 + .01 * Math.sin(2 * Math.PI * 9 * t)); }, function (t) { return Math.min(1, t / .01) * Math.min(1, (d - t) / .03) / h; })); add(o, b, s * l); }); return o; } },
+    { cat: "quiz", id: "fanfare", ja: "ファンファーレ", en: "Fanfare", sja: "タタタターン", sen: "Ta-ta-ta-taa!",
+      f: function (p, l) { var o = N(1.3 * l); [[523.25, 0, .15], [659.25, .12, .15], [783.99, .24, .15], [1046.5, .38, .9]].forEach(function (n) { var d = n[2] * l, f = n[0] * p; var a = osc(d, function () { return f; }, function (t) { return Math.min(1, t / .01) * Math.exp(-t * 2.5 / l) * Math.min(1, (d - t) / .05); }); add(a, osc(d, function () { return f * 2; }, function (t) { return .3 * Math.exp(-t * 4) * Math.min(1, (d - t) / .05); })); add(o, a, n[1] * l, .8); }); return o; } },
+    { cat: "quiz", id: "drumroll", ja: "ドラムロール", en: "Drum roll", sja: "ダラララ…ジャン", sen: "Drrr… crash",
+      f: function (p, l) { var d = 1.6 * l, o = N(d), n = noise(.05, 3); hp(n, .5); var t = 0, k = 0; while (t < 1.2 * l) { var g = .3 + .7 * t / (1.2 * l); var b = Float32Array.from(n); for (var i = 0; i < b.length; i++) b[i] *= Math.exp(-i / SR * 70); add(o, b, t, g); t += .045 / p; k++; }
+        var c = noise(.5 * l, 9); hp(c, .3); for (var i = 0; i < c.length; i++) c[i] *= Math.exp(-i / SR * 5); add(o, c, 1.2 * l, 1); add(o, osc(.4, function (t) { return (60 + 80 * Math.exp(-t * 20)) * p; }, dec(8)), 1.2 * l, 1.2); return o; } },
+    { cat: "quiz", id: "timeup", ja: "時間切れ", en: "Time's up", sja: "ピピピッ", sen: "Beep-beep-beep",
+      f: function (p, l) { var o = N(.7 * l); for (var k = 0; k < 3; k++) add(o, osc(.12 * l, function () { return 2093 * p; }, function (t) { return Math.min(1, t / .005) * Math.min(1, (.12 * l - t) / .01); }), k * .2 * l, .6); return o; } },
+    // ---- 動き・登場 ----
+    { cat: "move", id: "whoosh", ja: "シュッ", en: "Whoosh", sja: "すばやく横切る", sen: "Something swishes past",
+      f: function (p, l) { var d = .32 * l, x = noise(d, 11), q = 0; for (var i = 0; i < x.length; i++) { var a = Math.min(.9, (.03 + .45 * Math.pow(Math.sin(Math.PI * i / x.length), 2)) * p); q += a * (x[i] - q); x[i] = q * Math.sin(Math.PI * i / x.length) * 1.4; } return x; } },
+    { cat: "move", id: "boing", ja: "ぼよん", en: "Boing", sja: "はねる・ジャンプ", sen: "A bouncy jump",
+      f: function (p, l) { var d = .38 * l; return osc(d, function (t) { return (220 + 520 * Math.pow(t / d, .6) + 40 * Math.sin(2 * Math.PI * 18 * t)) * p; }, dec(8 / l, .003)); } },
+    { cat: "move", id: "slide", ja: "サッ（紙）", en: "Paper slide", sja: "紙がすべる", sen: "Paper slides",
+      f: function (p, l) { var d = .35 * l, x = noise(d, 13); hp(x, Math.min(.9, .3 * p)); for (var i = 0; i < x.length; i++) x[i] *= Math.sin(Math.PI * i / x.length) * .8; return x; } },
+    { cat: "move", id: "rise", ja: "スーッ（上がる）", en: "Rise", sja: "パワーアップ", sen: "Power up",
+      f: function (p, l) { var d = .5 * l; return osc(d, function (t) { return (300 + 1200 * Math.pow(t / d, 1.4)) * p; }, function (t) { return Math.sin(Math.PI * t / d); }); } },
+    // ---- 衝撃 ----
+    { cat: "hit", id: "thud", ja: "ドン", en: "Thud", sja: "重いものが落ちる", sen: "Something heavy lands",
+      f: function (p, l) { var d = .6 * l, o = osc(d, function (t) { return (40 + 120 * Math.exp(-t * 18)) * p; }, dec(5 / l, .001)); var n = noise(d, 17); lp(n, .25); for (var i = 0; i < n.length; i++) n[i] *= Math.exp(-i / SR * 25) * .7; return add(o, n); } },
+    { cat: "hit", id: "slam", ja: "ドーン（ハッ！）", en: "Slam", sja: "マンガの効果文字に", sen: "For comic impact text",
+      f: function (p, l) { var d = .55 * l, o = osc(d, function (t) { return (45 + 160 * Math.exp(-t * 22)) * p; }, dec(7 / l, .001)); var n = noise(d, 19); lp(n, .35); for (var i = 0; i < n.length; i++) n[i] *= Math.exp(-i / SR * 30) * .6; add(o, n); add(o, osc(d, function () { return 1760 * p; }, dec(18, .001)), 0, .25); return o; } },
+    { cat: "hit", id: "gong", ja: "ガーン", en: "Gong (shock)", sja: "ショックを受ける", sen: "Shocked!",
+      f: function (p, l) { var d = 2.2 * l, o = N(d); [[98, 1], [233, .55], [391, .35], [587, .18], [163, .4]].forEach(function (pa) { add(o, osc(d, function (t) { return pa[0] * p * (.82 + .18 * Math.exp(-t * .6)); }, dec(1.6 / l, .002)), 0, pa[1]); }); return o; } },
+    // ---- キラキラ ----
+    { cat: "shine", id: "sparkle", ja: "キラキラ", en: "Sparkle", sja: "光る・魔法", sen: "Shiny magic",
+      f: function (p, l) { var o = N(1 * l), r = rng(23); for (var k = 0; k < 10; k++) add(o, bell(hz(88 + Math.floor(r() * 12)) * p, .5, 10), k * .06 * l, .5); return o; } },
+    { cat: "shine", id: "chime", ja: "チャイム（達成）", en: "Chime (done)", sja: "できた！", sen: "Done!",
+      f: function (p, l) { var o = N(1.3 * l); [84, 87, 91, 96].forEach(function (m, k) { add(o, bell(hz(m) * p, .9 * l, 4 / l), k * .1 * l, .7); }); return o; } },
+    { cat: "shine", id: "coin", ja: "コイン", en: "Coin", sja: "チャリーン", sen: "Ka-ching",
+      f: function (p, l) { var o = N(.6 * l); add(o, osc(.08 * l, function () { return 988 * p; }, dec(10, .001))); add(o, osc(.5 * l, function () { return 1319 * p; }, dec(6 / l, .001)), .07 * l); return o; } },
+    // ---- 動作音 ----
+    { cat: "act", id: "snip", ja: "チョキン", en: "Snip", sja: "ハサミで切る", sen: "Scissors cut",
+      f: function (p, l) { var o = N(.3 * l); [[0, 3400], [.07, 2600]].forEach(function (s, k) { var a = osc(.06, function () { return s[1] * p; }, dec(70, .0005)); add(a, osc(.06, function () { return s[1] * 1.47 * p; }, dec(70, .0005)), 0, .6); var n = noise(.06, 29 + k); hp(n, .6); for (var i = 0; i < n.length; i++) n[i] *= Math.exp(-i / SR * 60) * .6; add(a, n); add(o, a, s[0] * l); }); return o; } },
+    { cat: "act", id: "squeak", ja: "ぎゅっ", en: "Squeeze", sja: "にぎる・縮める", sen: "Squish",
+      f: function (p, l) { var d = .3 * l; return osc(d, function (t) { return (900 - 500 * t / d + 60 * Math.sin(2 * Math.PI * 35 * t)) * p; }, function (t) { return Math.sin(Math.PI * t / d) * .8; }); } },
+    { cat: "act", id: "stamp", ja: "ポン（ハンコ）", en: "Stamp", sja: "ハンコを押す", sen: "A rubber stamp",
+      f: function (p, l) { var d = .45 * l, o = osc(d, function (t) { return (95 + 160 * Math.exp(-t * 35)) * p; }, dec(11 / l, .001)); var n = noise(d, 31); lp(n, .45); for (var i = 0; i < n.length; i++) n[i] *= Math.exp(-i / SR * 45) * .55; add(o, n); add(o, osc(d, function () { return 620 * p; }, dec(50, .001)), 0, .25); return o; } },
+    { cat: "act", id: "heartbeat", ja: "ドキッ（心臓）", en: "Heartbeat", sja: "ドクン・ドクン", sen: "Ba-dum",
+      f: function (p, l) { var o = N(.6 * l); [[0, 1], [.2, .7]].forEach(function (s) { add(o, osc(.25, function (t) { return (70 + 60 * Math.exp(-t * 30)) * p; }, dec(14, .001)), s[0] * l, s[1]); }); return o; } },
+    { cat: "act", id: "drip", ja: "しずく", en: "Drip", sja: "ぴちょん・汗", sen: "A drop of water",
+      f: function (p, l) { var d = .18 * l; return osc(d, function (t) { return (900 + 900 * t / d) * p; }, dec(22 / l, .002)); } },
+  ];
+  var CATS = { ui: ["ボタン・操作", "Buttons & UI"], quiz: ["クイズ", "Quiz"], move: ["動き・登場", "Movement"], hit: ["衝撃", "Impact"], shine: ["キラキラ", "Sparkle"], act: ["動作音", "Actions"] };
+
+  var KEY = "tukurimichi.sfx.v1", st = { pitch: 0, len: 1, vol: .8 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function render(s) {
+    var x = s.f(Math.pow(2, st.pitch / 12), st.len), m = 0;
+    for (var i = 0; i < x.length; i++) if (!isFinite(x[i])) x[i] = 0; else if (Math.abs(x[i]) > m) m = Math.abs(x[i]);
+    var g = m ? .89 * st.vol / m : 0, fade = Math.min(x.length, Math.round(SR * .01));
+    for (var j = 0; j < x.length; j++) x[j] *= g * (j >= x.length - fade ? (x.length - j) / fade : 1);  // 終わりのプツッを消す
+    return x;
+  }
+  var ac = null, cur = null;
+  function play(s, card) {
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { return; }
+    var x = render(s), b = ac.createBuffer(1, x.length, SR); b.getChannelData(0).set(x);
+    if (cur) try { cur.stop(); } catch (e) {}
+    var src = ac.createBufferSource(); src.buffer = b; src.connect(ac.destination); src.start(); cur = src;
+    if (card) { card.classList.add("playing"); setTimeout(function () { card.classList.remove("playing"); }, x.length / SR * 1000); }
+    if (window.gtag) gtag("event", "sfx_play", { id: s.id });
+  }
+  function wav(x) {
+    var b = new DataView(new ArrayBuffer(44 + x.length * 2));
+    function s(o, t) { for (var i = 0; i < t.length; i++) b.setUint8(o + i, t.charCodeAt(i)); }
+    s(0, "RIFF"); b.setUint32(4, 36 + x.length * 2, true); s(8, "WAVE"); s(12, "fmt "); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+    b.setUint32(24, SR, true); b.setUint32(28, SR * 2, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); s(36, "data"); b.setUint32(40, x.length * 2, true);
+    for (var i = 0; i < x.length; i++) b.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i])) * 32767, true);
+    return new Uint8Array(b.buffer);
+  }
+  function fname(s) { var L = lang === "en" ? s.en : s.ja; return "tukurimichi_" + s.id + (st.pitch || st.len !== 1 ? "_" + (st.pitch >= 0 ? "+" : "") + st.pitch + "_x" + st.len : "") + ".wav"; }
+  function download(blob, name) { var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 30000); }
+
+  // ZIP（圧縮なし）
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0;
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.bytes, crc = crc32(data), h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name); off += 30 + name.length + data.length;
+    });
+    var cs = central.reduce(function (s, x) { return s + x.length; }, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cs, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+
+  var LANG = {
+    ja: {
+      toggleTo: "English", docTitle: "効果音 無料（商用利用OK・クレジット不要・WAVダウンロード）| tukurimichi.com",
+      docDesc: "ボタン・決定・正解・不正解・ファンファーレ・ドン・キラキラなど、無料で使える効果音。商用利用OK・クレジット表記不要・加工OK。押して試聴して、高さや長さを変えてWAVでダウンロードできます。広告なし・登録なし。",
+      back: "← つくるみち の道具箱へ", h1: "効果音（無料・商用利用OK）",
+      lead: "押すと鳴ります。気に入ったらWAVで保存。上のつまみで高さ・長さ・音量を変えて、その音のまま保存できます。音はすべて、このサイトでプログラムから合成したものです（録音や他の素材は使っていません）。",
+      lic: "<b>使ってよい範囲</b>：動画・配信・ゲーム・アプリ・授業・発表など、<b>商用・非商用を問わず無料</b>で使えます。<b>クレジット（出典）の表記は要りません</b>。加工もご自由に。<br>ひとつだけ：この音を集めて「効果音素材集」として配ったり売ったりすることはご遠慮ください。",
+      lblPitch: "高さ", lblLen: "長さ", lblVol: "音量", reset: "元に戻す", zip: "全部まとめて保存（ZIP）",
+      vPitch: function (v) { return v === 0 ? "そのまま" : (v > 0 ? "+" : "") + v + "（半音）"; }, vLen: function (v) { return "×" + v; }, vVol: function (v) { return Math.round(v * 100) + "%"; },
+      play: "鳴らす", dl: "WAV", zipName: "つくるみち_効果音.zip",
+      notes: "・WAV（44.1kHz・16bit・モノラル）で保存します。MP3が必要なときは、お使いの編集ソフトで書き出してください<br>・音はこのブラウザの中で計算して作っています。サーバーから音のファイルを読み込むことも、何かを送ることもありません<br>・つまみの位置はこの端末に覚えておきます",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>YouTube や配信で使ってもいいですか？収益化していても大丈夫？</h3><p>大丈夫です。商用・収益化している動画でも無料で使えます。クレジットの表記も要りません（書いてもらえるとうれしいです）。</p>"
+        + "<h3>ゲームやアプリに入れて配布してもいいですか？</h3><p>いいです。作品の一部として入れて配ったり売ったりするのは自由です。この音だけを集めて素材集として配る・売ることだけはやめてください。</p>"
+        + "<h3>音の高さや長さを変えられますか？</h3><p>上のつまみで、高さ（半音ずつ上下1オクターブ）・長さ（0.5〜2倍）・音量を変えられます。変えた音のまま WAV で保存できます。</p>"
+        + "<h3>MP3 で欲しい</h3><p>いまは WAV だけです。WAV は、ほとんどの動画編集ソフト・ゲームエンジンでそのまま使えます。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3><p>広告は出ません。無料で、会員登録も要りません。</p>"
+        + "<h3>どうやって作った音ですか？</h3><p>正弦波・三角波・ノイズを組み合わせて、プログラムで合成しています。このサイトの紹介動画の効果音も、ここにある音です。</p>"
+    },
+    en: {
+      toggleTo: "日本語", docTitle: "Free Sound Effects – Commercial Use OK, No Credit Needed (WAV) | tukurimichi.com",
+      docDesc: "Free sound effects: buttons, select, correct, wrong, fanfare, impacts, sparkles and more. Commercial use OK, no credit required, edits OK. Preview, change pitch and length, and download WAV. No ads, no sign-up.",
+      back: "← Back to the tukurimichi toolbox", h1: "Sound Effects (free, commercial use OK)",
+      lead: "Click to play. Save the ones you like as WAV. Use the sliders to change pitch, length and volume, and save the sound as you hear it. Every sound is synthesized by code on this site (no recordings or third-party samples).",
+      lic: "<b>License</b>: free for <b>commercial and non-commercial use</b> — videos, streams, games, apps, classes, presentations. <b>No credit required</b>. Edit freely.<br>One request: please don't redistribute or sell these sounds as a sound-effect pack.",
+      lblPitch: "Pitch", lblLen: "Length", lblVol: "Volume", reset: "Reset", zip: "Save all (ZIP)",
+      vPitch: function (v) { return v === 0 ? "original" : (v > 0 ? "+" : "") + v + " semitones"; }, vLen: function (v) { return "×" + v; }, vVol: function (v) { return Math.round(v * 100) + "%"; },
+      play: "Play", dl: "WAV", zipName: "tukurimichi_sfx.zip",
+      notes: "・Saved as WAV (44.1 kHz, 16-bit, mono)<br>・Sounds are computed in this browser; nothing is downloaded from a server or sent anywhere<br>・Slider positions are remembered on this device",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Can I use them in monetized YouTube videos or streams?</h3><p>Yes. Commercial use is free and no credit is needed.</p>"
+        + "<h3>Can I ship them inside a game or app?</h3><p>Yes, as part of your work. Just don't redistribute them as a standalone sound pack.</p>"
+        + "<h3>Can I change pitch or length?</h3><p>Use the sliders: pitch (±1 octave), length (0.5–2×) and volume. The WAV is saved as you hear it.</p>"
+        + "<h3>Are there ads?</h3><p>No ads, free, no account.</p>"
+    }
+  };
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+
+  function build() {
+    var L = T(), html = "", en = lang === "en";
+    Object.keys(CATS).forEach(function (c) {
+      html += '<h2 class="cat">' + CATS[c][en ? 1 : 0] + '</h2><div class="grid">';
+      SOUNDS.filter(function (s) { return s.cat === c; }).forEach(function (s) {
+        html += '<div class="card" data-id="' + s.id + '"><button class="play" type="button" aria-label="' + L.play + '">▶</button><div class="t"><b>' + (en ? s.en : s.ja) + "</b><small>" + (en ? s.sen : s.sja) + '</small></div><button class="dl" type="button">' + L.dl + "</button></div>";
+      });
+      html += "</div>";
+    });
+    $("list").innerHTML = html;
+  }
+  $("list").onclick = function (e) {
+    var card = e.target.closest(".card"); if (!card) return;
+    var s = SOUNDS.filter(function (x) { return x.id === card.dataset.id; })[0];
+    if (e.target.closest(".dl")) { download(new Blob([wav(render(s))], { type: "audio/wav" }), fname(s)); if (window.gtag) gtag("event", "sfx_download", { id: s.id }); return; }
+    play(s, card);
+  };
+  $("zipBtn").onclick = function () {
+    download(zip(SOUNDS.map(function (s) { return { name: fname(s), bytes: wav(render(s)) }; })), T().zipName);
+    if (window.gtag) gtag("event", "sfx_zip", {});
+  };
+  function showVals() { var L = T(); $("vPitch").textContent = L.vPitch(+st.pitch); $("vLen").textContent = L.vLen(+st.len); $("vVol").textContent = L.vVol(+st.vol); }
+  ["pitch", "len", "vol"].forEach(function (k) { var el = $(k); el.value = st[k]; el.oninput = function () { st[k] = +el.value; save(); showVals(); }; });
+  $("resetBtn").onclick = function () { st.pitch = 0; st.len = 1; st.vol = .8; ["pitch", "len", "vol"].forEach(function (k) { $(k).value = st[k]; }); save(); showVals(); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead; $("licT").innerHTML = L.lic;
+    $("lblPitch").textContent = L.lblPitch; $("lblLen").textContent = L.lblLen; $("lblVol").textContent = L.lblVol;
+    $("resetBtn").textContent = L.reset; $("zipBtn").textContent = L.zip;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    showVals(); build();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__sfx = { SOUNDS: SOUNDS, render: render, st: st }; // 試験用
+})();
+</script>
+</body>
+</html>
