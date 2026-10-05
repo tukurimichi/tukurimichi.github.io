@@ -67,6 +67,7 @@
   .status.ok { color: var(--accent); font-weight: 700; } .status.ng { color: var(--accent-warm); font-weight: 700; }
   .results { margin-top: 8px; font-size: 13px; line-height: 2; }
   .results a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+  .results .tomerge { margin-top: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; line-height: 1.7; }
   .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
   .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
   .faq code { background: rgba(43,35,24,0.07); padding: 0 4px; border-radius: 4px; }
@@ -142,6 +143,7 @@
       loading: "読み込み中…", encrypted: "パスワードで保護されたPDFは読み込めません（解除してから入れてください）", broken: "読み込めませんでした（壊れているか、PDFではない可能性）",
       notPdf: "PDFファイルを選んでください", working: function (i, n) { return "作っています… " + i + "/" + n; },
       done: function (n) { return n + "個のPDFを作りました"; }, failed: function (e) { return "うまくいきませんでした：" + e; },
+      toMerge: "分けたPDFを、また1つにまとめたくなったら → <a href=\"../pdf/\">PDF結合</a>（こちらもどこにも送りません）",
       dlEach: "1つずつ保存：", grp: function (k) { return "#" + k; },
       notes: "・元のPDFは書き換えません。分けたものは新しいファイルとして保存されます<br>・しおり（目次）やフォームの入力内容は引き継がれない場合があります<br>・分け方の設定はこの端末に覚えておきます（PDFそのものは覚えません）",
       credit: "PDFの処理に <a href=\"https://github.com/Hopding/pdf-lib\" target=\"_blank\" rel=\"noopener\">pdf-lib</a> v1.17.1（MIT / © 2019 Andrew Dillon、<a href=\"../pdf/LICENSE-pdf-lib.txt\">全文</a>）、ページの表示に <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108（Apache-2.0 / © Mozilla、<a href=\"../pdf/LICENSE-pdf.js.txt\">全文</a>）を使用しています。",
@@ -172,6 +174,7 @@
       loading: "Loading…", encrypted: "Password-protected PDFs cannot be opened (remove the password first)", broken: "Could not read this file (it may be damaged or not a PDF)",
       notPdf: "Please choose a PDF file", working: function (i, n) { return "Working… " + i + "/" + n; },
       done: function (n) { return "Made " + n + " PDF" + (n > 1 ? "s" : ""); }, failed: function (e) { return "Something went wrong: " + e; },
+      toMerge: "Want to put PDFs back together? → <a href=\"../pdf/\">Merge PDFs</a> (no upload either)",
       dlEach: "Save one by one:", grp: function (k) { return "#" + k; },
       notes: "・Your original PDF is not changed; split parts are saved as new files<br>・Bookmarks and form data may not carry over<br>・Your split settings are remembered on this device (the PDF itself is not)",
       credit: "Uses <a href=\"https://github.com/Hopding/pdf-lib\" target=\"_blank\" rel=\"noopener\">pdf-lib</a> v1.17.1 (MIT / © 2019 Andrew Dillon, <a href=\"../pdf/LICENSE-pdf-lib.txt\">text</a>) and <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108 (Apache-2.0 / © Mozilla, <a href=\"../pdf/LICENSE-pdf.js.txt\">text</a>).",
@@ -322,7 +325,7 @@
       // 1つずつも保存できるように並べる
       var html = outs.length > 1 ? "<b>" + L.dlEach + "</b> " : "";
       if (outs.length > 1) outs.forEach(function (o) { var u = URL.createObjectURL(new Blob([o.bytes], { type: "application/pdf" })); lastUrls.push(u); html += '<a href="' + u + '" download="' + o.name.replace(/"/g, "") + '">' + o.name.replace(/</g, "&lt;") + "</a>"; });
-      $("results").innerHTML = html;
+      $("results").innerHTML = html + "<div class=\"tomerge\">" + L.toMerge + "</div>";
       setStatus(L.done(outs.length), "ok");
       if (window.gtag) gtag("event", "pdf_split", { mode: st.mode, parts: outs.length, pages: file.pages });
     }).catch(function (e) { setStatus(L.failed(String(e && e.message || e)), "ng"); }).then(function () { updatePlan(); });
