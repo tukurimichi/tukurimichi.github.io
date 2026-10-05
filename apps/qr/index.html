@@ -73,7 +73,8 @@
 
   .preview { position: sticky; top: 16px; text-align: center; }
   .preview .box { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
-  #qrCanvas { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  #qrView svg { width: 100%; height: auto; display: block; }
+  .seg.lock button { opacity: .45; cursor: default; }
   .empty { font-size: 12.5px; color: var(--ink-muted); padding: 60px 10px; }
   .btns { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
   .btn {
@@ -123,6 +124,14 @@
         <input type="text" id="cap" maxlength="40">
       </div>
       <div class="field">
+        <label id="lblStyle">デザイン</label>
+        <div class="seg" id="segStyle">
+          <button type="button" data-v="chibi">チビロボ</button>
+          <button type="button" data-v="plain">ふつう</button>
+        </div>
+        <div class="hint" id="hintStyle"></div>
+      </div>
+      <div class="field">
         <label id="lblSize">画像の大きさ</label>
         <div class="seg" id="segSize">
           <button type="button" data-v="256">256px</button>
@@ -154,7 +163,7 @@
 
     <div class="preview">
       <div class="box">
-        <canvas id="qrCanvas" width="512" height="512" hidden></canvas>
+        <div id="qrView" hidden></div>
         <div class="empty" id="emptyT">左に内容を入れると、ここにQRコードが出ます。</div>
       </div>
       <div class="warn" id="warn"></div>
@@ -187,6 +196,9 @@
       lead: "URLや文字を入れると、その場でQRコードができます。期限はなく、ずっと読めます。広告なし・登録なし。入力した内容はこのブラウザの中だけで使い、どこにも送信しません。",
       lblTxt: "QRコードにする内容（URL・文字）",
       lblCap: "下に入れる文字（なくてもよい）",
+      lblStyle: "デザイン",
+      hintChibi: "角の3つの四角がチビロボの顔になり、真ん中にチビロボが座ります。読み取りやすさを保つため、汚れへの強さは H に固定します。",
+      hintPlain: "白黒の、いちばん素直なQRコードです。",
       capPh: "例：お店のホームページ",
       lblSize: "画像の大きさ",
       hintSize: "印刷するなら 1024px 以上がおすすめです。SVG は大きくしても粗くなりません。",
@@ -196,11 +208,12 @@
       empty: "左に内容を入れると、ここにQRコードが出ます。",
       dlPng: "PNGで保存", dlSvg: "SVGで保存",
       count: function (n) { return n + " バイト（最大 約2,900 バイト。日本語は1文字3バイト）"; },
-      tooLong: "長すぎてQRコードにできません。短くするか、汚れへの強さを L にしてください。",
+      tooLong: "長すぎてQRコードにできません。短くするか、デザインを「ふつう」にして汚れへの強さを L にしてください。",
       lowContrast: "点と背景の色が近いと、読み取れないことがあります。点を濃く・背景を薄くしてください。",
       inverted: "点の方が背景より明るいと、読めないアプリがあります。",
       meta: function (v, m) { return "バージョン " + v + "（" + m + "×" + m + " マス）"; },
-      fileBase: "qrcode",
+      fileBase: "qrcode-chibirobo",
+      fileBasePlain: "qrcode",
       credit: "QRコードの作成に <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4（MIT / © 2009 Kazuhiko Arase、<a href=\"LICENSE-qrcode-generator.txt\">全文</a>）を使用しています。「QRコード」は株式会社デンソーウェーブの登録商標です。",
       notes: "・作ったQRコードは、商用・個人を問わず自由に使えます（チラシ・名刺・店頭・Webなど）<br>"
         + "・入力した内容と設定はこの端末に覚えておくので、ページを開き直しても続きから使えます<br>"
@@ -212,6 +225,10 @@
         + "<p>送られません。QRコードはいま開いているブラウザの中だけで作ります。入力した内容を保存・記録する仕組みもありません。</p>"
         + "<h3>広告は出ますか？お金はかかりますか？</h3>"
         + "<p>広告は出ません。無料で、会員登録も要りません。何個作っても無料です。</p>"
+        + "<h3>真ん中にロボットが乗っていても読めますか？</h3>"
+        + "<p>読めます。QRコードには、一部が隠れたり汚れたりしても元に戻せる仕組み（誤り訂正）があります。チビロボのデザインでは、いちばん強い H（約30%まで戻せる）に固定し、ロボットは全体の約5%におさめています。角の3つの四角も、読み取りに要る「黒・白・黒」の幅はそのままにして顔にしています。それでも、印刷する前には必ずスマホで読めるか確かめてください。</p>"
+        + "<h3>チビロボって誰？</h3>"
+        + "<p>このサイト（つくるみち）に住んでいる、オレンジと白の小さなロボットです。<a href=\"../../chibi/\">着せ替えのページ</a>もあります。</p>"
         + "<h3>商用利用（お店のチラシ・名刺など）に使ってもいいですか？</h3>"
         + "<p>使えます。作ったQRコードの画像は自由に使ってください。</p>"
         + "<h3>文字入りのQRコードは作れますか？</h3>"
@@ -230,6 +247,9 @@
       lead: "Type a URL or some text and the QR code appears right away. It never expires. No ads, no sign-up. What you type stays in this browser and is never sent anywhere.",
       lblTxt: "What to put in the QR code (URL or text)",
       lblCap: "Caption under the code (optional)",
+      lblStyle: "Design",
+      hintChibi: "The three corner squares become Chibi Robo faces, and Chibi Robo sits in the middle. Damage tolerance is fixed at H so it still scans easily.",
+      hintPlain: "A plain black-and-white QR code.",
       capPh: "e.g. Visit our website",
       lblSize: "Image size",
       hintSize: "For printing, 1024px or larger is best. SVG stays sharp at any size.",
@@ -239,11 +259,12 @@
       empty: "Type something on the left and your QR code shows up here.",
       dlPng: "Save as PNG", dlSvg: "Save as SVG",
       count: function (n) { return n + " bytes (up to about 2,900)"; },
-      tooLong: "Too long for a QR code. Shorten it, or set damage tolerance to L.",
+      tooLong: "Too long for a QR code. Shorten it, or switch the design to Plain and set damage tolerance to L.",
       lowContrast: "If the dots and background are too similar, phones may not read it. Use dark dots on a light background.",
       inverted: "Some apps cannot read codes whose dots are lighter than the background.",
       meta: function (v, m) { return "Version " + v + " (" + m + "×" + m + " modules)"; },
-      fileBase: "qrcode",
+      fileBase: "qrcode-chibirobo",
+      fileBasePlain: "qrcode",
       credit: "QR codes are made with <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4 (MIT / © 2009 Kazuhiko Arase, <a href=\"LICENSE-qrcode-generator.txt\">full text</a>). “QR Code” is a registered trademark of DENSO WAVE INCORPORATED.",
       notes: "・You may use the codes you make freely, for personal or business use (flyers, business cards, shop windows, websites)<br>"
         + "・Your text and settings are remembered on this device, so you can pick up where you left off<br>"
@@ -255,6 +276,10 @@
         + "<p>No. The code is drawn inside the browser you have open. Nothing you type is stored or logged anywhere.</p>"
         + "<h3>Are there ads? Does it cost anything?</h3>"
         + "<p>No ads. Free, no account, make as many as you like.</p>"
+        + "<h3>Does it still scan with a robot in the middle?</h3>"
+        + "<p>Yes. QR codes carry error correction, so they can be read even when part of the code is covered. The Chibi Robo design locks the level at H (recovers about 30%) and keeps the robot to about 5% of the area. The three corner squares keep the dark-light-dark widths a scanner needs; only their look changes. Still, always test with a phone before printing.</p>"
+        + "<h3>Who is Chibi Robo?</h3>"
+        + "<p>The small orange-and-white robot who lives on this site (tukurimichi). There is also a <a href=\"../../chibi/\">dress-up page</a>.</p>"
         + "<h3>Can I use it commercially (flyers, business cards)?</h3>"
         + "<p>Yes. Use the images however you like.</p>"
         + "<h3>Can I add text to the QR code?</h3>"
@@ -267,14 +292,14 @@
   };
 
   var KEY = "tukurimichi.qr.v1";
-  var st = { txt: "", cap: "", size: 1024, ecc: "M", fg: "#000000", bg: "#ffffff" };
+  var st = { txt: "", cap: "", size: 1024, ecc: "M", fg: "#000000", bg: "#ffffff", style: "chibi" };
   try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k in st) if (k in saved) st[k] = saved[k]; } catch (e) {}
   function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
   var lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja");
   function T() { return LANG[lang]; }
   var $ = function (id) { return document.getElementById(id); };
-  var txt = $("txt"), cap = $("cap"), fg = $("fg"), bg = $("bg"), canvas = $("qrCanvas");
+  var txt = $("txt"), cap = $("cap"), fg = $("fg"), bg = $("bg"), view = $("qrView");
   var current = null; // { qr, count }
 
   qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
@@ -288,32 +313,30 @@
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
 
+  function eccNow() { return st.style === "chibi" ? "H" : st.ecc; }
+
   function build() {
     if (!st.txt) return null;
-    var qr = qrcode(0, st.ecc);
+    var qr = qrcode(0, eccNow());
     qr.addData(st.txt, "Byte");
     qr.make();
     return qr;
   }
 
-  // 画像の組み立て：余白4マス＋（あれば）下に文字
-  function layout(count, px) {
-    var quiet = 4, cell = px / (count + quiet * 2);
-    var capH = st.cap ? Math.round(px * 0.12) : 0;
-    return { cell: cell, quiet: quiet, w: px, h: px + capH, capH: capH };
-  }
-
   function draw() {
     var L = T(), warn = [];
     $("cntT").textContent = st.txt ? L.count(utf8Len(st.txt)) : "";
+    $("hintStyle").textContent = st.style === "chibi" ? L.hintChibi : L.hintPlain;
+    $("segEcc").className = "seg" + (st.style === "chibi" ? " lock" : "");
+    markEcc();
     current = null;
     try { var qr = build(); if (qr) current = { qr: qr, count: qr.getModuleCount() }; }
     catch (e) { warn.push(L.tooLong); }
 
     var has = !!current;
-    canvas.hidden = !has; $("emptyT").hidden = has;
+    view.hidden = !has; $("emptyT").hidden = has;
     $("dlPng").disabled = !has; $("dlSvg").disabled = !has;
-    $("meta").textContent = has ? L.meta((current.count - 17) / 4, current.count) : "";
+    $("meta").textContent = has ? L.meta((current.count - 17) / 4, current.count) + " ・ " + eccNow() : "";
 
     var lf = lum(st.fg), lb = lum(st.bg);
     var ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
@@ -321,43 +344,83 @@
     else if (has && lf > lb) warn.push(L.inverted);
     var w = $("warn"); w.innerHTML = warn.join("<br>"); w.className = "warn" + (warn.length ? " show" : "");
 
-    if (has) render(canvas, 512);
-  }
-
-  function render(cv, px) {
-    var c = current.count, lo = layout(c, px);
-    cv.width = lo.w; cv.height = lo.h;
-    var g = cv.getContext("2d");
-    g.fillStyle = st.bg; g.fillRect(0, 0, lo.w, lo.h);
-    g.fillStyle = st.fg;
-    for (var r = 0; r < c; r++) for (var col = 0; col < c; col++) {
-      if (!current.qr.isDark(r, col)) continue;
-      var x0 = Math.floor((lo.quiet + col) * lo.cell), y0 = Math.floor((lo.quiet + r) * lo.cell);
-      var x1 = Math.floor((lo.quiet + col + 1) * lo.cell), y1 = Math.floor((lo.quiet + r + 1) * lo.cell);
-      g.fillRect(x0, y0, x1 - x0, y1 - y0);
-    }
-    if (st.cap) {
-      var fs = Math.round(lo.capH * 0.55);
-      g.font = "700 " + fs + "px 'Hiragino Sans','Yu Gothic UI','Noto Sans JP',sans-serif";
-      g.textAlign = "center"; g.textBaseline = "middle";
-      var maxW = lo.w * 0.9;
-      while (g.measureText(st.cap).width > maxW && fs > 8) { fs--; g.font = "700 " + fs + "px 'Hiragino Sans','Yu Gothic UI','Noto Sans JP',sans-serif"; }
-      g.fillText(st.cap, lo.w / 2, lo.w - lo.quiet * lo.cell * 0.35 + lo.capH / 2);
-    }
+    if (has) view.innerHTML = svgText(null);
   }
 
   function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-  function svgText() {
-    var c = current.count, q = 4, n = c + q * 2;
-    var capH = st.cap ? Math.round(n * 0.12) : 0, d = "";
-    for (var r = 0; r < c; r++) for (var col = 0; col < c; col++)
-      if (current.qr.isDark(r, col)) d += "M" + (col + q) + " " + (r + q) + "h1v1h-1z";
-    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + n + " " + (n + capH) + '" width="' + st.size + '" height="' + Math.round(st.size * (n + capH) / n) + '" shape-rendering="crispEdges">'
-      + '<rect width="100%" height="100%" fill="' + st.bg + '"/>'
-      + '<path d="' + d + '" fill="' + st.fg + '"/>';
-    if (st.cap) s += '<text x="' + (n / 2) + '" y="' + (n - q * 0.35 + capH / 2) + '" font-size="' + (capH * 0.55).toFixed(2) + '" font-weight="700" font-family="Hiragino Sans, Yu Gothic UI, Noto Sans JP, sans-serif" text-anchor="middle" dominant-baseline="middle" fill="' + st.fg + '">' + esc(st.cap) + "</text>";
-    return s + "</svg>";
+  // チビロボの色（キャラクターの基準画 chibi_front.png から）
+  var PEACH = "#F2A07B", PEACH_D = "#E07F55", WHITE = "#FFFFFF", SCREEN = "#4A4441", EYE = "#FFD9B8";
+
+  function rr(x, y, w, h, r, fill) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + r + '" fill="' + fill + '"/>';
+  }
+
+  // 角の四角（7×7）をチビロボの顔に。黒・白・黒の幅（1:1:3:1:1）は変えない。
+  // 目を真ん中の高さに置くと、読み取り機が四角を探す横の線をふさいで読めなくなる（2026-10-05 試験）。角の丸みも0.7より大きいと読める率が落ちる
+  function finderFace(x, y, antenna) {
+    var o = "";
+    if (antenna) {
+      o += '<rect x="' + (x + 3.35) + '" y="' + (y - 1.75) + '" width="0.3" height="1.25" fill="' + PEACH + '"/>';
+      o += '<circle cx="' + (x + 3.5) + '" cy="' + (y - 1.95) + '" r="0.48" fill="' + PEACH + '"/>';
+    }
+    o += rr(x, y, 7, 7, 0.7, st.fg);
+    o += rr(x + 1, y + 1, 5, 5, 0.4, st.bg);
+    o += rr(x + 2, y + 2, 3, 3, 0.33, st.fg);
+    o += '<circle cx="' + (x + 2.85) + '" cy="' + (y + 2.7) + '" r="0.3" fill="' + st.bg + '"/>';
+    o += '<circle cx="' + (x + 4.15) + '" cy="' + (y + 2.7) + '" r="0.3" fill="' + st.bg + '"/>';
+    return o;
+  }
+
+  // 真ん中に座るチビロボ（幅 w マスの正方形の中に描く）
+  function chibiBadge(cx, cy, w) {
+    var u = w / 20, x0 = cx - w / 2, y0 = cy - w / 2, o = "";
+    function R(x, y, ww, hh, r, f) { return rr(x0 + x * u, y0 + y * u, ww * u, hh * u, r * u, f); }
+    function C(x, y, r, f) { return '<circle cx="' + (x0 + x * u) + '" cy="' + (y0 + y * u) + '" r="' + (r * u) + '" fill="' + f + '"/>'; }
+    // 白い部分は背景の白に溶けるので、薄い縁を付ける
+    var LINE = ' stroke="' + PEACH_D + '" stroke-opacity=".55" stroke-width="' + (0.45 * u) + '"';
+    function RW(x, y, ww, hh, r) { return '<rect x="' + (x0 + x * u) + '" y="' + (y0 + y * u) + '" width="' + (ww * u) + '" height="' + (hh * u) + '" rx="' + (r * u) + '" fill="' + WHITE + '"' + LINE + '/>'; }
+    function CW(x, y, r) { return '<circle cx="' + (x0 + x * u) + '" cy="' + (y0 + y * u) + '" r="' + (r * u) + '" fill="' + WHITE + '"' + LINE + '/>'; }
+    o += R(0, 0, 20, 20, 4.2, st.bg);                 // 下地
+    o += R(9.7, 1.6, 0.6, 2.2, 0.3, PEACH_D) + C(10, 1.5, 1, PEACH); // アンテナ
+    o += R(3.2, 5.6, 1.4, 3.6, 0.7, PEACH_D) + R(15.4, 5.6, 1.4, 3.6, 0.7, PEACH_D); // 耳
+    o += R(4, 3.6, 12, 8.6, 2, PEACH);                 // 頭
+    o += R(5.2, 4.8, 9.6, 6.2, 1.3, WHITE);            // 白いふち
+    o += R(6.1, 5.6, 7.8, 4.6, 0.9, SCREEN);           // 画面
+    o += C(8.4, 7.9, 0.95, EYE) + C(11.6, 7.9, 0.95, EYE); // 目
+    o += R(9.2, 12.1, 1.6, 0.8, 0.3, SCREEN);          // 首
+    o += CW(5.6, 14.4, 1.25) + CW(14.4, 14.4, 1.25); // 肩
+    o += RW(6.6, 12.8, 6.8, 5.2, 1.3);                 // 胴
+    o += R(7.6, 13.6, 4.8, 2.9, 0.7, PEACH);           // 胸のパネル
+    o += R(7.4, 18, 2.2, 1.3, 0.5, PEACH) + R(10.4, 18, 2.2, 1.3, 0.5, PEACH); // 足
+    return o;
+  }
+
+  // 真ん中のロボットの大きさ（マス）。全体の約5%の面積・奇数にそろえる
+  function badgeSize(c) { var b = Math.round(c * 0.23); if (b % 2 === 0) b++; return Math.max(7, b); }
+
+  function svgText(px) {
+    var c = current.count, q = 4, n = c + q * 2, chibi = st.style === "chibi";
+    var capH = st.cap ? Math.round(n * 0.12) : 0, d = "", qr = current.qr;
+    var bs = chibi ? badgeSize(c) : 0, b0 = (c - bs) / 2, b1 = b0 + bs;
+    function inFinder(r, col) { return (r < 7 && col < 7) || (r < 7 && col >= c - 7) || (r >= c - 7 && col < 7); }
+    for (var r = 0; r < c; r++) for (var col = 0; col < c; col++) {
+      if (!qr.isDark(r, col)) continue;
+      if (chibi && inFinder(r, col)) continue;
+      if (chibi && r >= b0 - 0.5 && r < b1 + 0.5 && col >= b0 - 0.5 && col < b1 + 0.5) continue;
+      if (chibi) d += "M" + (col + q + 0.3) + " " + (r + q) + "h.4a.3 .3 0 0 1 .3 .3v.4a.3 .3 0 0 1-.3 .3h-.4a.3 .3 0 0 1-.3-.3v-.4a.3 .3 0 0 1 .3-.3z";
+      else d += "M" + (col + q) + " " + (r + q) + "h1v1h-1z";
+    }
+    var W = px || st.size, H = Math.round(W * (n + capH) / n);
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + n + " " + (n + capH) + '"' + (px === null ? "" : ' width="' + W + '" height="' + H + '"') + (chibi ? "" : ' shape-rendering="crispEdges"') + ">"
+      + '<rect width="100%" height="100%" fill="' + st.bg + '"/>';
+    o += '<path d="' + d + '" fill="' + st.fg + '"/>';
+    if (chibi) {
+      o += finderFace(q, q, true) + finderFace(q + c - 7, q, true) + finderFace(q, q + c - 7, false);
+      o += chibiBadge(q + c / 2, q + c / 2, bs + 0.6);
+    }
+    if (st.cap) o += '<text x="' + (n / 2) + '" y="' + (n - q * 0.35 + capH / 2) + '" font-size="' + (capH * 0.55).toFixed(2) + '" font-weight="700" font-family="Hiragino Sans, Yu Gothic UI, Noto Sans JP, sans-serif" text-anchor="middle" dominant-baseline="middle" fill="' + st.fg + '">' + esc(st.cap) + "</text>";
+    return o + "</svg>";
   }
 
   function download(blob, name) {
@@ -366,18 +429,33 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
   }
+  function baseName() { return st.style === "chibi" ? T().fileBase : T().fileBasePlain; }
 
   $("dlPng").onclick = function () {
     if (!current) return;
-    var cv = document.createElement("canvas"); render(cv, st.size);
-    cv.toBlob(function (b) { download(b, T().fileBase + ".png"); }, "image/png");
-    if (window.gtag) gtag("event", "qr_download", { format: "png" });
+    var svg = svgText(st.size), img = new Image();
+    var url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    img.onload = function () {
+      var cv = document.createElement("canvas");
+      cv.width = img.naturalWidth || st.size; cv.height = img.naturalHeight || st.size;
+      var g = cv.getContext("2d"); g.fillStyle = st.bg; g.fillRect(0, 0, cv.width, cv.height);
+      g.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      cv.toBlob(function (b) { download(b, baseName() + ".png"); }, "image/png");
+    };
+    img.src = url;
+    if (window.gtag) gtag("event", "qr_download", { format: "png", style: st.style });
   };
   $("dlSvg").onclick = function () {
     if (!current) return;
-    download(new Blob([svgText()], { type: "image/svg+xml" }), T().fileBase + ".svg");
-    if (window.gtag) gtag("event", "qr_download", { format: "svg" });
+    download(new Blob([svgText(st.size)], { type: "image/svg+xml" }), baseName() + ".svg");
+    if (window.gtag) gtag("event", "qr_download", { format: "svg", style: st.style });
   };
+
+  function markEcc() {
+    var v = eccNow();
+    [].forEach.call($("segEcc").children, function (b) { b.className = (b.dataset.v === v) ? "on" : ""; });
+  }
 
   function seg(id, key, num) {
     var box = $(id);
@@ -390,6 +468,9 @@
   }
   seg("segSize", "size", true);
   seg("segEcc", "ecc", false);
+  seg("segStyle", "style", false);
+  var eccClick = $("segEcc").onclick;
+  $("segEcc").onclick = function (e) { if (st.style === "chibi") return; eccClick(e); };
 
   txt.value = st.txt; cap.value = st.cap; fg.value = st.fg; bg.value = st.bg;
   txt.oninput = function () { st.txt = txt.value; save(); draw(); };
@@ -406,7 +487,7 @@
     $("backLink").textContent = L.back;
     $("h1t").textContent = L.h1;
     $("leadT").textContent = L.lead;
-    ["lblTxt", "lblCap", "lblSize", "hintSize", "lblEcc", "hintEcc", "lblColor", "lblFg", "lblBg", "resetColor", "dlPng", "dlSvg"].forEach(function (k) { $(k).textContent = L[k]; });
+    ["lblTxt", "lblCap", "lblStyle", "lblSize", "hintSize", "lblEcc", "hintEcc", "lblColor", "lblFg", "lblBg", "resetColor", "dlPng", "dlSvg"].forEach(function (k) { $(k).textContent = L[k]; });
     $("emptyT").textContent = L.empty;
     cap.placeholder = L.capPh;
     $("notesT").innerHTML = L.notes;
