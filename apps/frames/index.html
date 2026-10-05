@@ -5,18 +5,19 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title id="pageTitle">動画をコマにする | tukurimichi.com</title>
-<meta name="description" id="metaDesc" content="動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはブラウザの中だけで処理され、どこにも送信されません。">
-<meta property="og:title" content="動画をコマにする">
-<meta property="og:description" content="動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはブラウザの中だけで処理され、どこにも送信されません。">
+<title id="pageTitle">動画のフレーム抽出・静止画の切り出し（無料・広告なし・アップロード不要）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="動画から静止画を等間隔で切り出して画像（JPG）にする無料サイト。広告なし・登録なし・インストール不要。動画はサーバーに送られず、ブラウザの中だけで処理されます。スマホ（iPhone・Android）とパソコンで使えます。">
+<meta property="og:title" content="動画のフレーム抽出・静止画の切り出し（無料・広告なし）">
+<meta property="og:description" content="動画から静止画を等間隔で切り出して画像（JPG）にする無料サイト。広告なし・登録なし・インストール不要。動画はサーバーに送られず、ブラウザの中だけで処理されます。スマホ（iPhone・Android）とパソコンで使えます。">
 <meta property="og:url" content="https://tukurimichi.com/apps/frames/">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="tukurimichi.com">
 <meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="動画をコマにする">
-<meta name="twitter:description" content="動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはブラウザの中だけで処理され、どこにも送信されません。">
+<meta name="twitter:title" content="動画のフレーム抽出・静止画の切り出し（無料・広告なし）">
+<meta name="twitter:description" content="動画から静止画を等間隔で切り出して画像（JPG）にする無料サイト。広告なし・登録なし・インストール不要。動画はサーバーに送られず、ブラウザの中だけで処理されます。スマホ（iPhone・Android）とパソコンで使えます。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/frames/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎞️</text></svg>">
 <style>
 :root{
@@ -74,13 +75,13 @@ textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--l
 <a class="backlink" href="../../tools.html" id="backTop">← 道具箱に戻る</a>
 <div class="banner">
 <button id="langBtn" class="langToggle"></button>
-<h1 id="bannerH1">動画をコマにする</h1>
-<p id="bannerP">動画を等間隔で切り出して、画像にします。</p>
+<h1 id="bannerH1">動画をコマにする（フレーム抽出）</h1>
+<p id="bannerP">動画から静止画を等間隔で切り出して、画像にします。無料・広告なし。</p>
 </div>
 
 <div class="entry">
 <p id="lead">AIは、あなたが作った動画の中身を見られません。だから「この動画のここが変」と伝えるのが難しい。この道具は、動画を等間隔で切り出して画像にします。その画像をAIに渡せば、話が通じるようになります。</p>
-<p id="lead2"><b>ファイルはどこにも送信されません。</b>すべてブラウザの中だけで処理されます。会員登録も要りません。</p>
+<p id="lead2"><b>ファイルはどこにも送信されません。</b>すべてブラウザの中だけで処理されます。広告なし・会員登録も要りません。</p>
 
 <div class="drop" id="drop">
   <span class="dropIcon">🎞️</span>
@@ -123,6 +124,8 @@ textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--l
   </div>
 </div>
 
+<div class="note" id="faqT"><h3>よくある質問</h3><p><b>動画はどこかに送られますか？</b><br>送られません。切り出しはいま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがありません。</p><p><b>広告は出ますか？お金はかかりますか？</b><br>広告は出ません。無料で、会員登録も要りません。</p><p><b>スマホ（iPhone・Android）でも使えますか？</b><br>使えます。撮った動画を選んで「切り出す」を押すと、画像を1枚ずつ、またはまとめて保存できます。長い動画や枚数が多いときはパソコンの方が速いです。</p><p><b>何秒ごとに切り出せますか？</b><br>「枚数で決める」（2〜30枚）と「間隔で決める」（何秒ごと）が選べます。1本は40MB・60秒までです。</p><p><b>全部のフレーム（全コマ）を出したい</b><br>このページは等間隔の切り出し用です。全コマや長い動画は、下の Python 版（ffmpeg を使う）を使ってください。</p></div>
+
 <div class="note">
   <h3 id="cliTitle">コマンドで使いたい人へ</h3>
   <p id="cliDesc">同じことをする Python のスクリプトも置いてあります。ffmpeg を使うので、長い動画や大量の書き出しはこちらが速いです。AIエージェントに使わせることもできます。</p>
@@ -141,14 +144,15 @@ textarea.tpl{width:100%;height:150px;background:#08080A;border:1px solid var(--l
 <script>
 var LANG={
 ja:{toggleTo:"English",
-title:"動画をコマにする | tukurimichi.com",
-desc:"動画を等間隔で切り出して画像にする無料ツール。AIに動画の中身を見せたいときに使います。ファイルはどこにも送信されません。",
+faq:"<h3>よくある質問</h3><p><b>動画はどこかに送られますか？</b><br>送られません。切り出しはいま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがありません。</p><p><b>広告は出ますか？お金はかかりますか？</b><br>広告は出ません。無料で、会員登録も要りません。</p><p><b>スマホ（iPhone・Android）でも使えますか？</b><br>使えます。撮った動画を選んで「切り出す」を押すと、画像を1枚ずつ、またはまとめて保存できます。長い動画や枚数が多いときはパソコンの方が速いです。</p><p><b>何秒ごとに切り出せますか？</b><br>「枚数で決める」（2〜30枚）と「間隔で決める」（何秒ごと）が選べます。1本は40MB・60秒までです。</p><p><b>全部のフレーム（全コマ）を出したい</b><br>このページは等間隔の切り出し用です。全コマや長い動画は、下の Python 版（ffmpeg を使う）を使ってください。</p>",
+title:"動画のフレーム抽出・静止画の切り出し（無料・広告なし・アップロード不要）| tukurimichi.com",
+desc:"動画から静止画を等間隔で切り出して画像（JPG）にする無料サイト。広告なし・登録なし・インストール不要。動画はサーバーに送られず、ブラウザの中だけで処理されます。スマホ（iPhone・Android）とパソコンで使えます。",
 t:{
 backTop:"← 道具箱に戻る",
-bannerH1:"動画をコマにする",
-bannerP:"動画を等間隔で切り出して、画像にします。",
+bannerH1:"動画をコマにする（フレーム抽出）",
+bannerP:"動画から静止画を等間隔で切り出して、画像にします。無料・広告なし。",
 lead:"AIは、あなたが作った動画の中身を見られません。だから「この動画のここが変」と伝えるのが難しい。この道具は、動画を等間隔で切り出して画像にします。その画像をAIに渡せば、話が通じるようになります。",
-lead2:"ファイルはどこにも送信されません。すべてブラウザの中だけで処理されます。会員登録も要りません。",
+lead2:"ファイルはどこにも送信されません。すべてブラウザの中だけで処理されます。広告なし・会員登録も要りません。",
 dropText:"動画をドラッグ、またはタップして選ぶ",
 dropSub:"mp4 / mov / webm など ／ 40MB・60秒まで",
 lblCount:"切り出す枚数",
@@ -166,14 +170,15 @@ cliDl:"video_frames.py をダウンロード →",
 footBack:"← 道具箱に戻る"
 }},
 en:{toggleTo:"日本語",
-title:"Video to Frames | tukurimichi.com",
-desc:"Free tool that slices a video into evenly spaced still images, so you can show an AI what is actually in your video. Nothing is uploaded.",
+faq:"<h3>FAQ</h3><p><b>Is my video uploaded anywhere?</b><br>No. Slicing happens inside the browser you have open. There is no upload step.</p><p><b>Are there ads? Does it cost anything?</b><br>No ads. It is free and needs no account.</p><p><b>Does it work on iPhone or Android?</b><br>Yes. Pick a video, press “Slice it”, and save the images one by one or all at once. Long videos or many frames are faster on a computer.</p><p><b>How often can it grab a frame?</b><br>Choose “By count” (2–30 images) or “By interval” (every N seconds). Videos up to 40 MB and 60 seconds.</p><p><b>I want every single frame</b><br>This page is for evenly spaced stills. For every frame or long videos, use the Python version below (it uses ffmpeg).</p>",
+title:"Extract Frames from Video Free – No Ads, No Upload | tukurimichi.com",
+desc:"Free site that pulls evenly spaced still images out of a video. No ads, no sign-up, nothing to install. Your video never leaves your browser.",
 t:{
 backTop:"← Back to the toolbox",
-bannerH1:"Video to Frames",
-bannerP:"Slice a video into evenly spaced stills.",
+bannerH1:"Video to Frames (frame extractor)",
+bannerP:"Pull evenly spaced still images out of a video. Free, no ads.",
 lead:"An AI cannot watch the video you just made. That makes it hard to say \"something is wrong right here.\" This tool slices your video into evenly spaced stills. Hand those to the AI and you can finally talk about it.",
-lead2:"Nothing is uploaded. Everything runs inside your browser. No account needed.",
+lead2:"Nothing is uploaded. Everything runs inside your browser. No ads, no account needed.",
 dropText:"Drop a video here, or tap to choose one",
 dropSub:"mp4 / mov / webm ／ up to 40 MB and 60 seconds",
 lblCount:"Number of frames",
@@ -223,6 +228,7 @@ document.getElementById("pageTitle").textContent=L.title;
 document.getElementById("metaDesc").setAttribute("content",L.desc);
 for(var k in L.t){var el=document.getElementById(k);if(el)el.textContent=L.t[k];}
 document.getElementById("langBtn").textContent=L.toggleTo;
+document.getElementById("faqT").innerHTML=L.faq;
 if(shots.length)updateTpl();
 if(typeof updatePlan==="function")updatePlan();
 }

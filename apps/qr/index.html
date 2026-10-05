@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">QRコード作成（無料・期限なし・広告なし）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="URLや文字からQRコードを無料で作るツール。期限なしでずっと読める・広告なし・登録なし。文字入り・色の変更・PNG/SVGで保存。入力した内容はサーバーに送られず、ブラウザの中だけで作ります。">
+<meta property="og:title" content="QRコード作成（無料・期限なし・広告なし）">
+<meta property="og:description" content="URLや文字からQRコードを無料で作るツール。期限なしでずっと読める・広告なし・登録なし。入力した内容はどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/qr/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="QRコード作成（無料・期限なし・広告なし）">
+<meta name="twitter:description" content="URLや文字からQRコードを無料で作るツール。期限なしでずっと読める・広告なし・登録なし。入力した内容はどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/qr/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root {
+    --bg: #EDE6D6;
+    --ink: #2B2318;
+    --ink-muted: #8A7F68;
+    --accent: #1E7A52;
+    --accent-warm: #D9823B;
+    --surface: #FBF4E4;
+    --border: rgba(43,35,24,0.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body {
+    font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    color: var(--ink);
+    padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .langToggle {
+    appearance: none; border: 1px solid var(--border); background: var(--surface);
+    color: var(--ink); border-radius: 999px; padding: 5px 13px;
+    font-family: inherit; font-size: 12px; cursor: pointer;
+  }
+  .langToggle:hover { background: #fff; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+
+  .tool { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+  @media (max-width: 640px) { .tool { grid-template-columns: 1fr; } .preview { order: -1; position: static; } .preview .box { max-width: 260px; margin: 0 auto; } }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  textarea, input[type=text] {
+    width: 100%; border: 1px solid var(--border); border-radius: 10px;
+    background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; padding: 9px 11px;
+  }
+  textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button {
+    appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink);
+    font-family: inherit; font-size: 12.5px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .colors { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; }
+  .colors label { display: flex; align-items: center; gap: 6px; }
+  input[type=color] { width: 36px; height: 28px; border: 1px solid var(--border); border-radius: 6px; padding: 0; background: none; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+
+  .preview { position: sticky; top: 16px; text-align: center; }
+  .preview .box { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+  #qrCanvas { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  .empty { font-size: 12.5px; color: var(--ink-muted); padding: 60px 10px; }
+  .btns { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    appearance: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 700;
+    padding: 10px 18px; border-radius: 999px;
+  }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:hover:not(:disabled) { background: #249062; }
+  .btn:disabled { background: var(--ink-muted); color: var(--surface); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); }
+  .btn.ghost:hover:not(:disabled) { background: rgba(43,35,24,0.16); }
+  .warn { margin-top: 10px; font-size: 12px; line-height: 1.6; color: #8A4A15; background: #FDEFE3; border: 1px solid rgba(217,130,59,0.5); border-radius: 10px; padding: 8px 10px; display: none; text-align: left; }
+  .warn.show { display: block; }
+  .meta { font-size: 11.5px; color: var(--ink-muted); margin-top: 8px; }
+
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; }
+  .faq h3 { font-size: 14px; margin: 18px 0 4px; }
+  .faq p { margin: 0; }
+  .note {
+    margin-top: 28px; font-size: 12px; color: var(--ink-muted);
+    line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px;
+  }
+  .note a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">QRコード作成（無料・期限なし・広告なし）</h1>
+  <p class="lead" id="leadT">URLや文字を入れると、その場でQRコードができます。期限はなく、ずっと読めます。広告なし・登録なし。入力した内容はこのブラウザの中だけで使い、どこにも送信しません。</p>
+
+  <div class="tool">
+    <div class="panel">
+      <div class="field">
+        <label for="txt" id="lblTxt">QRコードにする内容（URL・文字）</label>
+        <textarea id="txt" placeholder="https://example.com"></textarea>
+        <div class="hint" id="cntT"></div>
+      </div>
+      <div class="field">
+        <label for="cap" id="lblCap">下に入れる文字（なくてもよい）</label>
+        <input type="text" id="cap" maxlength="40">
+      </div>
+      <div class="field">
+        <label id="lblSize">画像の大きさ</label>
+        <div class="seg" id="segSize">
+          <button type="button" data-v="256">256px</button>
+          <button type="button" data-v="512">512px</button>
+          <button type="button" data-v="1024">1024px</button>
+          <button type="button" data-v="2048">2048px</button>
+        </div>
+        <div class="hint" id="hintSize">印刷するなら 1024px 以上がおすすめです。SVG は大きくしても粗くなりません。</div>
+      </div>
+      <div class="field">
+        <label id="lblEcc">汚れへの強さ（誤り訂正）</label>
+        <div class="seg" id="segEcc">
+          <button type="button" data-v="L">L 7%</button>
+          <button type="button" data-v="M">M 15%</button>
+          <button type="button" data-v="Q">Q 25%</button>
+          <button type="button" data-v="H">H 30%</button>
+        </div>
+        <div class="hint" id="hintEcc">強くするほど、汚れや欠けがあっても読めます。そのぶん点が細かくなります。ふつうは M で十分です。</div>
+      </div>
+      <div class="field">
+        <label id="lblColor">色</label>
+        <div class="colors">
+          <label><input type="color" id="fg" value="#000000"> <span id="lblFg">点の色</span></label>
+          <label><input type="color" id="bg" value="#ffffff"> <span id="lblBg">背景の色</span></label>
+          <button type="button" class="btn ghost" id="resetColor" style="padding:4px 12px;font-size:12px">黒と白に戻す</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="box">
+        <canvas id="qrCanvas" width="512" height="512" hidden></canvas>
+        <div class="empty" id="emptyT">左に内容を入れると、ここにQRコードが出ます。</div>
+      </div>
+      <div class="warn" id="warn"></div>
+      <div class="btns">
+        <button type="button" class="btn primary" id="dlPng" disabled>PNGで保存</button>
+        <button type="button" class="btn ghost" id="dlSvg" disabled>SVGで保存</button>
+      </div>
+      <div class="meta" id="meta"></div>
+    </div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+
+  <div class="note">
+    <span id="notesT"></span><br>
+    <span id="creditT">QRコードの作成に <a href="https://github.com/kazuhikoarase/qrcode-generator" target="_blank" rel="noopener">qrcode-generator</a> v1.4.4（MIT / © 2009 Kazuhiko Arase、<a href="LICENSE-qrcode-generator.txt">全文</a>）を使用しています。「QRコード」は株式会社デンソーウェーブの登録商標です。</span>
+  </div>
+</div>
+
+<script src="qrcode.js"></script>
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "QRコード作成（無料・期限なし・広告なし）| tukurimichi.com",
+      docDesc: "URLや文字からQRコードを無料で作るツール。期限なしでずっと読める・広告なし・登録なし。文字入り・色の変更・PNG/SVGで保存。入力した内容はサーバーに送られず、ブラウザの中だけで作ります。",
+      back: "← つくるみち の道具箱へ",
+      h1: "QRコード作成（無料・期限なし・広告なし）",
+      lead: "URLや文字を入れると、その場でQRコードができます。期限はなく、ずっと読めます。広告なし・登録なし。入力した内容はこのブラウザの中だけで使い、どこにも送信しません。",
+      lblTxt: "QRコードにする内容（URL・文字）",
+      lblCap: "下に入れる文字（なくてもよい）",
+      capPh: "例：お店のホームページ",
+      lblSize: "画像の大きさ",
+      hintSize: "印刷するなら 1024px 以上がおすすめです。SVG は大きくしても粗くなりません。",
+      lblEcc: "汚れへの強さ（誤り訂正）",
+      hintEcc: "強くするほど、汚れや欠けがあっても読めます。そのぶん点が細かくなります。ふつうは M で十分です。",
+      lblColor: "色", lblFg: "点の色", lblBg: "背景の色", resetColor: "黒と白に戻す",
+      empty: "左に内容を入れると、ここにQRコードが出ます。",
+      dlPng: "PNGで保存", dlSvg: "SVGで保存",
+      count: function (n) { return n + " バイト（最大 約2,900 バイト。日本語は1文字3バイト）"; },
+      tooLong: "長すぎてQRコードにできません。短くするか、汚れへの強さを L にしてください。",
+      lowContrast: "点と背景の色が近いと、読み取れないことがあります。点を濃く・背景を薄くしてください。",
+      inverted: "点の方が背景より明るいと、読めないアプリがあります。",
+      meta: function (v, m) { return "バージョン " + v + "（" + m + "×" + m + " マス）"; },
+      fileBase: "qrcode",
+      credit: "QRコードの作成に <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4（MIT / © 2009 Kazuhiko Arase、<a href=\"LICENSE-qrcode-generator.txt\">全文</a>）を使用しています。「QRコード」は株式会社デンソーウェーブの登録商標です。",
+      notes: "・作ったQRコードは、商用・個人を問わず自由に使えます（チラシ・名刺・店頭・Webなど）<br>"
+        + "・入力した内容と設定はこの端末に覚えておくので、ページを開き直しても続きから使えます<br>"
+        + "・読めるかどうかは、印刷する前に必ずスマホのカメラで確かめてください",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>期限はありますか？あとで読めなくなりませんか？</h3>"
+        + "<p>ありません。このQRコードは、入れたURLや文字そのものを模様にしています。途中に別のサーバーをはさまない（いわゆる「静的QRコード」）ので、このサイトが無くなっても、ずっと同じように読めます。無料のQRコードサービスで「期限が切れて読めなくなった」というのは、多くが途中に自社のURLをはさむ「動的QRコード」のためです。</p>"
+        + "<h3>安全ですか？入力した内容はどこかに送られますか？</h3>"
+        + "<p>送られません。QRコードはいま開いているブラウザの中だけで作ります。入力した内容を保存・記録する仕組みもありません。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3>"
+        + "<p>広告は出ません。無料で、会員登録も要りません。何個作っても無料です。</p>"
+        + "<h3>商用利用（お店のチラシ・名刺など）に使ってもいいですか？</h3>"
+        + "<p>使えます。作ったQRコードの画像は自由に使ってください。</p>"
+        + "<h3>文字入りのQRコードは作れますか？</h3>"
+        + "<p>「下に入れる文字」に書くと、QRコードの下にその文字が入った画像になります。QRコードの模様そのものは変えないので、読み取りやすさは変わりません。</p>"
+        + "<h3>PNGとSVG、どちらで保存すればいいですか？</h3>"
+        + "<p>ふつうは PNG で大丈夫です。チラシやポスターなど大きく印刷するときや、デザインソフト（Illustrator など）で使うときは、拡大しても粗くならない SVG が向いています。</p>"
+        + "<h3>スマホ（iPhone・Android）でも作れますか？</h3>"
+        + "<p>作れます。「PNGで保存」を押すと画像として保存できます（iPhone では保存の画面が開きます）。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Free QR Code Generator – No Expiry, No Ads | tukurimichi.com",
+      docDesc: "Make a QR code from a URL or text for free. It never expires, has no ads and needs no sign-up. Add a caption, change colors, save as PNG or SVG. Nothing you type leaves your browser.",
+      back: "← Back to the tukurimichi toolbox",
+      h1: "QR Code Generator (free, no expiry, no ads)",
+      lead: "Type a URL or some text and the QR code appears right away. It never expires. No ads, no sign-up. What you type stays in this browser and is never sent anywhere.",
+      lblTxt: "What to put in the QR code (URL or text)",
+      lblCap: "Caption under the code (optional)",
+      capPh: "e.g. Visit our website",
+      lblSize: "Image size",
+      hintSize: "For printing, 1024px or larger is best. SVG stays sharp at any size.",
+      lblEcc: "Damage tolerance (error correction)",
+      hintEcc: "Higher levels still scan when the code is dirty or partly covered, but the dots get finer. M is fine for most uses.",
+      lblColor: "Colors", lblFg: "Dots", lblBg: "Background", resetColor: "Back to black & white",
+      empty: "Type something on the left and your QR code shows up here.",
+      dlPng: "Save as PNG", dlSvg: "Save as SVG",
+      count: function (n) { return n + " bytes (up to about 2,900)"; },
+      tooLong: "Too long for a QR code. Shorten it, or set damage tolerance to L.",
+      lowContrast: "If the dots and background are too similar, phones may not read it. Use dark dots on a light background.",
+      inverted: "Some apps cannot read codes whose dots are lighter than the background.",
+      meta: function (v, m) { return "Version " + v + " (" + m + "×" + m + " modules)"; },
+      fileBase: "qrcode",
+      credit: "QR codes are made with <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4 (MIT / © 2009 Kazuhiko Arase, <a href=\"LICENSE-qrcode-generator.txt\">full text</a>). “QR Code” is a registered trademark of DENSO WAVE INCORPORATED.",
+      notes: "・You may use the codes you make freely, for personal or business use (flyers, business cards, shop windows, websites)<br>"
+        + "・Your text and settings are remembered on this device, so you can pick up where you left off<br>"
+        + "・Always test the code with a phone camera before printing",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Does it expire? Will it stop working later?</h3>"
+        + "<p>No. The pattern encodes your URL or text directly. There is no redirect server in between (a so-called static QR code), so it keeps working even if this site disappears. When free QR services say a code has “expired”, it is usually because they put their own redirect link inside it (a dynamic QR code).</p>"
+        + "<h3>Is it safe? Is what I type sent anywhere?</h3>"
+        + "<p>No. The code is drawn inside the browser you have open. Nothing you type is stored or logged anywhere.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3>"
+        + "<p>No ads. Free, no account, make as many as you like.</p>"
+        + "<h3>Can I use it commercially (flyers, business cards)?</h3>"
+        + "<p>Yes. Use the images however you like.</p>"
+        + "<h3>Can I add text to the QR code?</h3>"
+        + "<p>Type a caption and it is placed under the code in the saved image. The code pattern itself is unchanged, so it scans just as well.</p>"
+        + "<h3>PNG or SVG?</h3>"
+        + "<p>PNG is fine for most uses. For large prints such as posters, or for design software like Illustrator, use SVG — it stays sharp at any size.</p>"
+        + "<h3>Does it work on iPhone or Android?</h3>"
+        + "<p>Yes. Press “Save as PNG” to save the image (on iPhone a share/save sheet opens).</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.qr.v1";
+  var st = { txt: "", cap: "", size: 1024, ecc: "M", fg: "#000000", bg: "#ffffff" };
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k in st) if (k in saved) st[k] = saved[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+
+  var lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja");
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var txt = $("txt"), cap = $("cap"), fg = $("fg"), bg = $("bg"), canvas = $("qrCanvas");
+  var current = null; // { qr, count }
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+
+  function utf8Len(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return unescape(encodeURIComponent(s)).length; } }
+
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+
+  function build() {
+    if (!st.txt) return null;
+    var qr = qrcode(0, st.ecc);
+    qr.addData(st.txt, "Byte");
+    qr.make();
+    return qr;
+  }
+
+  // 画像の組み立て：余白4マス＋（あれば）下に文字
+  function layout(count, px) {
+    var quiet = 4, cell = px / (count + quiet * 2);
+    var capH = st.cap ? Math.round(px * 0.12) : 0;
+    return { cell: cell, quiet: quiet, w: px, h: px + capH, capH: capH };
+  }
+
+  function draw() {
+    var L = T(), warn = [];
+    $("cntT").textContent = st.txt ? L.count(utf8Len(st.txt)) : "";
+    current = null;
+    try { var qr = build(); if (qr) current = { qr: qr, count: qr.getModuleCount() }; }
+    catch (e) { warn.push(L.tooLong); }
+
+    var has = !!current;
+    canvas.hidden = !has; $("emptyT").hidden = has;
+    $("dlPng").disabled = !has; $("dlSvg").disabled = !has;
+    $("meta").textContent = has ? L.meta((current.count - 17) / 4, current.count) : "";
+
+    var lf = lum(st.fg), lb = lum(st.bg);
+    var ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+    if (has && ratio < 4) warn.push(L.lowContrast);
+    else if (has && lf > lb) warn.push(L.inverted);
+    var w = $("warn"); w.innerHTML = warn.join("<br>"); w.className = "warn" + (warn.length ? " show" : "");
+
+    if (has) render(canvas, 512);
+  }
+
+  function render(cv, px) {
+    var c = current.count, lo = layout(c, px);
+    cv.width = lo.w; cv.height = lo.h;
+    var g = cv.getContext("2d");
+    g.fillStyle = st.bg; g.fillRect(0, 0, lo.w, lo.h);
+    g.fillStyle = st.fg;
+    for (var r = 0; r < c; r++) for (var col = 0; col < c; col++) {
+      if (!current.qr.isDark(r, col)) continue;
+      var x0 = Math.floor((lo.quiet + col) * lo.cell), y0 = Math.floor((lo.quiet + r) * lo.cell);
+      var x1 = Math.floor((lo.quiet + col + 1) * lo.cell), y1 = Math.floor((lo.quiet + r + 1) * lo.cell);
+      g.fillRect(x0, y0, x1 - x0, y1 - y0);
+    }
+    if (st.cap) {
+      var fs = Math.round(lo.capH * 0.55);
+      g.font = "700 " + fs + "px 'Hiragino Sans','Yu Gothic UI','Noto Sans JP',sans-serif";
+      g.textAlign = "center"; g.textBaseline = "middle";
+      var maxW = lo.w * 0.9;
+      while (g.measureText(st.cap).width > maxW && fs > 8) { fs--; g.font = "700 " + fs + "px 'Hiragino Sans','Yu Gothic UI','Noto Sans JP',sans-serif"; }
+      g.fillText(st.cap, lo.w / 2, lo.w - lo.quiet * lo.cell * 0.35 + lo.capH / 2);
+    }
+  }
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+  function svgText() {
+    var c = current.count, q = 4, n = c + q * 2;
+    var capH = st.cap ? Math.round(n * 0.12) : 0, d = "";
+    for (var r = 0; r < c; r++) for (var col = 0; col < c; col++)
+      if (current.qr.isDark(r, col)) d += "M" + (col + q) + " " + (r + q) + "h1v1h-1z";
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + n + " " + (n + capH) + '" width="' + st.size + '" height="' + Math.round(st.size * (n + capH) / n) + '" shape-rendering="crispEdges">'
+      + '<rect width="100%" height="100%" fill="' + st.bg + '"/>'
+      + '<path d="' + d + '" fill="' + st.fg + '"/>';
+    if (st.cap) s += '<text x="' + (n / 2) + '" y="' + (n - q * 0.35 + capH / 2) + '" font-size="' + (capH * 0.55).toFixed(2) + '" font-weight="700" font-family="Hiragino Sans, Yu Gothic UI, Noto Sans JP, sans-serif" text-anchor="middle" dominant-baseline="middle" fill="' + st.fg + '">' + esc(st.cap) + "</text>";
+    return s + "</svg>";
+  }
+
+  function download(blob, name) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  }
+
+  $("dlPng").onclick = function () {
+    if (!current) return;
+    var cv = document.createElement("canvas"); render(cv, st.size);
+    cv.toBlob(function (b) { download(b, T().fileBase + ".png"); }, "image/png");
+    if (window.gtag) gtag("event", "qr_download", { format: "png" });
+  };
+  $("dlSvg").onclick = function () {
+    if (!current) return;
+    download(new Blob([svgText()], { type: "image/svg+xml" }), T().fileBase + ".svg");
+    if (window.gtag) gtag("event", "qr_download", { format: "svg" });
+  };
+
+  function seg(id, key, num) {
+    var box = $(id);
+    function mark() { [].forEach.call(box.children, function (b) { b.className = (String(st[key]) === b.dataset.v) ? "on" : ""; }); }
+    box.onclick = function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      st[key] = num ? +b.dataset.v : b.dataset.v; mark(); save(); draw();
+    };
+    mark();
+  }
+  seg("segSize", "size", true);
+  seg("segEcc", "ecc", false);
+
+  txt.value = st.txt; cap.value = st.cap; fg.value = st.fg; bg.value = st.bg;
+  txt.oninput = function () { st.txt = txt.value; save(); draw(); };
+  cap.oninput = function () { st.cap = cap.value; save(); draw(); };
+  fg.oninput = function () { st.fg = fg.value; save(); draw(); };
+  bg.oninput = function () { st.bg = bg.value; save(); draw(); };
+  $("resetColor").onclick = function () { st.fg = fg.value = "#000000"; st.bg = bg.value = "#ffffff"; save(); draw(); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle;
+    $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back;
+    $("h1t").textContent = L.h1;
+    $("leadT").textContent = L.lead;
+    ["lblTxt", "lblCap", "lblSize", "hintSize", "lblEcc", "hintEcc", "lblColor", "lblFg", "lblBg", "resetColor", "dlPng", "dlSvg"].forEach(function (k) { $(k).textContent = L[k]; });
+    $("emptyT").textContent = L.empty;
+    cap.placeholder = L.capPh;
+    $("notesT").innerHTML = L.notes;
+    $("creditT").innerHTML = L.credit;
+    $("faqT").innerHTML = L.faq;
+    $("langBtn").textContent = L.toggleTo;
+    draw();
+  }
+  $("langBtn").onclick = function () {
+    lang = (lang === "ja") ? "en" : "ja";
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    applyLang();
+  };
+  applyLang();
+})();
+</script>
+</body>
+</html>
