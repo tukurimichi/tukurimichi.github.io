@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">HEICをJPGに変換（無料・一括・アップロードなし）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="iPhoneの写真（HEIC・HEIF）を無料でJPG・PNGにまとめて変換。パソコンで開けない、フォームに上げられない写真に。広告なし・登録なし・枚数制限なし。写真はどこにも送られず、ブラウザの中だけで変換します。位置情報も消えます。">
+<meta property="og:title" content="HEICをJPGに変換（無料・一括・アップロードなし）">
+<meta property="og:description" content="iPhoneの写真（HEIC）をまとめてJPGに。写真はどこにも送られず、ブラウザの中だけで変換します。">
+<meta property="og:url" content="https://tukurimichi.com/apps/heic/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HEICをJPGに変換（無料・一括・アップロードなし）">
+<meta name="twitter:description" content="iPhoneの写真（HEIC）をまとめてJPGに。写真はどこにも送られず、ブラウザの中だけで変換します。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/heic/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px 22px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  select { font-family: inherit; font-size: 14px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--border); background: #fff; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .drop { margin-top: 16px; border: 2px dashed var(--border); border-radius: 18px; background: var(--surface); padding: 34px 20px; text-align: center; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: #fff; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .sum { flex: 1; min-width: 200px; font-size: 13px; color: var(--ink-muted); }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+  .item { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+  .item .th { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; background: #f3f0ea; flex: none; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink-muted); }
+  .item .info { flex: 1; min-width: 0; font-size: 13px; line-height: 1.6; }
+  .item .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .sz { color: var(--ink-muted); }
+  .item a.dl { color: var(--accent); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .item .err { color: var(--accent-warm); }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .faq a { color: var(--accent); }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: inherit; }
+</style>
+
+<style>
+.more-tools{margin-top:34px;padding:18px;border:1px solid rgba(128,128,128,.35);border-radius:16px;background:rgba(128,128,128,.07);color:inherit}
+.more-tools h2{font-size:16px;margin:0 0 4px}
+.more-tools .mt-sub{font-size:12px;opacity:.75;margin:0 0 12px}
+.more-tools ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.more-tools a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);text-decoration:none;color:inherit;background:rgba(255,255,255,.04)}
+.more-tools a:hover{border-color:rgba(128,128,128,.7)}
+.more-tools .mt-i{font-size:20px;flex:none}
+.more-tools b{display:block;font-size:13.5px}
+.more-tools small{display:block;font-size:11.5px;opacity:.7}
+html[lang="en"] .more-tools .ja{display:none}
+html:not([lang="en"]) .more-tools .en{display:none}
+@media print{.more-tools{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">HEICをJPGに変換（無料・一括）</h1>
+  <p class="lead" id="leadT"></p>
+
+  <div class="panel">
+    <div><span class="lbl" id="lblFmt"></span>
+      <div class="seg" id="segFmt"><button type="button" data-v="jpeg">JPG</button><button type="button" data-v="png">PNG</button><button type="button" data-v="webp">WebP</button></div>
+      <div class="hint" id="hintFmt"></div></div>
+    <div id="qWrap"><span class="lbl" id="lblQ"></span>
+      <input type="range" id="quality" min="60" max="100" step="1"><div class="hint" id="qT"></div></div>
+    <div><span class="lbl" id="lblSize"></span>
+      <select id="maxSide"><option value="0"></option><option>3840</option><option>2560</option><option>1920</option><option>1280</option></select>
+      <div class="hint" id="hintSize"></div></div>
+  </div>
+
+  <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
+  <input type="file" id="picker" accept=".heic,.heif,image/heic,image/heif,image/*" multiple>
+
+  <div class="bar" id="bar" hidden>
+    <span class="sum" id="sum"></span>
+    <button class="btn ghost" id="clearBtn" type="button"></button>
+    <button class="btn primary" id="zipBtn" type="button" disabled></button>
+  </div>
+  <ul class="list" id="list"></ul>
+
+  <section class="faq" id="faqT"></section>
+  <nav class="more-tools" aria-label="ほかの道具"><h2><span class="ja">ほかの道具</span><span class="en">More tools</span></h2><p class="mt-sub"><span class="ja">どれも無料・広告なし。ブラウザの中だけで動き、ファイルはどこにも送りません。</span><span class="en">All free, no ads. Everything runs in your browser and nothing is uploaded.</span></p><ul><li><a href="../pdf/"><span class="mt-i">📄</span><span><b><span class="ja">PDF結合</span><span class="en">Merge PDFs</span></b><small><span class="ja">複数のPDFを1つに</span><span class="en">Join PDFs into one</span></small></span></a></li><li><a href="../pdf-split/"><span class="mt-i">✂️</span><span><b><span class="ja">PDF分割</span><span class="en">Split PDF</span></b><small><span class="ja">ページを分ける・抜き出す</span><span class="en">Split or extract pages</span></small></span></a></li><li><a href="../image/"><span class="mt-i">🖼️</span><span><b><span class="ja">画像の圧縮・リサイズ</span><span class="en">Compress Images</span></b><small><span class="ja">写真をまとめて小さく</span><span class="en">Shrink photos in bulk</span></small></span></a></li><li><a href="../qr/"><span class="mt-i">🔳</span><span><b><span class="ja">QRコード作成</span><span class="en">QR Code Generator</span></b><small><span class="ja">期限なし・チビロボ入り</span><span class="en">Never expires</span></small></span></a></li><li><a href="../inkan/"><span class="mt-i">🔴</span><span><b><span class="ja">電子印鑑</span><span class="en">Digital Hanko</span></b><small><span class="ja">丸印・日付印・角印</span><span class="en">Round, date & square seals</span></small></span></a></li><li><a href="../calendar/"><span class="mt-i">📅</span><span><b><span class="ja">カレンダー印刷</span><span class="en">Printable Calendar</span></b><small><span class="ja">祝日入り・A4</span><span class="en">Holidays included, A4</span></small></span></a></li><li><a href="../roulette/"><span class="mt-i">🎡</span><span><b><span class="ja">ルーレット</span><span class="en">Spinner Wheel</span></b><small><span class="ja">順番決め・抽選に</span><span class="en">For turns and raffles</span></small></span></a></li><li><a href="../sfx/"><span class="mt-i">🔊</span><span><b><span class="ja">効果音</span><span class="en">Sound Effects</span></b><small><span class="ja">商用OK・クレジット不要</span><span class="en">Free for commercial use</span></small></span></a></li><li><a href="../frames/"><span class="mt-i">🎞️</span><span><b><span class="ja">動画をコマにする</span><span class="en">Video to Frames</span></b><small><span class="ja">動画から静止画を切り出す</span><span class="en">Pull stills from a video</span></small></span></a></li></ul><p class="mt-sub" style="margin:12px 0 0"><a href="../../tools.html" style="display:inline;border:none;padding:0;background:none;text-decoration:underline"><span class="ja">道具の一覧へ →</span><span class="en">See all tools →</span></a></p></nav>
+  <div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "HEICをJPGに変換（無料・一括・アップロードなし）| tukurimichi.com",
+      docDesc: "iPhoneの写真（HEIC・HEIF）を無料でJPG・PNGにまとめて変換。パソコンで開けない、フォームに上げられない写真に。広告なし・登録なし・枚数制限なし。写真はどこにも送られず、ブラウザの中だけで変換します。位置情報も消えます。",
+      back: "← つくるみち の道具箱へ", h1: "HEICをJPGに変換（無料・一括）",
+      lead: "iPhoneで撮った写真（.HEIC）を、どのパソコン・どのサイトでも開けるJPGにまとめて変換します。広告なし・登録なし・枚数の制限なし。写真はこのブラウザの中だけで変換され、どこにも送信されません。",
+      lblFmt: "変換する形式", hintFmt: "ふつうはJPGで大丈夫です。PNGは画質が落ちませんが、ファイルがとても大きくなります。",
+      lblQ: "画質", qT: function (q) { return "画質 " + q + "（90前後がおすすめ。100に近いほどきれいで大きくなります）"; },
+      lblSize: "長い辺のサイズ", sizeKeep: "そのまま（元の大きさ）", hintSize: "メールやフォームで「大きすぎる」と言われるときは、1920pxにすると軽くなります。",
+      dropTitle: "HEICの写真をここにドラッグ＆ドロップ", dropSub: "またはクリックして選ぶ（何枚でも・.heic / .heif。JPGなどが混ざっていても大丈夫）",
+      clear: "すべて消す", zip: "まとめてZIPで保存",
+      sum: function (n, all) { return all + "枚中 " + n + "枚 変換しました"; },
+      loading: "変換の準備中…（初回だけ約1.5MBを読み込みます）", working: "変換中…", wait: "順番待ち",
+      failed: "この写真は変換できませんでした（HEICでないか、ファイルが壊れている可能性）", dl: "保存",
+      notes: "・元の写真は書き換えません。変換したものは新しいファイルとして保存されます<br>・変換した写真には、撮った場所・日時・機種などの情報（Exif）は入りません。写真の向きは見たままの向きで保存します<br>・設定はこの端末に覚えておきます（写真そのものは覚えません）<br>・HEICの読み込みには <a href=\"https://github.com/strukturag/libheif\" target=\"_blank\" rel=\"noopener\">libheif</a>（LGPL-3.0。<a href=\"LICENSE-libheif.txt\">ライセンス</a>）をそのまま使っています",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>写真はどこかに送られますか？</h3><p>送られません。読み込みも変換も、いま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがありません。人に見せたくない写真でも安心して使えます。</p>"
+        + "<h3>HEICってなに？なぜ開けないの？</h3><p>iPhoneが写真を保存するときの形式です（JPGの半分くらいの大きさで同じ画質を保てます）。ただ、Windowsの一部のアプリや、会社・役所などのアップロード画面ではまだ開けないことが多く、「ファイル形式が対応していません」と言われます。この道具でJPGにすれば、どこでも開けます。</p>"
+        + "<h3>何枚まで変換できますか？お金はかかりますか？</h3><p>枚数の制限はありません。無料で、広告も会員登録もありません。一度にたくさん入れたときは、1枚ずつ順番に変換します。</p>"
+        + "<h3>画質は落ちますか？</h3><p>JPGの画質90なら、見た目ではほとんど分かりません。少しも落としたくないときはPNGを選んでください（ファイルは大きくなります）。</p>"
+        + "<h3>位置情報（撮った場所）は残りますか？</h3><p>残りません。変換した写真には、撮った場所・日時・機種などの情報は入りません。SNSやフリマアプリに上げる前にも使えます。</p>"
+        + "<h3>そもそもiPhoneでJPGで撮るには？</h3><p>iPhoneの「設定 → カメラ → フォーマット」で「互換性優先」を選ぶと、これから撮る写真がJPGになります。すでに撮った写真は、この道具で変換してください。</p>"
+        + "<h3>ファイルを小さくしたい</h3><p>長い辺のサイズを1920pxにすると軽くなります。「○KB以下」にしたいときは、変換したあと <a href=\"../image/\">画像の圧縮・リサイズ</a> を使ってください。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "HEIC to JPG Converter – Free, Batch, No Upload | tukurimichi.com",
+      docDesc: "Convert iPhone photos (HEIC / HEIF) to JPG or PNG in bulk for free. No ads, no sign-up, no limit. Photos never leave your browser, and location data is removed.",
+      back: "← Back to the tukurimichi toolbox", h1: "HEIC to JPG Converter (free, batch)",
+      lead: "Turn iPhone photos (.HEIC) into JPGs that open on any computer or website, in bulk. No ads, no sign-up, no limit. Photos are converted inside this browser and never sent anywhere.",
+      lblFmt: "Convert to", hintFmt: "JPG is right for most uses. PNG keeps every pixel but makes very large files.",
+      lblQ: "Quality", qT: function (q) { return "Quality " + q + " (around 90 is a good balance)"; },
+      lblSize: "Long side", sizeKeep: "Keep original size", hintSize: "If an email or form says the file is too large, 1920px makes it much lighter.",
+      dropTitle: "Drop HEIC photos here", dropSub: "or click to choose (any number · .heic / .heif — JPGs mixed in are fine)",
+      clear: "Clear all", zip: "Save all as ZIP",
+      sum: function (n, all) { return n + " of " + all + " converted"; },
+      loading: "Getting ready… (first time only, about 1.5 MB)", working: "Converting…", wait: "Waiting",
+      failed: "Could not convert this photo (not HEIC, or the file may be damaged)", dl: "Save",
+      notes: "・Originals are not changed; results are saved as new files<br>・Results carry no EXIF data (location, date, camera). Orientation is kept as displayed<br>・Settings are remembered on this device (photos are not)<br>・HEIC decoding uses <a href=\"https://github.com/strukturag/libheif\" target=\"_blank\" rel=\"noopener\">libheif</a> unmodified (LGPL-3.0, <a href=\"LICENSE-libheif.txt\">license</a>)",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Are my photos uploaded?</h3><p>No. Everything happens inside the browser you have open. There is no upload at all.</p>"
+        + "<h3>What is HEIC and why won't it open?</h3><p>It is the format iPhones save photos in. Many Windows apps and upload forms still can't read it. Converting to JPG fixes that.</p>"
+        + "<h3>Is there a limit? Does it cost anything?</h3><p>No limit, free, no ads, no account.</p>"
+        + "<h3>Is quality lost?</h3><p>At JPG quality 90 the difference is hard to see. Choose PNG if you want no loss at all (files get large).</p>"
+        + "<h3>Is location data kept?</h3><p>No. Converted photos contain no location, date or camera data.</p>"
+    }
+  };
+  function fmt(b) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + " KB" : (b / 1048576).toFixed(1) + " MB"; }
+
+  var KEY = "tukurimichi.heic.v1";
+  var st = { fmt: "jpeg", quality: 90, maxSide: "0" };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var items = [], nextId = 1, queue = Promise.resolve(), gen = 0;
+
+  // ---- HEIC の読み込み（libheif。初めて HEIC が来たときだけ読み込む）----
+  var heifP = null;
+  function heif() {
+    if (heifP) return heifP;
+    heifP = new Promise(function (res, rej) {
+      var s = document.createElement("script"); s.src = "libheif.js";
+      s.onload = function () {
+        fetch("libheif.wasm").then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); }).then(function (wasmBinary) {
+          var m = libheif({ wasmBinary: wasmBinary, onRuntimeInitialized: function () { setTimeout(function () { res(m); }); } });
+        }).catch(rej);
+      };
+      s.onerror = rej; document.head.appendChild(s);
+    });
+    heifP.catch(function () { heifP = null; });
+    return heifP;
+  }
+  // ファイルの頭で中身を見分ける（名前が .HEIC でも中身が JPG のことがある）
+  function isHeif(u8) {
+    if (u8.length < 12 || String.fromCharCode(u8[4], u8[5], u8[6], u8[7]) !== "ftyp") return false;
+    var b = String.fromCharCode(u8[8], u8[9], u8[10], u8[11]);
+    return /^(heic|heix|hevc|hevx|heim|heis|mif1|msf1|avif)$/.test(b);
+  }
+  function decodeHeif(u8) {
+    return heif().then(function (M) {
+      var dec = new M.HeifDecoder(), imgs = dec.decode(u8);
+      if (!imgs || !imgs.length) throw new Error("empty");
+      var img = imgs.filter(function (i) { return i.is_primary && i.is_primary(); })[0] || imgs[0];
+      var w = img.get_width(), h = img.get_height(), id = new ImageData(w, h);
+      return new Promise(function (res, rej) {
+        img.display(id, function (d) {
+          imgs.forEach(function (i) { try { i.free(); } catch (e) {} });
+          d ? res(id) : rej(new Error("display"));
+        });
+      });
+    }).then(function (id) {
+      var c = document.createElement("canvas"); c.width = id.width; c.height = id.height;
+      c.getContext("2d").putImageData(id, 0, 0); return c;
+    });
+  }
+  function decodeAny(file) {
+    return file.arrayBuffer().then(function (buf) {
+      var u8 = new Uint8Array(buf);
+      if (isHeif(u8)) return decodeHeif(u8).catch(function () {
+        // libheif で読めなかったときは、ブラウザ（Safari など）に任せてみる
+        return createImageBitmap(new Blob([buf], { type: "image/heic" }));
+      });
+      return createImageBitmap(new Blob([buf], { type: file.type || "image/jpeg" }), { imageOrientation: "from-image" });
+    });
+  }
+
+  function outType() { return "image/" + st.fmt; }
+  function ext(type) { return type === "image/png" ? ".png" : type === "image/webp" ? ".webp" : ".jpg"; }
+  function toBlob(c, type, q) { return new Promise(function (res, rej) { c.toBlob(function (b) { b ? res(b) : rej(new Error("blob")); }, type, q); }); }
+  function render1(src, type) {
+    var lim = +st.maxSide, long = Math.max(src.width, src.height), sc = lim && long > lim ? lim / long : 1;
+    var w = Math.max(1, Math.round(src.width * sc)), h = Math.max(1, Math.round(src.height * sc));
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var g = c.getContext("2d");
+    if (type === "image/jpeg") { g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); }
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+    g.drawImage(src, 0, 0, w, h);
+    return c;
+  }
+  function thumbOf(c) {
+    var s = 128, r = Math.max(s / c.width, s / c.height), t = document.createElement("canvas");
+    t.width = s; t.height = s; var g = t.getContext("2d");
+    g.drawImage(c, (s - c.width * r) / 2, (s - c.height * r) / 2, c.width * r, c.height * r);
+    return t.toDataURL("image/jpeg", .7);
+  }
+
+  function processOne(it, myGen) {
+    if (myGen !== gen) return Promise.resolve();
+    it.state = heifP ? "work" : "load"; render();
+    return new Promise(function (r) { setTimeout(r, 30); }).then(function () { return decodeAny(it.file); }).then(function (src) {
+      if (myGen !== gen) return;
+      it.state = "work"; render();
+      var type = outType(), c = render1(src, type);
+      if (!it.thumb) it.thumb = thumbOf(c);
+      try { src.close && src.close(); } catch (e) {}
+      return toBlob(c, type, type === "image/png" ? undefined : st.quality / 100).then(function (b) {
+        if (myGen !== gen) return;
+        it.out = b; it.w = c.width; it.h = c.height;
+        it.name = it.file.name.replace(/\.[^.]+$/, "") + ext(type);
+        if (it.url) URL.revokeObjectURL(it.url); it.url = URL.createObjectURL(b);
+        it.state = "done";
+      });
+    }).catch(function () { if (myGen === gen) it.state = "error"; }).then(function () { if (myGen === gen) render(); });
+  }
+
+  function addFiles(list) {
+    var files = Array.prototype.filter.call(list, function (f) { return /^image\//.test(f.type) || /\.(heic|heif|hif|jpe?g|png|webp|avif)$/i.test(f.name); });
+    files.forEach(function (f) {
+      var it = { id: nextId++, file: f, state: "wait" };
+      items.push(it);
+      var g = gen; queue = queue.then(function () { return processOne(it, g); });
+    });
+    render();
+    if (window.gtag && files.length) gtag("event", "heic_add", { count: files.length });
+  }
+  function redoAll() {
+    gen++; var g = gen; queue = Promise.resolve();
+    items.forEach(function (it) { it.state = "wait"; queue = queue.then(function () { return processOne(it, g); }); });
+    render();
+  }
+
+  function render() {
+    var L = T(), done = items.filter(function (i) { return i.state === "done"; });
+    $("bar").hidden = !items.length;
+    $("sum").textContent = items.length ? L.sum(done.length, items.length) : "";
+    $("zipBtn").disabled = !done.length || items.some(function (i) { return i.state !== "done" && i.state !== "error"; });
+    $("list").innerHTML = items.map(function (it) {
+      var info;
+      if (it.state === "wait") info = '<span class="sz">' + L.wait + "</span>";
+      else if (it.state === "load") info = '<span class="sz">' + L.loading + "</span>";
+      else if (it.state === "work") info = '<span class="sz">' + L.working + "</span>";
+      else if (it.state === "error") info = '<span class="err">' + L.failed + "</span>";
+      else info = '<span class="sz">' + fmt(it.file.size) + " → " + fmt(it.out.size) + "（" + it.w + "×" + it.h + "）</span>";
+      var th = it.thumb ? '<img class="th" src="' + it.thumb + '" alt="">' : '<div class="th">HEIC</div>';
+      return '<li class="item">' + th + '<div class="info"><div class="nm">' + esc(it.file.name) + "</div>" + info + "</div>"
+        + (it.state === "done" ? '<a class="dl" href="' + it.url + '" download="' + esc(it.name) + '">' + L.dl + "</a>" : "") + "</li>";
+    }).join("");
+  }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+
+  // ---- ZIP（圧縮なし。写真はもう圧縮されているので、まとめるだけ）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date(), used = {};
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var nm = f.name, k = 2; while (used[nm]) nm = f.name.replace(/(\.[^.]+)$/, "(" + (k++) + ")$1"); used[nm] = 1;
+      var name = enc.encode(nm), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name); off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+  $("zipBtn").onclick = function () {
+    var done = items.filter(function (i) { return i.state === "done"; });
+    Promise.all(done.map(function (i) { return i.out.arrayBuffer().then(function (ab) { return { name: i.name, bytes: new Uint8Array(ab) }; }); })).then(function (fs) {
+      var a = document.createElement("a"), u = URL.createObjectURL(zip(fs)); a.href = u; a.download = (lang === "en" ? "converted_photos" : "変換した写真") + ".zip";
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+      if (window.gtag) gtag("event", "heic_zip", { count: fs.length, fmt: st.fmt });
+    });
+  };
+
+  // ---- 操作 ----
+  var drop = $("drop"), picker = $("picker");
+  drop.onclick = function () { picker.click(); };
+  picker.onchange = function () { addFiles(picker.files); picker.value = ""; };
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { addFiles(e.dataTransfer.files); });
+  $("clearBtn").onclick = function () { gen++; queue = Promise.resolve(); items.forEach(function (i) { if (i.url) URL.revokeObjectURL(i.url); }); items = []; render(); };
+  var box = $("segFmt");
+  function mark() { [].forEach.call(box.children, function (b) { b.classList.toggle("on", b.dataset.v === st.fmt); }); $("qWrap").style.visibility = st.fmt === "png" ? "hidden" : ""; }
+  box.onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.fmt = b.dataset.v; mark(); save(); redoAll(); };
+  mark();
+  var t1; function later() { clearTimeout(t1); t1 = setTimeout(redoAll, 400); }
+  $("quality").value = st.quality; $("quality").oninput = function () { st.quality = +this.value; save(); $("qT").textContent = T().qT(st.quality); later(); };
+  $("maxSide").value = st.maxSide; $("maxSide").onchange = function () { st.maxSide = this.value; save(); redoAll(); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    ["lblFmt", "hintFmt", "lblQ", "lblSize", "hintSize", "dropTitle", "dropSub"].forEach(function (k) { $(k).textContent = L[k]; });
+    $("qT").textContent = L.qT(st.quality); $("maxSide").options[0].textContent = L.sizeKeep;
+    $("clearBtn").textContent = L.clear; $("zipBtn").textContent = L.zip;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    render();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__heic = { st: st, items: function () { return items; }, redo: redoAll }; // 試験用
+})();
+</script>
+</body>
+</html>
