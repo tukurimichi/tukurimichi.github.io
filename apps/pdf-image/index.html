@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">PDFをJPG・PNG画像に変換（無料・広告なし・アップロード不要）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="PDFをJPG・PNGの画像に無料で変換するツール。全ページまとめて・選んだページだけ、画質（解像度）も選べます。広告なし・登録なし・インストール不要。ファイルはサーバーに送られず、ブラウザの中だけで変換します。">
+<meta property="og:title" content="PDFをJPG・PNG画像に変換（無料・広告なし・アップロード不要）">
+<meta property="og:description" content="PDFをページごとにJPG・PNGの画像に。全ページまとめてZIPでも、1ページだけでも。ファイルはどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/pdf-image/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDFをJPG・PNG画像に変換（無料・広告なし・アップロード不要）">
+<meta name="twitter:description" content="PDFをページごとにJPG・PNGの画像に。全ページまとめてZIPでも、1ページだけでも。ファイルはどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/pdf-image/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .drop { border: 2px dashed var(--border); border-radius: 18px; background: var(--surface); padding: 34px 20px; text-align: center; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: #fff; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+  .file { display: flex; align-items: center; gap: 10px; margin: 16px 0 8px; font-size: 14px; flex-wrap: wrap; }
+  .file b { word-break: break-all; }
+  .file .meta { color: var(--ink-muted); font-size: 12.5px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-top: 10px; display: grid; gap: 14px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 14px; }
+  .pg { position: relative; background: #fff; border: 2px solid var(--border); border-radius: 8px; padding: 4px; text-align: center; user-select: none; cursor: pointer; }
+  .pg img, .pg .ph { width: 100%; aspect-ratio: 210/297; object-fit: contain; display: block; background: #f6f3ee; border-radius: 4px; }
+  .pg .no { font-size: 11.5px; color: var(--ink-muted); margin-top: 3px; }
+  .pg.sel { border-color: var(--accent); }
+  .pg.sel::after { content: "✓"; position: absolute; right: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; line-height: 20px; }
+  .pg:not(.sel) { opacity: .4; }
+  .pickbar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; align-items: center; font-size: 12.5px; color: var(--ink-muted); }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .plan { font-size: 13px; color: var(--ink-muted); flex: 1; min-width: 180px; }
+  .status { margin-top: 12px; font-size: 13px; min-height: 1.6em; line-height: 1.6; }
+  .status.ok { color: var(--accent); font-weight: 700; } .status.ng { color: var(--accent-warm); font-weight: 700; }
+  .results { margin-top: 8px; font-size: 13px; line-height: 2; }
+  .results a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+  .results .next { margin-top: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; line-height: 1.7; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .faq a { color: var(--accent); }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: var(--accent); }
+</style>
+
+<style>
+.more-tools{margin-top:34px;padding:18px;border:1px solid rgba(128,128,128,.35);border-radius:16px;background:rgba(128,128,128,.07);color:inherit}
+.more-tools h2{font-size:16px;margin:0 0 4px}
+.more-tools .mt-sub{font-size:12px;opacity:.75;margin:0 0 12px}
+.more-tools ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.more-tools a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);text-decoration:none;color:inherit;background:rgba(255,255,255,.04)}
+.more-tools a:hover{border-color:rgba(128,128,128,.7)}
+.more-tools .mt-i{font-size:20px;flex:none}
+.more-tools b{display:block;font-size:13.5px}
+.more-tools small{display:block;font-size:11.5px;opacity:.7}
+html[lang="en"] .more-tools .ja{display:none}
+html:not([lang="en"]) .more-tools .en{display:none}
+@media print{.more-tools{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">PDFをJPG・PNG画像に変換（無料・広告なし）</h1>
+  <p class="lead" id="leadT">PDFを1ページずつJPGやPNGの画像にします。全ページまとめても、選んだページだけでも。広告なし・登録なし。ファイルはこのブラウザの中だけで変換され、どこにも送信されません。</p>
+
+  <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
+  <input type="file" id="picker" accept="application/pdf,.pdf">
+
+  <div id="work" hidden>
+    <div class="file"><span>📄</span><b id="fname"></b><span class="meta" id="fmeta"></span><button class="btn ghost" id="clearBtn" type="button"></button></div>
+    <div class="panel">
+      <div><span class="lbl" id="lblFmt"></span>
+        <div class="seg" id="segFmt"><button type="button" data-v="jpg">JPG</button><button type="button" data-v="png">PNG</button></div>
+        <div class="hint" id="hintFmt"></div></div>
+      <div><span class="lbl" id="lblDpi"></span>
+        <div class="seg" id="segDpi"><button type="button" data-v="96"></button><button type="button" data-v="150"></button><button type="button" data-v="200"></button><button type="button" data-v="300"></button></div>
+        <div class="hint" id="hintDpi"></div></div>
+    </div>
+    <div class="pickbar"><span id="hintPick"></span>
+      <button type="button" class="btn ghost" id="pickAll"></button><button type="button" class="btn ghost" id="pickNone"></button></div>
+    <div class="grid" id="grid"></div>
+    <div class="bar">
+      <span class="plan" id="plan"></span>
+      <button class="btn primary" id="goBtn" type="button" disabled></button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+  <nav class="more-tools" aria-label="ほかの道具"><h2><span class="ja">ほかの道具</span><span class="en">More tools</span></h2><p class="mt-sub"><span class="ja">どれも無料・広告なし。ブラウザの中だけで動き、ファイルはどこにも送りません。</span><span class="en">All free, no ads. Everything runs in your browser and nothing is uploaded.</span></p><ul><li><a href="../pdf/"><span class="mt-i">📄</span><span><b><span class="ja">PDF結合</span><span class="en">Merge PDFs</span></b><small><span class="ja">複数のPDFを1つに</span><span class="en">Join PDFs into one</span></small></span></a></li><li><a href="../pdf-split/"><span class="mt-i">✂️</span><span><b><span class="ja">PDF分割</span><span class="en">Split PDF</span></b><small><span class="ja">ページを分ける・抜き出す</span><span class="en">Split or extract pages</span></small></span></a></li><li><a href="../image/"><span class="mt-i">🖼️</span><span><b><span class="ja">画像の圧縮・リサイズ</span><span class="en">Compress Images</span></b><small><span class="ja">写真をまとめて小さく</span><span class="en">Shrink photos in bulk</span></small></span></a></li><li><a href="../heic/"><span class="mt-i">📱</span><span><b><span class="ja">HEIC→JPG変換</span><span class="en">HEIC to JPG</span></b><small><span class="ja">iPhoneの写真をJPGに</span><span class="en">iPhone photos to JPG</span></small></span></a></li><li><a href="../qr/"><span class="mt-i">🔳</span><span><b><span class="ja">QRコード作成</span><span class="en">QR Code Generator</span></b><small><span class="ja">期限なし・チビロボ入り</span><span class="en">Never expires</span></small></span></a></li><li><a href="../inkan/"><span class="mt-i">🔴</span><span><b><span class="ja">電子印鑑</span><span class="en">Digital Hanko</span></b><small><span class="ja">丸印・日付印・角印</span><span class="en">Round, date & square seals</span></small></span></a></li><li><a href="../calendar/"><span class="mt-i">📅</span><span><b><span class="ja">カレンダー印刷</span><span class="en">Printable Calendar</span></b><small><span class="ja">祝日入り・A4</span><span class="en">Holidays included, A4</span></small></span></a></li><li><a href="../roulette/"><span class="mt-i">🎡</span><span><b><span class="ja">ルーレット</span><span class="en">Spinner Wheel</span></b><small><span class="ja">順番決め・抽選に</span><span class="en">For turns and raffles</span></small></span></a></li><li><a href="../sfx/"><span class="mt-i">🔊</span><span><b><span class="ja">効果音</span><span class="en">Sound Effects</span></b><small><span class="ja">商用OK・クレジット不要</span><span class="en">Free for commercial use</span></small></span></a></li><li><a href="../frames/"><span class="mt-i">🎞️</span><span><b><span class="ja">動画をコマにする</span><span class="en">Video to Frames</span></b><small><span class="ja">動画から静止画を切り出す</span><span class="en">Pull stills from a video</span></small></span></a></li></ul><p class="mt-sub" style="margin:12px 0 0"><a href="../../tools.html" style="display:inline;border:none;padding:0;background:none;text-decoration:underline"><span class="ja">道具の一覧へ →</span><span class="en">See all tools →</span></a></p></nav>
+<div class="note"><span id="notesT"></span><br>
+    <span class="credit" id="creditT"></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "PDFをJPG・PNG画像に変換（無料・広告なし・アップロード不要）| tukurimichi.com",
+      docDesc: "PDFをJPG・PNGの画像に無料で変換するツール。全ページまとめて・選んだページだけ、画質（解像度）も選べます。広告なし・登録なし・インストール不要。ファイルはサーバーに送られず、ブラウザの中だけで変換します。",
+      back: "← つくるみち の道具箱へ", h1: "PDFをJPG・PNG画像に変換（無料・広告なし）",
+      lead: "PDFを1ページずつJPGやPNGの画像にします。全ページまとめても、選んだページだけでも。広告なし・登録なし。ファイルはこのブラウザの中だけで変換され、どこにも送信されません。",
+      dropTitle: "PDFをここにドラッグ＆ドロップ", dropSub: "またはクリックしてファイルを選ぶ（1つ）",
+      clear: "別のPDFにする", meta: function (n, sz) { return n + "ページ・" + sz; },
+      lblFmt: "画像の形式", hintFmt: "JPG＝ファイルが小さい（写真・スキャンの書類向き）／PNG＝文字や線がくっきり（図面・表向き）",
+      lblDpi: "画質", dpis: ["軽め（96dpi）", "標準（150dpi）", "きれい（200dpi）", "印刷用（300dpi）"],
+      hintDpi: "数字が大きいほどきれいで、ファイルも大きくなります。LINEやメールで送るなら「標準」で十分です",
+      hintPick: "ページの絵を押すと、変換する・しないを切り替えます",
+      pickAll: "全部", pickNone: "なし",
+      go: "画像にして保存", goZip: "画像にしてZIPで保存",
+      plan: function (n, fmt) { return n + "枚の" + fmt + "画像になります"; },
+      noPick: "ページを1つ以上選んでください",
+      loading: "読み込み中…", encrypted: "パスワードで保護されたPDFは読み込めません（解除してから入れてください）", broken: "読み込めませんでした（壊れているか、PDFではない可能性）",
+      notPdf: "PDFファイルを選んでください", working: function (i, n) { return "変換しています… " + i + "/" + n; },
+      done: function (n) { return n + "枚の画像を作りました"; }, failed: function (e) { return "うまくいきませんでした：" + e; },
+      shrunk: "（とても大きいページは、ブラウザで扱える大きさまで画質を下げました）",
+      next: "画像が大きすぎたら → <a href=\"../image/\">画像の圧縮・リサイズ</a>／いらないページを先に消すなら → <a href=\"../pdf-split/\">PDF分割</a>（どちらもどこにも送りません）",
+      dlEach: "1枚ずつ保存：",
+      notes: "・元のPDFは書き換えません<br>・形式と画質の設定はこの端末に覚えておきます（PDFそのものは覚えません）",
+      credit: "PDFの表示に <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108（Apache-2.0 / © Mozilla、<a href=\"../pdf/LICENSE-pdf.js.txt\">全文</a>）を使用しています。",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>安全ですか？PDFはどこかに送られますか？</h3><p>送られません。読み込みも画像への変換も、いま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがそもそも無いので、社外秘の書類や個人情報の入ったPDFでも使えます。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3><p>広告は出ません。無料で、会員登録も要りません。ページ数や回数の制限もありません（とても大きいファイルはブラウザの力が足りずに失敗することがあります）。</p>"
+        + "<h3>JPGとPNG、どちらを選べばいいですか？</h3><p>迷ったらJPGです。ファイルが小さく、どこでも開けます。図面や細かい文字の表など、線をくっきり残したいときはPNGを選んでください。</p>"
+        + "<h3>画質（dpi）はどれにすればいいですか？</h3><p>スマホやパソコンで見る・LINEやメールで送るなら「標準（150dpi）」で十分です。拡大して細かい字を読みたいときは「きれい（200dpi）」、紙に印刷するなら「印刷用（300dpi）」を選んでください。</p>"
+        + "<h3>スマホ（iPhone・Android）でも使えますか？</h3><p>使えます。ファイルを選ぶ画面から、スマホに保存してあるPDFを選んでください。2枚以上のときはZIPにまとめて保存します（「1枚ずつ保存」からも保存できます）。</p>"
+        + "<h3>1ページだけ画像にしたい</h3><p>「なし」を押してから、画像にしたいページの絵を押してください。そのページだけが画像になります。</p>"
+        + "<h3>インストールは要りますか？オフラインでも使えますか？</h3><p>インストールは要りません。このページを一度開けば、そのあとネットを切っても変換できます。</p>"
+        + "<h3>逆に、画像をまとめて1つのPDFにしたい／PDFを分けたい</h3><p>PDFどうしをまとめるなら <a href=\"../pdf/\">PDF結合</a>、ページを分けるなら <a href=\"../pdf-split/\">PDF分割</a> を使ってください。どちらもファイルはどこにも送りません。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "PDF to JPG / PNG Converter Free – No Ads, No Upload | tukurimichi.com",
+      docDesc: "Convert PDF pages to JPG or PNG images for free. All pages or just the ones you pick, with a choice of resolution. No ads, no sign-up, nothing to install. Your file never leaves your browser.",
+      back: "← Back to the tukurimichi toolbox", h1: "PDF to JPG / PNG (free, no ads)",
+      lead: "Turn each page of a PDF into a JPG or PNG image — all pages or just the ones you pick. No ads, no sign-up. Your file is converted inside this browser and never sent anywhere.",
+      dropTitle: "Drop a PDF here", dropSub: "or click to choose a file (one)",
+      clear: "Use another PDF", meta: function (n, sz) { return n + " pages · " + sz; },
+      lblFmt: "Format", hintFmt: "JPG = smaller files (photos, scanned papers) / PNG = crisp text and lines (drawings, tables)",
+      lblDpi: "Quality", dpis: ["Light (96 dpi)", "Standard (150 dpi)", "Sharp (200 dpi)", "Print (300 dpi)"],
+      hintDpi: "Higher means sharper images and bigger files. Standard is plenty for sharing by chat or email",
+      hintPick: "Click a page to include or skip it",
+      pickAll: "All", pickNone: "None",
+      go: "Convert and save", goZip: "Convert and save as ZIP",
+      plan: function (n, fmt) { return "Makes " + n + " " + fmt + " image" + (n > 1 ? "s" : ""); },
+      noPick: "Pick at least one page",
+      loading: "Loading…", encrypted: "Password-protected PDFs cannot be opened (remove the password first)", broken: "Could not read this file (it may be damaged or not a PDF)",
+      notPdf: "Please choose a PDF file", working: function (i, n) { return "Converting… " + i + "/" + n; },
+      done: function (n) { return "Made " + n + " image" + (n > 1 ? "s" : ""); }, failed: function (e) { return "Something went wrong: " + e; },
+      shrunk: " (very large pages were reduced to a size the browser can handle)",
+      next: "Images too big? → <a href=\"../image/\">Compress Images</a> / Remove pages first? → <a href=\"../pdf-split/\">Split PDF</a> (no upload either)",
+      dlEach: "Save one by one:",
+      notes: "・Your original PDF is not changed<br>・Your format and quality settings are remembered on this device (the PDF itself is not)",
+      credit: "Uses <a href=\"https://github.com/mozilla/pdf.js\" target=\"_blank\" rel=\"noopener\">PDF.js</a> v6.2.108 (Apache-2.0 / © Mozilla, <a href=\"../pdf/LICENSE-pdf.js.txt\">text</a>).",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is it safe? Is my PDF uploaded?</h3><p>No. Reading and converting happen inside the browser you have open. There is no upload step, so confidential documents are fine.</p>"
+        + "<h3>Are there ads? Does it cost anything?</h3><p>No ads, free, no account, no limits (very large files may fail if the browser runs out of memory).</p>"
+        + "<h3>JPG or PNG?</h3><p>If unsure, JPG: smaller files that open anywhere. Choose PNG for drawings or small text you want to keep crisp.</p>"
+        + "<h3>Which quality (dpi)?</h3><p>Standard (150 dpi) is plenty for viewing on screens and sharing. Use 200 dpi to zoom into small text, 300 dpi for printing.</p>"
+        + "<h3>Does it work on iPhone or Android?</h3><p>Yes. Two or more images are saved together as a ZIP (or one by one).</p>"
+        + "<h3>I only need one page</h3><p>Press “None”, then click the page you want.</p>"
+        + "<h3>Does it work offline?</h3><p>Once this page has loaded you can disconnect and still convert.</p>"
+        + "<h3>I want to merge or split PDFs</h3><p>Use <a href=\"../pdf/\">Merge PDFs</a> or <a href=\"../pdf-split/\">Split PDF</a>. Neither uploads anything.</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.pdfimage.v1";
+  var st = { fmt: "jpg", dpi: 150 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null; // { name, size, doc, task, pages, thumbs[] }
+  var picked = {};
+  var lastUrls = [];
+  var busy = false;
+  var MAX_PX = 16e6, MAX_SIDE = 8000;   // ブラウザのキャンバスの限度より手前で止める
+
+  function fmtSize(b) { return b < 1048576 ? Math.round(b / 1024) + " KB" : (b / 1048576).toFixed(1) + " MB"; }
+  function baseName() { return (file && file.name || "document.pdf").replace(/\.pdf$/i, ""); }
+  function setStatus(t, k) { var s = $("status"); s.textContent = t || ""; s.className = "status" + (k ? " " + k : ""); }
+  function selected() { var a = []; if (file) for (var i = 0; i < file.pages; i++) if (picked[i]) a.push(i); return a; }
+
+  function renderGrid() {
+    var grid = $("grid"); if (!file) { grid.innerHTML = ""; updatePlan(); return; }
+    var html = "";
+    for (var i = 0; i < file.pages; i++) {
+      html += '<div class="pg' + (picked[i] ? " sel" : "") + '" data-i="' + i + '">' + (file.thumbs[i] ? '<img src="' + file.thumbs[i] + '" alt="">' : '<div class="ph"></div>')
+        + '<div class="no">' + (i + 1) + "</div></div>";
+    }
+    grid.innerHTML = html;
+    updatePlan();
+  }
+  function updatePlan() {
+    var L = T(), go = $("goBtn"), n = selected().length;
+    if (!file) { go.disabled = true; $("plan").textContent = ""; return; }
+    if (!n) { $("plan").textContent = L.noPick; go.disabled = true; return; }
+    $("plan").textContent = L.plan(n, st.fmt.toUpperCase());
+    go.disabled = busy; go.textContent = n > 1 ? L.goZip : L.go;
+  }
+
+  // ---- 読み込み（PDF.js だけで読む）----
+  function closeFile() { if (file && file.task) { try { file.task.destroy(); } catch (e) {} } file = null; }
+  function loadFile(f) {
+    if (!f || !(/\.pdf$/i.test(f.name) || f.type === "application/pdf")) { setStatus(T().notPdf, "ng"); return; }
+    var pdfjs = window.__pdfjsLib;
+    if (!pdfjs) { window.addEventListener("pdfjs-ready", function () { loadFile(f); }, { once: true }); return; }
+    clearResults(); closeFile(); picked = {};
+    setStatus(T().loading);
+    f.arrayBuffer().then(function (buf) {
+      var task = pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false, cMapUrl: "../pdf/cmaps/", cMapPacked: true, standardFontDataUrl: "../pdf/standard_fonts/", wasmUrl: "../pdf/wasm/", iccUrl: "../pdf/iccs/" });
+      return task.promise.then(function (doc) {
+        file = { name: f.name, size: f.size, doc: doc, task: task, pages: doc.numPages, thumbs: [] };
+        for (var i = 0; i < file.pages; i++) picked[i] = true;
+        $("work").hidden = false; $("fname").textContent = f.name; $("fmeta").textContent = T().meta(file.pages, fmtSize(f.size));
+        setStatus(""); renderGrid(); makeThumbs(file);
+      });
+    }).catch(function (e) {
+      setStatus(e && e.name === "PasswordException" ? T().encrypted : T().broken, "ng");
+    });
+  }
+  function makeThumbs(fl) {
+    var i = 0;
+    function next() {
+      if (file !== fl || i >= fl.pages) return;
+      var idx = i++;
+      return fl.doc.getPage(idx + 1).then(function (page) {
+        var v0 = page.getViewport({ scale: 1 }), sc = Math.min(160 / v0.width, 226 / v0.height), vp = page.getViewport({ scale: sc });
+        var c = document.createElement("canvas"); c.width = Math.max(1, Math.round(vp.width)); c.height = Math.max(1, Math.round(vp.height));
+        var ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+        return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () {
+          fl.thumbs[idx] = c.toDataURL("image/jpeg", .7);
+          var el = document.querySelector('.pg[data-i="' + idx + '"]');
+          if (el && file === fl) { var ph = el.querySelector(".ph"); if (ph) { var im = new Image(); im.src = fl.thumbs[idx]; ph.replaceWith(im); } }
+        });
+      }).then(next, next);
+    }
+    next();
+  }
+
+  // ---- 1ページを画像に ----
+  function renderPage(idx, dpi, fmt) {
+    return file.doc.getPage(idx + 1).then(function (page) {
+      var v0 = page.getViewport({ scale: 1 }), sc = dpi / 72, shrunk = false;
+      var w = v0.width * sc, h = v0.height * sc, lim = Math.min(1, Math.sqrt(MAX_PX / (w * h)), MAX_SIDE / Math.max(w, h));
+      if (lim < 1) { sc *= lim; shrunk = true; }
+      var vp = page.getViewport({ scale: sc });
+      var c = document.createElement("canvas"); c.width = Math.max(1, Math.floor(vp.width)); c.height = Math.max(1, Math.floor(vp.height));
+      var ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+      return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () {
+        return new Promise(function (res, rej) {
+          c.toBlob(function (b) { c.width = c.height = 0; b ? res({ blob: b, shrunk: shrunk, w: vp.width, h: vp.height }) : rej(new Error("toBlob")); },
+            fmt === "png" ? "image/png" : "image/jpeg", .92);
+        });
+      });
+    });
+  }
+
+  // ---- 変換して保存 ----
+  function clearResults() { lastUrls.forEach(function (u) { URL.revokeObjectURL(u); }); lastUrls = []; $("results").innerHTML = ""; }
+  function download(blob, name) {
+    var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  function pad(n, w) { n = String(n); while (n.length < w) n = "0" + n; return n; }
+  $("goBtn").onclick = function () {
+    var L = T(), sel = selected(); if (!sel.length || !file || busy) return;
+    busy = true; clearResults(); updatePlan();
+    var fl = file, fmt = st.fmt, dpi = +st.dpi, ext = fmt === "png" ? ".png" : ".jpg", w = String(fl.pages).length, outs = [], anyShrunk = false, i = 0;
+    function one() {
+      if (file !== fl) throw new Error("cancel");
+      if (i >= sel.length) return;
+      var idx = sel[i++]; setStatus(L.working(i, sel.length));
+      return renderPage(idx, dpi, fmt).then(function (r) {
+        if (r.shrunk) anyShrunk = true;
+        outs.push({ name: baseName() + "_p" + pad(idx + 1, Math.max(2, w)) + ext, blob: r.blob });
+        return one();
+      });
+    }
+    Promise.resolve().then(one).then(function () {
+      if (outs.length === 1) { download(outs[0].blob, outs[0].name); return; }
+      return Promise.all(outs.map(function (o) { return o.blob.arrayBuffer().then(function (b) { return { name: o.name, bytes: new Uint8Array(b) }; }); }))
+        .then(function (fs) { download(zip(fs), baseName() + (lang === "en" ? "_images.zip" : "_画像.zip")); });
+    }).then(function () {
+      var html = outs.length > 1 ? "<b>" + L.dlEach + "</b> " : "";
+      if (outs.length > 1) outs.forEach(function (o) { var u = URL.createObjectURL(o.blob); lastUrls.push(u); html += '<a href="' + u + '" download="' + o.name.replace(/"/g, "") + '">' + o.name.replace(/</g, "&lt;") + "</a>"; });
+      $("results").innerHTML = html + '<div class="next">' + L.next + "</div>";
+      setStatus(L.done(outs.length) + (anyShrunk ? L.shrunk : ""), "ok");
+      if (window.gtag) gtag("event", "pdf_image", { fmt: fmt, dpi: dpi, images: outs.length, pages: fl.pages });
+    }).catch(function (e) {
+      if (String(e && e.message) !== "cancel") setStatus(L.failed(String(e && e.message || e)), "ng");
+    }).then(function () { busy = false; updatePlan(); });
+  };
+
+  // ---- ZIP（圧縮なしでまとめる。外の部品を使わない）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date();
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+      h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+      c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0);
+    var e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+
+  // ---- 操作 ----
+  var drop = $("drop"), picker = $("picker");
+  drop.onclick = function () { picker.click(); };
+  picker.onchange = function () { if (picker.files[0]) loadFile(picker.files[0]); picker.value = ""; };
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  $("clearBtn").onclick = function () { closeFile(); picked = {}; clearResults(); $("work").hidden = true; setStatus(""); };
+  $("segFmt").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.fmt = b.dataset.v; save(); markSeg(); updatePlan(); };
+  $("segDpi").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.dpi = +b.dataset.v; save(); markSeg(); };
+  function markSeg() {
+    [].forEach.call($("segFmt").children, function (b) { b.classList.toggle("on", b.dataset.v === st.fmt); });
+    [].forEach.call($("segDpi").children, function (b) { b.classList.toggle("on", +b.dataset.v === +st.dpi); });
+  }
+  $("grid").onclick = function (e) { var el = e.target.closest(".pg"); if (!el) return; var i = +el.dataset.i; picked[i] = !picked[i]; el.classList.toggle("sel", !!picked[i]); updatePlan(); };
+  function pickBy(v) { picked = {}; if (file) for (var i = 0; i < file.pages; i++) picked[i] = v; renderGrid(); }
+  $("pickAll").onclick = function () { pickBy(true); };
+  $("pickNone").onclick = function () { pickBy(false); };
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    $("dropTitle").textContent = L.dropTitle; $("dropSub").textContent = L.dropSub; $("clearBtn").textContent = L.clear;
+    $("lblFmt").textContent = L.lblFmt; $("hintFmt").textContent = L.hintFmt;
+    $("lblDpi").textContent = L.lblDpi; $("hintDpi").textContent = L.hintDpi;
+    [].forEach.call($("segDpi").children, function (b, i) { b.textContent = L.dpis[i]; });
+    $("hintPick").textContent = L.hintPick; $("pickAll").textContent = L.pickAll; $("pickNone").textContent = L.pickNone;
+    if (file) $("fmeta").textContent = L.meta(file.pages, fmtSize(file.size));
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("creditT").innerHTML = L.credit; $("langBtn").textContent = L.toggleTo;
+    markSeg(); updatePlan();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__p2i = { st: st, load: loadFile, render: function (i, d, f) { return renderPage(i, d, f); }, sel: selected }; // 試験用
+})();
+</script>
+<script type="module">
+  // PDF.js は PDF結合（../pdf/）と同じもの（CVE-2024-4367 修正済みの 6.2.108、isEvalSupported も切る）
+  import * as pdfjsLib from "../pdf/pdf.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "../pdf/pdf.worker.min.mjs";
+  window.__pdfjsLib = pdfjsLib;
+  window.dispatchEvent(new Event("pdfjs-ready"));
+</script>
+</body>
+</html>
