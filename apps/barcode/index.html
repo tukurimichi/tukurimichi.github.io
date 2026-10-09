@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">バーコード作成（JAN・CODE128・CODE39｜無料・広告なし・まとめて作れる）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="バーコードを無料で作成。JANコード（13桁・8桁、チェックデジットは自動）・CODE128・CODE39に対応。何行でもまとめて作れて、PNG・SVGで保存、A4に並べて印刷もできます。広告なし・登録なし・入れた文字はどこにも送られません。">
+<meta property="og:title" content="バーコード作成（JAN・CODE128・CODE39｜無料・広告なし）">
+<meta property="og:description" content="JAN・CODE128・CODE39のバーコードをまとめて作成。PNG・SVG保存、A4に並べて印刷も。入れた文字はどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/barcode/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="バーコード作成（JAN・CODE128・CODE39｜無料・広告なし）">
+<meta name="twitter:description" content="JAN・CODE128・CODE39のバーコードをまとめて作成。PNG・SVG保存、A4に並べて印刷も。入れた文字はどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/barcode/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --danger: #c8412f; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; display: grid; gap: 16px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 6px; line-height: 1.6; }
+  textarea { width: 100%; min-height: 120px; font-family: ui-monospace, Consolas, monospace; font-size: 15px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: var(--ink); resize: vertical; }
+  .opts { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; font-size: 13px; }
+  .opts input[type=range] { width: 120px; vertical-align: middle; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 16px; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; }
+  .card svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .card .err { color: var(--danger); font-size: 13px; font-weight: 700; padding: 18px 4px; line-height: 1.6; word-break: break-all; }
+  .card .fixed { font-size: 11.5px; color: var(--accent-warm); margin-top: 4px; }
+  .card .acts { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+  .card .acts button { appearance: none; border: 1px solid var(--border); background: var(--surface); border-radius: 999px; font-family: inherit; font-size: 12px; padding: 4px 12px; cursor: pointer; color: var(--ink); }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); }
+  .plan { font-size: 13px; color: var(--ink-muted); flex: 1; min-width: 160px; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .faq a { color: var(--accent); }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  #sheet { display: none; }
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    body { background: #fff; padding: 0; }
+    .wrap > *:not(#sheet) { display: none !important; }
+    #sheet { display: grid !important; grid-template-columns: repeat(var(--cols, 3), 1fr); gap: 6mm 4mm; }
+    #sheet div { text-align: center; break-inside: avoid; }
+    #sheet svg { width: 100%; height: auto; }
+  }
+</style>
+
+<style>
+.more-tools{margin-top:34px;padding:18px;border:1px solid rgba(128,128,128,.35);border-radius:16px;background:rgba(128,128,128,.07);color:inherit}
+.more-tools h2{font-size:16px;margin:0 0 4px}
+.more-tools .mt-sub{font-size:12px;opacity:.75;margin:0 0 12px}
+.more-tools ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.more-tools a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);text-decoration:none;color:inherit;background:rgba(255,255,255,.04)}
+.more-tools a:hover{border-color:rgba(128,128,128,.7)}
+.more-tools .mt-i{font-size:20px;flex:none}
+.more-tools b{display:block;font-size:13.5px}
+.more-tools small{display:block;font-size:11.5px;opacity:.7}
+html[lang="en"] .more-tools .ja{display:none}
+html:not([lang="en"]) .more-tools .en{display:none}
+@media print{.more-tools{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">バーコード作成（無料・広告なし）</h1>
+  <p class="lead" id="leadT">JANコード・CODE128・CODE39のバーコードを作ります。1行に1つ書けば、何個でもまとめて作れます。PNG・SVGで保存したり、A4に並べて印刷したりできます。入れた文字はこのブラウザの中だけで使い、どこにも送信しません。</p>
+
+  <div class="panel">
+    <div><span class="lbl" id="lblType"></span>
+      <div class="seg" id="segType"><button type="button" data-v="ean13"></button><button type="button" data-v="ean8"></button><button type="button" data-v="code128"></button><button type="button" data-v="code39"></button></div>
+      <div class="hint" id="hintType"></div></div>
+    <div><span class="lbl" id="lblIn"></span>
+      <textarea id="input" spellcheck="false"></textarea></div>
+    <div class="opts">
+      <label><span id="lblH"></span> <input type="range" id="optH" min="20" max="120" step="5"></label>
+      <label><span id="lblW"></span> <input type="range" id="optW" min="1" max="5" step="1"></label>
+      <label><input type="checkbox" id="optText"> <span id="lblText"></span></label>
+      <label><span id="lblCols"></span> <select id="optCols"><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="bar">
+    <span class="plan" id="plan"></span>
+    <button class="btn ghost" id="printBtn" type="button"></button>
+    <button class="btn primary" id="zipBtn" type="button"></button>
+  </div>
+  <div id="sheet"></div>
+
+  <section class="faq" id="faqT"></section>
+  <nav class="more-tools" aria-label="ほかの道具"><h2><span class="ja">ほかの道具</span><span class="en">More tools</span></h2><p class="mt-sub"><span class="ja">どれも無料・広告なし。ブラウザの中だけで動き、ファイルはどこにも送りません。</span><span class="en">All free, no ads. Everything runs in your browser and nothing is uploaded.</span></p><ul><li><a href="../pdf/"><span class="mt-i">📄</span><span><b><span class="ja">PDF結合</span><span class="en">Merge PDFs</span></b><small><span class="ja">複数のPDFを1つに</span><span class="en">Join PDFs into one</span></small></span></a></li><li><a href="../pdf-split/"><span class="mt-i">✂️</span><span><b><span class="ja">PDF分割</span><span class="en">Split PDF</span></b><small><span class="ja">ページを分ける・抜き出す</span><span class="en">Split or extract pages</span></small></span></a></li><li><a href="../pdf-image/"><span class="mt-i">🏞️</span><span><b><span class="ja">PDF→画像変換</span><span class="en">PDF to Image</span></b><small><span class="ja">ページをJPG・PNGに</span><span class="en">Pages to JPG / PNG</span></small></span></a></li><li><a href="../image/"><span class="mt-i">🖼️</span><span><b><span class="ja">画像の圧縮・リサイズ</span><span class="en">Compress Images</span></b><small><span class="ja">写真をまとめて小さく</span><span class="en">Shrink photos in bulk</span></small></span></a></li><li><a href="../heic/"><span class="mt-i">📱</span><span><b><span class="ja">HEIC→JPG変換</span><span class="en">HEIC to JPG</span></b><small><span class="ja">iPhoneの写真をJPGに</span><span class="en">iPhone photos to JPG</span></small></span></a></li><li><a href="../exif/"><span class="mt-i">📍</span><span><b><span class="ja">位置情報を消す</span><span class="en">Remove Photo Location</span></b><small><span class="ja">撮影日時のずれも直す</span><span class="en">Fix photo dates too</span></small></span></a></li><li><a href="../qr/"><span class="mt-i">🔳</span><span><b><span class="ja">QRコード作成</span><span class="en">QR Code Generator</span></b><small><span class="ja">期限なし・チビロボ入り</span><span class="en">Never expires</span></small></span></a></li><li><a href="../inkan/"><span class="mt-i">🔴</span><span><b><span class="ja">電子印鑑</span><span class="en">Digital Hanko</span></b><small><span class="ja">丸印・日付印・角印</span><span class="en">Round, date & square seals</span></small></span></a></li><li><a href="../calendar/"><span class="mt-i">📅</span><span><b><span class="ja">カレンダー印刷</span><span class="en">Printable Calendar</span></b><small><span class="ja">祝日入り・A4</span><span class="en">Holidays included, A4</span></small></span></a></li><li><a href="../roulette/"><span class="mt-i">🎡</span><span><b><span class="ja">ルーレット</span><span class="en">Spinner Wheel</span></b><small><span class="ja">順番決め・抽選に</span><span class="en">For turns and raffles</span></small></span></a></li><li><a href="../sfx/"><span class="mt-i">🔊</span><span><b><span class="ja">効果音</span><span class="en">Sound Effects</span></b><small><span class="ja">商用OK・クレジット不要</span><span class="en">Free for commercial use</span></small></span></a></li><li><a href="../frames/"><span class="mt-i">🎞️</span><span><b><span class="ja">動画をコマにする</span><span class="en">Video to Frames</span></b><small><span class="ja">動画から静止画を切り出す</span><span class="en">Pull stills from a video</span></small></span></a></li></ul><p class="mt-sub" style="margin:12px 0 0"><a href="../../tools.html" style="display:inline;border:none;padding:0;background:none;text-decoration:underline"><span class="ja">道具の一覧へ →</span><span class="en">See all tools →</span></a></p></nav>
+<div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "バーコード作成（JAN・CODE128・CODE39｜無料・広告なし・まとめて作れる）| tukurimichi.com",
+      docDesc: "バーコードを無料で作成。JANコード（13桁・8桁、チェックデジットは自動）・CODE128・CODE39に対応。何行でもまとめて作れて、PNG・SVGで保存、A4に並べて印刷もできます。広告なし・登録なし・入れた文字はどこにも送られません。",
+      back: "← つくるみち の道具箱へ", h1: "バーコード作成（無料・広告なし）",
+      lead: "JANコード・CODE128・CODE39のバーコードを作ります。1行に1つ書けば、何個でもまとめて作れます。PNG・SVGで保存したり、A4に並べて印刷したりできます。入れた文字はこのブラウザの中だけで使い、どこにも送信しません。",
+      lblType: "種類", types: ["JAN（13桁）", "JAN短縮（8桁）", "CODE128", "CODE39"],
+      hints: ["お店の商品に付いている、いちばんよく見るバーコードです。12桁を入れると最後の1桁（チェックデジット）を自動で足します",
+              "小さな商品用の8桁のJANです。7桁を入れると最後の1桁を自動で足します",
+              "英字・数字・記号が入れられます。在庫や備品の管理番号、伝票の番号に向いています",
+              "数字・英大文字と - . $ / + % 空白 が使えます。古い読み取り機でも読みやすい形です"],
+      lblIn: "中身（1行に1つ）", lblH: "高さ", lblW: "線の太さ", lblText: "下に文字を出す", lblCols: "印刷の列",
+      ph: ["490123456789\n4901234567894", "4512345", "ABC-0001\nITEM 2026/10", "ABC-0001"],
+      errDigits: function (n) { return n + "桁の数字を入れてください"; }, errCheck: function (c) { return "最後の1桁（チェックデジット）が合いません。正しくは " + c; },
+      errChar: function (c) { return "使えない文字があります：" + c; }, errEmpty: "", added: "チェックデジットを足しました",
+      png: "PNG", svg: "SVG", plan: function (n, e) { return n + "個" + (e ? "（うち直してほしいもの " + e + "個）" : ""); },
+      zip: "まとめてPNG（ZIP）", zip1: "PNGで保存", print: "A4に並べて印刷",
+      notes: "・入れた中身と設定はこの端末に覚えておきます（どこにも送りません）<br>・JANコードを商品に付けて売るには、GS1 Japan（流通システム開発センター）で事業者コードの登録が必要です。社内の管理用ならその必要はありません<br>・印刷したら、実際に読み取り機やスマホで読めるか確かめてから使ってください",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>安全ですか？入れた番号はどこかに送られますか？</h3><p>送られません。バーコードは、いま開いているブラウザの中だけで作っています。商品番号や社内の管理番号でも安心して使えます。</p>"
+        + "<h3>広告は出ますか？お金はかかりますか？</h3><p>広告は出ません。無料で、会員登録も要りません。作れる数の制限もありません。</p>"
+        + "<h3>JAN・CODE128・CODE39、どれを選べばいい？</h3><p>お店で売る商品ならJAN（13桁）。社内の備品・在庫・書類の管理番号ならCODE128がおすすめです（英字も入り、バーコードが短くすみます）。相手から「CODE39で」と言われたときはCODE39を選んでください。</p>"
+        + "<h3>チェックデジットって何？</h3><p>JANの最後の1桁で、読み間違いを見つけるための数字です。12桁（短縮なら7桁）を入れれば自動で計算して足します。13桁を入れたときは、最後の1桁が合っているか確かめます。</p>"
+        + "<h3>まとめて作れますか？</h3><p>1行に1つずつ書けば、何個でも一度に作れます。ExcelやGoogleスプレッドシートの列をそのまま貼り付けても大丈夫です。「まとめてPNG」でZIPにして保存、「A4に並べて印刷」でラベル用に並べて印刷できます。</p>"
+        + "<h3>印刷しても読めますか？</h3><p>線が細すぎると読めないことがあります。小さく刷るときは「線の太さ」を上げてから保存してください。印刷したら、読み取り機やスマホのカメラで読めるか確かめてから使ってください。</p>"
+        + "<h3>QRコードも作りたい</h3><p><a href=\"../qr/\">QRコード作成</a> を使ってください。こちらも無料・広告なしで、期限もありません。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Barcode Generator – EAN-13, Code 128, Code 39 | Free, No Ads | tukurimichi.com",
+      docDesc: "Free barcode generator for EAN-13 / JAN, EAN-8, Code 128 and Code 39. Check digits are added automatically. Make many at once, save as PNG or SVG, or print them on A4. No ads, no sign-up, nothing is uploaded.",
+      back: "← Back to the tukurimichi toolbox", h1: "Barcode generator (free, no ads)",
+      lead: "Make EAN/JAN, Code 128 and Code 39 barcodes. One per line — make as many as you like. Save as PNG or SVG, or print them on A4. What you type stays in this browser and is never sent anywhere.",
+      lblType: "Type", types: ["EAN-13 / JAN", "EAN-8", "Code 128", "Code 39"],
+      hints: ["The common retail barcode. Enter 12 digits and the check digit is added for you",
+              "Short 8-digit EAN for small products. Enter 7 digits and the check digit is added",
+              "Letters, digits and symbols. Good for asset tags, stock and order numbers",
+              "Digits, capital letters and - . $ / + % space. Easy for older scanners"],
+      lblIn: "Contents (one per line)", lblH: "Height", lblW: "Bar width", lblText: "Show text", lblCols: "Print columns",
+      ph: ["490123456789\n4901234567894", "4512345", "ABC-0001\nITEM 2026/10", "ABC-0001"],
+      errDigits: function (n) { return "Enter " + n + " digits"; }, errCheck: function (c) { return "The check digit is wrong. It should be " + c; },
+      errChar: function (c) { return "Unsupported character: " + c; }, errEmpty: "", added: "Check digit added",
+      png: "PNG", svg: "SVG", plan: function (n, e) { return n + " barcode" + (n > 1 ? "s" : "") + (e ? " (" + e + " to fix)" : ""); },
+      zip: "All as PNG (ZIP)", zip1: "Save PNG", print: "Print on A4",
+      notes: "・Your input and settings are remembered on this device (never uploaded)<br>・To put EAN/JAN codes on products for sale you need a company prefix from GS1. Internal use does not<br>・After printing, check that a scanner or phone can read them",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is it safe? Is my input uploaded?</h3><p>No. Barcodes are drawn inside your browser.</p>"
+        + "<h3>Ads? Cost?</h3><p>No ads, free, no account, no limit.</p>"
+        + "<h3>Which type should I use?</h3><p>Retail products: EAN-13. Internal asset or stock numbers: Code 128 (letters allowed, shorter). Use Code 39 when someone asks for it.</p>"
+        + "<h3>What is a check digit?</h3><p>The last digit of an EAN, used to catch misreads. Enter 12 digits (7 for EAN-8) and it is calculated; with 13 digits it is verified.</p>"
+        + "<h3>Can I make many at once?</h3><p>Yes — one per line. Paste a column from a spreadsheet. Save all as a ZIP or print them on A4.</p>"
+        + "<h3>Will printed codes scan?</h3><p>Very thin bars may not. Increase “Bar width” for small prints, and test with a scanner.</p>"
+        + "<h3>I need a QR code</h3><p>Use <a href=\"../qr/\">QR Code Generator</a> — free, no ads, never expires.</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.barcode.v1";
+  var st = { type: "ean13", text: { ean13: "", ean8: "", code128: "", code39: "" }, h: 60, w: 2, showText: true, cols: 3 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ================= 符号化（バーの並び＝"1"が黒・"0"が白のモジュール列）=================
+  var EAN_L = ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"];
+  var EAN_R = EAN_L.map(function (s) { return s.replace(/./g, function (c) { return c === "0" ? "1" : "0"; }); });
+  var EAN_G = EAN_R.map(function (s) { return s.split("").reverse().join(""); });
+  var PARITY = ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"];
+  function checkDigit(d) { var s = 0; for (var i = 0; i < d.length; i++) s += +d[d.length - 1 - i] * (i % 2 === 0 ? 3 : 1); return (10 - s % 10) % 10; }
+  function ean(raw, n) {
+    var L = T(), d = raw.replace(/[\s-]/g, "");
+    if (!/^\d+$/.test(d) || (d.length !== n - 1 && d.length !== n)) return { err: L.errDigits(n === 13 ? (lang === "en" ? "12–13" : "12〜13") : (lang === "en" ? "7–8" : "7〜8")) };
+    var c = checkDigit(d.slice(0, n - 1)), added = false;
+    if (d.length === n) { if (+d[n - 1] !== c) return { err: L.errCheck(d.slice(0, n - 1) + c) }; }
+    else { d += c; added = true; }
+    var m = "101", guards = [[0, 3]];
+    if (n === 13) {
+      var par = PARITY[+d[0]];
+      for (var i = 1; i <= 6; i++) m += (par[i - 1] === "L" ? EAN_L : EAN_G)[+d[i]];
+      guards.push([m.length, m.length + 5]); m += "01010";
+      for (i = 7; i <= 12; i++) m += EAN_R[+d[i]];
+    } else {
+      for (i = 0; i < 4; i++) m += EAN_L[+d[i]];
+      guards.push([m.length, m.length + 5]); m += "01010";
+      for (i = 4; i < 8; i++) m += EAN_R[+d[i]];
+    }
+    guards.push([m.length, m.length + 3]); m += "101";
+    return { mods: m, guards: guards, text: d, kind: "ean" + n, added: added };
+  }
+  var C128 = ["212222","222122","222221","121223","121322","131222","122213","122312","132212","221213","221312","231212","112232","122132","122231","113222","123122","123221","223211","221132","221231","213212","223112","312131","311222","321122","321221","312212","322112","322211","212123","212321","232121","111323","131123","131321","112313","132113","132311","211313","231113","231311","112133","112331","132131","113123","113321","133121","313121","211331","231131","213113","213311","213131","311123","311321","331121","312113","312311","332111","314111","221411","431111","111224","111422","121124","121421","141122","141221","112214","112412","122114","122411","142112","142211","241211","221114","413111","241112","134111","111242","121142","121241","114212","124112","124211","411212","421112","421211","212141","214121","412121","111143","111341","131141","114113","114311","411113","411311","113141","114131","311141","411131","211412","211214","211232","2331112"];
+  function widths(w) { var s = "", bar = true; for (var i = 0; i < w.length; i++) { s += (bar ? "1" : "0").repeat(+w[i]); bar = !bar; } return s; }
+  function code128(raw) {
+    var L = T(), s = raw;
+    for (var i = 0; i < s.length; i++) { var cc = s.charCodeAt(i); if (cc < 32 || cc > 126) return { err: L.errChar(s[i]) }; }
+    // 数字が4つ以上続く所は C（2桁で1つ）、それ以外は B
+    var vals = [], set = null;
+    function digitsRun(p) { var n = 0; while (p + n < s.length && /\d/.test(s[p + n])) n++; return n; }
+    i = 0;
+    while (i < s.length) {
+      var run = digitsRun(i);
+      var useC = run >= 4 && (i === 0 || i + run === s.length || run >= 6) || (run >= 2 && run === s.length);
+      if (useC) {
+        if (run % 2 === 1) { // 奇数なら1桁は B で先に出す
+          if (set !== "B") { vals.push(set ? 100 : 104); set = "B"; }
+          vals.push(s.charCodeAt(i) - 32); i++; run--;
+        }
+        if (set !== "C") { vals.push(set ? 99 : 105); set = "C"; }
+        for (var k = 0; k < run; k += 2) vals.push(+s.substr(i + k, 2));
+        i += run;
+      } else {
+        if (set !== "B") { vals.push(set ? 100 : 104); set = "B"; }
+        vals.push(s.charCodeAt(i) - 32); i++;
+      }
+    }
+    var sum = vals[0]; for (i = 1; i < vals.length; i++) sum += vals[i] * i;
+    vals.push(sum % 103); vals.push(106);
+    return { mods: vals.map(function (v) { return widths(C128[v]); }).join(""), text: s, kind: "code128" };
+  }
+  var C39 = { "0":"000110100","1":"100100001","2":"001100001","3":"101100000","4":"000110001","5":"100110000","6":"001110000","7":"000100101","8":"100100100","9":"001100100",
+    "A":"100001001","B":"001001001","C":"101001000","D":"000011001","E":"100011000","F":"001011000","G":"000001101","H":"100001100","I":"001001100","J":"000011100",
+    "K":"100000011","L":"001000011","M":"101000010","N":"000010011","O":"100010010","P":"001010010","Q":"000000111","R":"100000110","S":"001000110","T":"000010110",
+    "U":"110000001","V":"011000001","W":"111000000","X":"010010001","Y":"110010000","Z":"011010000","-":"010000101",".":"110000100"," ":"011000100","*":"010010100",
+    "$":"010101000","/":"010100010","+":"010001010","%":"000101010" };
+  function code39(raw) {
+    var L = T(), s = raw.toUpperCase();
+    for (var i = 0; i < s.length; i++) if (!C39[s[i]] || s[i] === "*") return { err: L.errChar(s[i]) };
+    var full = "*" + s + "*", m = "";
+    for (i = 0; i < full.length; i++) {
+      var p = C39[full[i]], bar = true;
+      for (var j = 0; j < 9; j++) { m += (bar ? "1" : "0").repeat(p[j] === "1" ? 3 : 1); bar = !bar; }
+      if (i < full.length - 1) m += "0";
+    }
+    return { mods: m, text: "*" + s + "*", kind: "code39" };
+  }
+  function encode(type, line) {
+    if (type === "ean13") return ean(line, 13);
+    if (type === "ean8") return ean(line, 8);
+    if (type === "code128") return code128(line);
+    return code39(line);
+  }
+
+  // ================= 描く（SVG。1モジュール＝1の座標）=================
+  function svgOf(r, h, showText, forPrint) {
+    var q = r.kind.indexOf("ean") === 0 ? (r.kind === "ean13" ? 11 : 7) : 10;   // 左右の余白（クワイエットゾーン）
+    var mw = r.mods.length, W = mw + q * 2, fs = r.kind.indexOf("ean") === 0 ? 9 : 8, th = showText ? fs + 3 : 0, H = h + th + 4;
+    var rects = "", i = 0;
+    while (i < mw) {
+      if (r.mods[i] === "1") {
+        var j = i; while (j < mw && r.mods[j] === "1") j++;
+        var tall = r.guards && r.guards.some(function (g) { return i >= g[0] && i < g[1]; });
+        rects += '<rect x="' + (q + i) + '" y="2" width="' + (j - i) + '" height="' + (h + (showText && tall ? fs * .55 : 0)) + '"/>';
+        i = j;
+      } else i++;
+    }
+    var txt = "";
+    if (showText) {
+      var y = h + fs + 2, f = 'font-family="OCR-B, Consolas, monospace" font-size="' + fs + '"';
+      if (r.kind === "ean13") {
+        txt = '<text x="' + (q - 2) + '" y="' + y + '" ' + f + ' text-anchor="end">' + r.text[0] + "</text>"
+            + '<text x="' + (q + 3 + 21) + '" y="' + y + '" ' + f + ' text-anchor="middle" letter-spacing="1.6">' + r.text.slice(1, 7) + "</text>"
+            + '<text x="' + (q + 50 + 21) + '" y="' + y + '" ' + f + ' text-anchor="middle" letter-spacing="1.6">' + r.text.slice(7) + "</text>";
+      } else if (r.kind === "ean8") {
+        txt = '<text x="' + (q + 3 + 14) + '" y="' + y + '" ' + f + ' text-anchor="middle" letter-spacing="1.6">' + r.text.slice(0, 4) + "</text>"
+            + '<text x="' + (q + 36 + 14) + '" y="' + y + '" ' + f + ' text-anchor="middle" letter-spacing="1.6">' + r.text.slice(4) + "</text>";
+      } else txt = '<text x="' + W / 2 + '" y="' + y + '" ' + f + ' text-anchor="middle">' + esc(r.text) + "</text>";
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" width="' + W * 2 + '" height="' + H * 2 + '" shape-rendering="crispEdges">'
+      + '<rect width="' + W + '" height="' + H + '" fill="#fff"/><g fill="#000">' + rects + "</g>" + txt + "</svg>";
+  }
+  function pngOf(r, scale) {
+    var svg = svgOf(r, st.h, st.showText), m = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg), W = +m[1], H = +m[2];
+    var c = document.createElement("canvas"); c.width = Math.round(W * scale); c.height = Math.round(H * scale);
+    var img = new Image();
+    return new Promise(function (res, rej) {
+      img.onload = function () { var x = c.getContext("2d"); x.imageSmoothingEnabled = false; x.drawImage(img, 0, 0, c.width, c.height); c.toBlob(function (b) { b ? res(b) : rej(new Error("png")); }, "image/png"); };
+      img.onerror = function () { rej(new Error("svg")); };
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    });
+  }
+
+  // ================= 画面 =================
+  var results = [];
+  function lines() { return (st.text[st.type] || "").split(/\r?\n/).map(function (s) { return s.replace(/\t/g, " ").trim(); }).filter(Boolean); }
+  function fname(r, k) { return (r.kind + "_" + (r.text.replace(/[\\\/:*?"<>|\s]+/g, "_").replace(/^\*|\*$/g, "") || k)).slice(0, 60) + ".png"; }
+  function render() {
+    var L = T(); results = lines().map(function (l) { var r = encode(st.type, l); r.src = l; return r; });
+    var html = "", ok = 0, bad = 0;
+    results.forEach(function (r, k) {
+      if (r.err) { bad++; html += '<div class="card"><div class="err">' + esc(r.src) + "<br>" + esc(r.err) + "</div></div>"; return; }
+      ok++;
+      html += '<div class="card">' + svgOf(r, st.h, st.showText) + (r.added ? '<div class="fixed">' + L.added + "</div>" : "")
+        + '<div class="acts"><button type="button" data-png="' + k + '">' + L.png + '</button><button type="button" data-svg="' + k + '">' + L.svg + "</button></div></div>";
+    });
+    $("grid").innerHTML = html;
+    $("plan").textContent = results.length ? L.plan(results.length, bad) : "";
+    $("zipBtn").disabled = !ok; $("printBtn").disabled = !ok; $("printBtn").className = "btn ghost";
+    $("zipBtn").textContent = ok > 1 ? L.zip : L.zip1;
+  }
+  function download(blob, name) {
+    var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  var SCALE = function () { return +st.w; };
+  $("grid").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var r = results[+(b.dataset.png || b.dataset.svg)]; if (!r || r.err) return;
+    if (b.dataset.svg != null) download(new Blob([svgOf(r, st.h, st.showText)], { type: "image/svg+xml" }), fname(r, 1).replace(/\.png$/, ".svg"));
+    else pngOf(r, SCALE()).then(function (bl) { download(bl, fname(r, 1)); });
+    if (window.gtag) gtag("event", "barcode_save", { type: st.type, fmt: b.dataset.svg != null ? "svg" : "png", count: 1 });
+  };
+  $("zipBtn").onclick = function () {
+    var ok = results.filter(function (r) { return !r.err; }); if (!ok.length) return;
+    if (ok.length === 1) { pngOf(ok[0], SCALE()).then(function (bl) { download(bl, fname(ok[0], 1)); }); }
+    else {
+      var used = {};
+      Promise.all(ok.map(function (r, k) { return pngOf(r, SCALE()).then(function (b) { return b.arrayBuffer(); }).then(function (ab) {
+        var n = fname(r, k + 1), m = 2; while (used[n]) n = fname(r, k + 1).replace(/\.png$/, "_" + (m++) + ".png"); used[n] = 1;
+        return { name: n, bytes: new Uint8Array(ab) }; }); }))
+        .then(function (fs) { download(zip(fs), (lang === "en" ? "barcodes" : "バーコード") + ".zip"); });
+    }
+    if (window.gtag) gtag("event", "barcode_save", { type: st.type, fmt: "png", count: ok.length });
+  };
+  $("printBtn").onclick = function () {
+    var ok = results.filter(function (r) { return !r.err; }); if (!ok.length) return;
+    $("sheet").style.setProperty("--cols", st.cols);
+    $("sheet").innerHTML = ok.map(function (r) { return "<div>" + svgOf(r, st.h, st.showText) + "</div>"; }).join("");
+    if (window.gtag) gtag("event", "barcode_print", { type: st.type, count: ok.length });
+    window.print();
+  };
+
+  // ---- ZIP（圧縮なしでまとめる）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date();
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+      h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+      c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0);
+    var e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+
+  // ---- 操作 ----
+  $("segType").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.type = b.dataset.v; save(); syncInputs(); render(); };
+  $("input").oninput = function () { st.text[st.type] = this.value; save(); render(); };
+  $("optH").oninput = function () { st.h = +this.value; save(); render(); };
+  $("optW").oninput = function () { st.w = +this.value; save(); };
+  $("optText").onchange = function () { st.showText = this.checked; save(); render(); };
+  $("optCols").onchange = function () { st.cols = +this.value; save(); };
+  function syncInputs() {
+    var L = T(), i = ["ean13", "ean8", "code128", "code39"].indexOf(st.type);
+    [].forEach.call($("segType").children, function (b) { b.classList.toggle("on", b.dataset.v === st.type); });
+    $("hintType").textContent = L.hints[i]; $("input").placeholder = L.ph[i]; $("input").value = st.text[st.type] || "";
+    $("optH").value = st.h; $("optW").value = st.w; $("optText").checked = !!st.showText; $("optCols").value = st.cols;
+  }
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    $("lblType").textContent = L.lblType; [].forEach.call($("segType").children, function (b, i) { b.textContent = L.types[i]; });
+    $("lblIn").textContent = L.lblIn; $("lblH").textContent = L.lblH; $("lblW").textContent = L.lblW; $("lblText").textContent = L.lblText; $("lblCols").textContent = L.lblCols;
+    $("printBtn").textContent = L.print;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    syncInputs(); render();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__bc = { st: st, encode: encode, svgOf: svgOf, png: function (r, s) { return pngOf(r, s); } }; // 試験用
+})();
+</script>
+</body>
+</html>
