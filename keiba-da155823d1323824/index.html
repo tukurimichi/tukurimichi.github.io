@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一口馬主クラブ一覧</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1d2330;--mut:#6b7385;--card:#fff;--line:#dfe3ea;--ac:#1f6feb;--ok:#1a7f37;--warn:#b35900}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8ebf2;--mut:#98a1b3;--card:#1d222c;--line:#2e3542;--ac:#6ea8ff;--ok:#56d364;--warn:#f0a050}}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,"Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}.sub{color:var(--mut);font-size:13px;margin-bottom:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+input{flex:1;min-width:160px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.name{font-weight:700}.fee{color:var(--mut);font-size:13px}
+.tag{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.ok{color:var(--ok);border-color:var(--ok)}.warn{color:var(--warn);border-color:var(--warn)}
+.links{margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;font-size:14px}
+a{color:var(--ac)}.note{color:var(--mut);font-size:13px;margin-top:4px}
+footer{color:var(--mut);font-size:12px;margin-top:16px}
+</style></head><body><main>
+<h1>一口馬主クラブ一覧</h1>
+<div class="sub">料金は参考値です。必ず各クラブの公式サイトで最新を確認してください。<span id="cnt"></span></div>
+<div class="bar">
+<input id="q" placeholder="クラブ名で絞る">
+<select id="s"><option value="o">並び：おすすめ順</option><option value="n">名前順</option><option value="m">月会費が安い順</option></select>
+<select id="v"><option value="">すべて</option><option value="1">公式サイト確認済み</option><option value="0">未確認</option></select>
+</div>
+<div id="list"></div>
+<footer>料金の出典：2023年2月時点の記事（Financial Field）。「確認済」は公式ページで見た値。公式URLは2026-10-09に確認できた分だけ直接リンク、他は検索リンク。地方競馬のクラブは未収録。</footer>
+</main>
+<script>
+// url/boshu＝公式で確認したもの。fee=[入会金,月会費,出典] 出典: 公式2026 / 記事2023
+const C=[
+{n:"キャロットクラブ",url:"https://carrotclub.net/",boshu:"https://carrotclub.net/horse/bosyuba-list.asp",nyu:22000,mo:3300,src:"記事2023"},
+{n:"サンデーサラブレッドクラブ",url:"https://www.sundaytc.co.jp/",boshu:"https://www.sundaytc.co.jp/list/",nyu:33000,mo:3300,src:"公式2026",note:"1頭40口の少人数制"},
+{n:"シルクホースクラブ",url:"https://www.silkhorseclub.jp/",boshu:"https://www.silkhorseclub.jp/horse_info/boshu/",nyu:11000,mo:3300,src:"記事2023",note:"2026年度の募集馬は6月25日に発表"},
+{n:"社台サラブレッドクラブ",nyu:33000,mo:3300,src:"記事2023",note:"1頭40口の少人数制"},
+{n:"インゼルサラブレッドクラブ",url:"https://inseltc.com/",boshu:"https://inseltc.com/offer-horse-list",nyu:11000,mo:1980,src:"記事2023",note:"2026年度の出資募集は10月初旬から"},
+{n:"グリーンファーム愛馬会",url:"https://www.greenfarm.co.jp/",nyu:19800,mo:3300,src:"記事2023"},
+{n:"ユニオンオーナーズクラブ",url:"https://www.union-oc.co.jp/",boshu:"https://www.union-oc.co.jp/offering/list.jsp",nyu:22000,mo:3300,src:"記事2023"},
+{n:"広尾サラブレッド倶楽部",url:"https://www.hirootc.jp/",nyu:0,mo:"770〜3300",mo1:770,src:"記事2023"},
+{n:"東京サラブレッドクラブ",nyu:11000,mo:3080,src:"記事2023"},
+{n:"サラブレッドクラブライオン",nyu:21000,mo:3150,src:"記事2023"},
+{n:"ウインレーシングクラブ",nyu:19800,mo:2000,src:"記事2023"},
+{n:"G1サラブレッドクラブ",nyu:33000,mo:1650,src:"記事2023"},
+{n:"ターファイトクラブ",nyu:10000,mo:3300,src:"記事2023"},
+{n:"大樹レーシングクラブ",nyu:10000,mo:2750,src:"記事2023"},
+{n:"DMMバヌーシー",nyu:0,mo:"880〜3520",mo1:880,src:"記事2023"},
+{n:"京都サラブレッドクラブ",nyu:0,mo:"550〜5500",mo1:550,src:"記事2023"},
+{n:"ノルマンディーオーナーズクラブ",nyu:11000,mo:1100,src:"記事2023"},
+{n:"友駿ホースクラブ愛馬会",nyu:10000,mo:3740,src:"記事2023"},
+{n:"ラフィアンターフマンクラブ",nyu:20000,mo:3000,src:"記事2023",note:"報道では競走馬ファンドの新規募集を2026年7月で終了とのこと。要確認"},
+{n:"ロードサラブレッドオーナーズ",nyu:11000,mo:2750,src:"記事2023"},
+{n:"ローレルクラブ",nyu:11000,mo:3300,src:"記事2023"},
+{n:"YGGオーナーズクラブ",nyu:0,mo:"825〜3300",mo1:825,src:"記事2023",note:"公式を検索で確認できず。実在・名称を要確認"},
+{n:"ワラウカド",nyu:11000,mo:2200,src:"記事2023",note:"公式を検索で確認できず。名称違いの可能性あり"}
+];
+const $=id=>document.getElementById(id);
+const yen=x=>typeof x==="number"?x.toLocaleString()+"円":x+"円";
+const mv=c=>c.mo1||c.mo;
+function load(){try{const s=JSON.parse(localStorage.getItem("hk.v1")||"{}");$("q").value=s.q||"";$("s").value=s.s||"o";$("v").value=s.v||""}catch(e){}}
+function save(){try{localStorage.setItem("hk.v1",JSON.stringify({q:$("q").value,s:$("s").value,v:$("v").value}))}catch(e){}}
+function draw(){
+ save();
+ let a=C.filter(c=>c.n.includes($("q").value.trim()));
+ const v=$("v").value; if(v!=="")a=a.filter(c=>!!c.url===(v==="1"));
+ const s=$("s").value;
+ if(s==="n")a=[...a].sort((x,y)=>x.n.localeCompare(y.n,"ja"));
+ if(s==="m")a=[...a].sort((x,y)=>mv(x)-mv(y));
+ $("cnt").textContent=" "+a.length+"件";
+ $("list").innerHTML=a.map(c=>{
+  const q=encodeURIComponent(c.n+" 公式 募集馬");
+  const links=(c.url?`<a href="${c.url}" target="_blank" rel="noopener">公式サイト</a>`:`<a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">公式を検索</a>`)
+   +(c.boshu?`<a href="${c.boshu}" target="_blank" rel="noopener">募集馬一覧</a>`:"");
+  return `<div class="card"><div class="top"><span class="name">${c.n}</span>
+   <span><span class="tag ${c.url?"ok":"warn"}">${c.url?"公式確認済":"公式未確認"}</span></span></div>
+   <div class="fee">入会金 ${yen(c.nyu)} ／ 月会費 ${yen(c.mo)}（${c.src}）</div>
+   <div class="links">${links}</div>${c.note?`<div class="note">${c.note}</div>`:""}</div>`}).join("");
+}
+load();["q","s","v"].forEach(i=>$(i).addEventListener("input",draw));draw();
+</script></body></html>

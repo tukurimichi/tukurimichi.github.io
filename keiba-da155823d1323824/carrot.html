@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>キャロット所属馬ボード</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1d2330;--mut:#6b7385;--card:#fff;--line:#dfe3ea;--ac:#1f6feb;--ok:#1a7f37;--star:#e0a100;--win:#fff6d6}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8ebf2;--mut:#98a1b3;--card:#1d222c;--line:#2e3542;--ac:#6ea8ff;--ok:#56d364;--star:#f5c542;--win:#3a331a}}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,"Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:980px;margin:0 auto;padding:12px 16px 40px}
+h1{font-size:19px;margin:4px 0 0}.sub{color:var(--mut);font-size:12px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button,.bar label{font:inherit;padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--fg);cursor:pointer}
+.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+input[type=search],select{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+input[type=search]{flex:1;min-width:140px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start}
+.row.win{background:var(--win)}.row.mine{border-left:4px solid var(--star)}
+.star{border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--mut);padding:0}.star.on{color:var(--star)}
+.b{flex:1;min-width:0}.nm{font-weight:700}.nm a{color:var(--fg);text-decoration:none}.nm a:hover{text-decoration:underline}
+.d{color:var(--mut);font-size:13px}.k{font-weight:700;color:var(--ac)}
+.dayh{margin:14px 0 6px;font-weight:700;font-size:14px;color:var(--mut)}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:0 7px;color:var(--mut);margin-left:4px}
+.full{color:#c33}.open{color:var(--ok);font-weight:700}
+a{color:var(--ac)}footer{color:var(--mut);font-size:12px;margin-top:20px}
+</style></head><body><main>
+<h1>キャロット所属馬ボード</h1>
+<div class="sub" id="upd">読み込み中…</div>
+<div class="tabs" id="tabs"></div>
+<div class="bar"><input type="search" id="q" placeholder="馬名・父・厩舎で絞る">
+<label><input type="checkbox" id="mineOnly"> ★持ち馬だけ</label><span class="d" id="cnt"></span></div>
+<div id="list"></div>
+<footer>データ：<a href="https://carrotclub.net/" target="_blank" rel="noopener">キャロットクラブ公式</a>の公開ページ（出走予定・競走結果・現役馬・募集馬）を取り込んだもの。確定情報は必ず公式・主催者発表で確認。馬名の★は自分の持ち馬の目印で、この端末にだけ保存されます（会員情報は読みません）。</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const TABS=[["yotei","出走予定"],["result","結果"],["horses","現役馬"],["boshu","募集馬"]];
+let D=null,st={tab:"yotei",q:"",mine:false,stars:[]};
+try{Object.assign(st,JSON.parse(localStorage.getItem("carrot.v1")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("carrot.v1",JSON.stringify(st))}catch(e){}};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hl=id=>`https://carrotclub.net/horse/horse.asp?id=${id}`;
+const star=id=>`<button class="star ${st.stars.includes(id)?"on":""}" data-id="${id}" title="持ち馬の目印">${st.stars.includes(id)?"★":"☆"}</button>`;
+const nm=(x,u)=>`<span class="nm"><a href="${u}" target="_blank" rel="noopener">${esc(x.name)}</a></span>`;
+const match=x=>{const q=st.q.trim();return !q||Object.values(x).some(v=>String(v).includes(q))};
+const mineOk=x=>!st.mine||(x.id&&st.stars.includes(x.id));
+function grouped(a,draw){let h="",last="";for(const x of a){if(x.date!==last){last=x.date;h+=`<div class="dayh">${esc(x.date)}</div>`}h+=draw(x)}return h}
+const R={
+ yotei:x=>`<div class="row ${st.stars.includes(x.id)?"mine":""}">${star(x.id)}<div class="b">${nm(x,hl(x.id))}<span class="chip">${esc(x.venue)} ${esc(x.race)}R</span><span class="chip">${esc(x.start)}発走</span>
+  <div class="d">${esc(x.title)} ${esc(x.kind)} ／ ${esc(x.course)} ／ ${esc(x.jockey)} ${esc(x.kin)}kg${x.ban?` ／ ${esc(x.waku)}枠${esc(x.ban)}番`:" ／ 枠順は未確定"}</div></div></div>`,
+ result:x=>{const w=x.chaku==="1";return `<div class="row ${w?"win":""} ${st.stars.includes(x.id)?"mine":""}">${star(x.id)}<div class="b">${nm(x,hl(x.id))}<span class="k"> ${esc(x.chaku)}着</span><span class="chip">${esc(x.venue)} ${esc(x.race)}R</span>
+  <div class="d">${esc(x.title)} ${esc(x.kind)} ／ ${esc(x.course)}(${esc(x.state)}) ／ ${esc(x.jockey)} ／ ${esc(x.ninki)}人気・${esc(x.heads)}頭 ／ ${esc(x.time)} ／ ${esc(x.weight)}kg ${esc(x.memo)}</div></div></div>`},
+ horses:x=>`<div class="row ${st.stars.includes(x.id)?"mine":""}">${star(x.id)}<div class="b">${nm(x,hl(x.id))}<span class="chip">${esc(x.sex)}${esc(x.age)}</span><span class="chip">${esc(x.area)}・${esc(x.trainer)}</span><span class="chip">${esc(x.cls)}</span>
+  <div class="d">${esc(x.sire)} × ${esc(x.dam)} ／ 戦績 ${esc(x.record)}</div></div></div>`,
+ boshu:x=>`<div class="row"><div class="b"><span class="nm"><a href="https://carrotclub.net/horse/bosyuba.asp?id=${x.id}" target="_blank" rel="noopener">${esc(x.no)}. ${esc(x.name)}</a></span>
+  <span class="${x.status.includes("満")?"full":"open"}"> ${esc(x.status)}</span><span class="chip">${esc(x.area)}・${esc(x.trainer)}</span>
+  <div class="d">${esc(x.sire)} ／ ${esc(x.sex)}・${esc(x.color)}・${esc(x.birth)}生 ／ 総額${esc(x.total)}万円・1口${esc(x.unit)}万円</div></div></div>`
+};
+function draw(){
+ $("tabs").innerHTML=TABS.map(([k,l])=>`<button data-t="${k}" class="${st.tab===k?"on":""}">${l}${D?` ${D[k].length}`:""}</button>`).join("");
+ $("q").value=st.q;$("mineOnly").checked=st.mine;$("mineOnly").parentElement.style.display=st.tab==="boshu"?"none":"";
+ if(!D)return;
+ const a=D[st.tab].filter(x=>match(x)&&(st.tab==="boshu"||mineOk(x)));
+ $("cnt").textContent=a.length+"件";
+ $("list").innerHTML=a.length?(st.tab==="yotei"||st.tab==="result"?grouped(a,R[st.tab]):a.map(R[st.tab]).join("")):'<div class="d">該当なし</div>';
+}
+document.addEventListener("click",e=>{
+ const t=e.target.closest("[data-t]");if(t){st.tab=t.dataset.t;save();draw();return}
+ const s=e.target.closest(".star");if(s){const i=st.stars.indexOf(s.dataset.id);i<0?st.stars.push(s.dataset.id):st.stars.splice(i,1);save();draw()}
+});
+$("q").addEventListener("input",e=>{st.q=e.target.value;save();draw()});
+$("mineOnly").addEventListener("change",e=>{st.mine=e.target.checked;save();draw()});
+fetch("data.json?"+Date.now()).then(r=>r.json()).then(d=>{D=d;$("upd").innerHTML=`最終取り込み ${esc(d.updated)} ／ <a href="index.html">全クラブ一覧</a>`;draw()})
+ .catch(()=>{$("upd").textContent="data.json を読めませんでした"});
+draw();
+</script></body></html>
