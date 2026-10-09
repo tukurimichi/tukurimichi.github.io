@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="pageTitle">写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）| tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="スマホ写真の位置情報（GPS・Exif）をまとめて消す無料ツール。カメラの時計のずれ（撮影日時）もまとめて直せます。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。">
+<meta property="og:title" content="写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）">
+<meta property="og:description" content="写真に入っている撮影場所・機種名をまとめて消す。カメラの時計のずれも直せる。写真はどこにも送られません。">
+<meta property="og:url" content="https://tukurimichi.com/apps/exif/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）">
+<meta name="twitter:description" content="写真に入っている撮影場所・機種名をまとめて消す。カメラの時計のずれも直せる。写真はどこにも送られません。">
+<meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
+<link rel="canonical" href="https://tukurimichi.com/apps/exif/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root { --bg: #EDE6D6; --ink: #2B2318; --ink-muted: #8A7F68; --accent: #1E7A52; --accent-warm: #D9823B; --danger: #c8412f; --surface: #FBF4E4; --border: rgba(43,35,24,0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); }
+  body { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Hiragino Sans", sans-serif; color: var(--ink); padding: 28px 20px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .back { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .langToggle { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-family: inherit; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lead { font-size: 13px; color: var(--ink-muted); margin: 0 0 22px; line-height: 1.7; }
+  .drop { border: 2px dashed var(--border); border-radius: 18px; background: var(--surface); padding: 34px 20px; text-align: center; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: #fff; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12.5px; color: var(--ink-muted); }
+  #picker { display: none; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-top: 16px; display: grid; gap: 16px; }
+  .lbl { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--ink); font-family: inherit; font-size: 13px; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  .hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 6px; line-height: 1.6; }
+  .shift { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+  .shift select, .shift input { font-family: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+  .shift input { width: 70px; }
+  .shift.off { opacity: .45; pointer-events: none; }
+  .list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+  .item { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 8px 12px 8px 8px; }
+  .item img, .item .ph { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; background: #f0ebe0; display: block; }
+  .nm { font-size: 13.5px; font-weight: 700; word-break: break-all; display: flex; gap: 8px; align-items: baseline; }
+  .nm .x { margin-left: auto; appearance: none; border: none; background: none; color: var(--ink-muted); cursor: pointer; font-size: 15px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; font-size: 12px; }
+  .tag { padding: 2px 9px; border-radius: 999px; background: rgba(43,35,24,0.07); }
+  .tag.gps { background: #fde7e3; color: var(--danger); font-weight: 700; }
+  .tag.gps a { color: inherit; }
+  .tag.ok { background: #e3f3ea; color: var(--accent); font-weight: 700; }
+  .tag.ng { background: #fff1dc; color: #9a5a12; }
+  .dt { font-size: 12px; margin-top: 5px; color: var(--ink-muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dt b { color: var(--ink); font-weight: 700; }
+  .dt .to { color: var(--accent); font-weight: 700; }
+  .dt button { appearance: none; border: 1px solid var(--border); background: #fff; border-radius: 999px; font-family: inherit; font-size: 11.5px; padding: 2px 9px; cursor: pointer; color: var(--ink); }
+  .dt input { font-family: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 8px; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btn { appearance: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 999px; }
+  .btn.primary { background: var(--accent); color: var(--surface); }
+  .btn.primary:disabled { background: var(--ink-muted); cursor: default; }
+  .btn.ghost { background: rgba(43,35,24,0.08); color: var(--ink); font-size: 13px; padding: 8px 14px; }
+  .plan { font-size: 13px; color: var(--ink-muted); flex: 1; min-width: 180px; }
+  .status { margin-top: 12px; font-size: 13px; min-height: 1.6em; line-height: 1.6; }
+  .status.ok { color: var(--accent); font-weight: 700; } .status.ng { color: var(--accent-warm); font-weight: 700; }
+  .results { margin-top: 8px; font-size: 13px; line-height: 2; }
+  .results a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+  .faq { margin-top: 36px; font-size: 13px; line-height: 1.8; }
+  .faq h2 { font-size: 17px; margin: 0 0 10px; } .faq h3 { font-size: 14px; margin: 18px 0 4px; } .faq p { margin: 0; }
+  .faq a { color: var(--accent); }
+  .note { margin-top: 28px; font-size: 12px; color: var(--ink-muted); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 14px; }
+  .note a { color: var(--accent); }
+</style>
+
+<style>
+.more-tools{margin-top:34px;padding:18px;border:1px solid rgba(128,128,128,.35);border-radius:16px;background:rgba(128,128,128,.07);color:inherit}
+.more-tools h2{font-size:16px;margin:0 0 4px}
+.more-tools .mt-sub{font-size:12px;opacity:.75;margin:0 0 12px}
+.more-tools ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.more-tools a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);text-decoration:none;color:inherit;background:rgba(255,255,255,.04)}
+.more-tools a:hover{border-color:rgba(128,128,128,.7)}
+.more-tools .mt-i{font-size:20px;flex:none}
+.more-tools b{display:block;font-size:13.5px}
+.more-tools small{display:block;font-size:11.5px;opacity:.7}
+html[lang="en"] .more-tools .ja{display:none}
+html:not([lang="en"]) .more-tools .en{display:none}
+@media print{.more-tools{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
+    <button id="langBtn" class="langToggle" type="button">English</button>
+  </div>
+  <h1 id="h1t">写真の位置情報を消す・撮影日時のずれを直す</h1>
+  <p class="lead" id="leadT">スマホやカメラの写真に入っている「撮った場所」「機種名」などをまとめて消します。カメラの時計がずれていたときの撮影日時もまとめて直せます。画質はそのまま。写真はこのブラウザの中だけで処理され、どこにも送信されません。</p>
+
+  <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
+  <input type="file" id="picker" accept="image/jpeg,.jpg,.jpeg,.heic,.heif,.png,.webp" multiple>
+
+  <div id="work" hidden>
+    <div class="panel">
+      <div><span class="lbl" id="lblMode"></span>
+        <div class="seg" id="segMode"><button type="button" data-v="gps"></button><button type="button" data-v="all"></button><button type="button" data-v="none"></button></div>
+        <div class="hint" id="hintMode"></div></div>
+      <div><span class="lbl" id="lblShift"></span>
+        <div class="shift" id="shiftBox">
+          <select id="shSign"><option value="1">＋</option><option value="-1">−</option></select>
+          <input type="number" id="shD" min="0" value="0"> <span id="uD"></span>
+          <input type="number" id="shH" min="0" value="0"> <span id="uH"></span>
+          <input type="number" id="shM" min="0" value="0"> <span id="uM"></span>
+        </div>
+        <div class="hint" id="hintShift"></div></div>
+    </div>
+    <ul class="list" id="list"></ul>
+    <div class="bar">
+      <span class="plan" id="plan"></span>
+      <button class="btn ghost" id="clearBtn" type="button"></button>
+      <button class="btn primary" id="goBtn" type="button" disabled></button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <section class="faq" id="faqT"></section>
+  <nav class="more-tools" aria-label="ほかの道具"><h2><span class="ja">ほかの道具</span><span class="en">More tools</span></h2><p class="mt-sub"><span class="ja">どれも無料・広告なし。ブラウザの中だけで動き、ファイルはどこにも送りません。</span><span class="en">All free, no ads. Everything runs in your browser and nothing is uploaded.</span></p><ul><li><a href="../pdf/"><span class="mt-i">📄</span><span><b><span class="ja">PDF結合</span><span class="en">Merge PDFs</span></b><small><span class="ja">複数のPDFを1つに</span><span class="en">Join PDFs into one</span></small></span></a></li><li><a href="../pdf-split/"><span class="mt-i">✂️</span><span><b><span class="ja">PDF分割</span><span class="en">Split PDF</span></b><small><span class="ja">ページを分ける・抜き出す</span><span class="en">Split or extract pages</span></small></span></a></li><li><a href="../pdf-image/"><span class="mt-i">🏞️</span><span><b><span class="ja">PDF→画像変換</span><span class="en">PDF to Image</span></b><small><span class="ja">ページをJPG・PNGに</span><span class="en">Pages to JPG / PNG</span></small></span></a></li><li><a href="../image/"><span class="mt-i">🖼️</span><span><b><span class="ja">画像の圧縮・リサイズ</span><span class="en">Compress Images</span></b><small><span class="ja">写真をまとめて小さく</span><span class="en">Shrink photos in bulk</span></small></span></a></li><li><a href="../heic/"><span class="mt-i">📱</span><span><b><span class="ja">HEIC→JPG変換</span><span class="en">HEIC to JPG</span></b><small><span class="ja">iPhoneの写真をJPGに</span><span class="en">iPhone photos to JPG</span></small></span></a></li><li><a href="../qr/"><span class="mt-i">🔳</span><span><b><span class="ja">QRコード作成</span><span class="en">QR Code Generator</span></b><small><span class="ja">期限なし・チビロボ入り</span><span class="en">Never expires</span></small></span></a></li><li><a href="../inkan/"><span class="mt-i">🔴</span><span><b><span class="ja">電子印鑑</span><span class="en">Digital Hanko</span></b><small><span class="ja">丸印・日付印・角印</span><span class="en">Round, date & square seals</span></small></span></a></li><li><a href="../calendar/"><span class="mt-i">📅</span><span><b><span class="ja">カレンダー印刷</span><span class="en">Printable Calendar</span></b><small><span class="ja">祝日入り・A4</span><span class="en">Holidays included, A4</span></small></span></a></li><li><a href="../roulette/"><span class="mt-i">🎡</span><span><b><span class="ja">ルーレット</span><span class="en">Spinner Wheel</span></b><small><span class="ja">順番決め・抽選に</span><span class="en">For turns and raffles</span></small></span></a></li><li><a href="../sfx/"><span class="mt-i">🔊</span><span><b><span class="ja">効果音</span><span class="en">Sound Effects</span></b><small><span class="ja">商用OK・クレジット不要</span><span class="en">Free for commercial use</span></small></span></a></li><li><a href="../frames/"><span class="mt-i">🎞️</span><span><b><span class="ja">動画をコマにする</span><span class="en">Video to Frames</span></b><small><span class="ja">動画から静止画を切り出す</span><span class="en">Pull stills from a video</span></small></span></a></li></ul><p class="mt-sub" style="margin:12px 0 0"><a href="../../tools.html" style="display:inline;border:none;padding:0;background:none;text-decoration:underline"><span class="ja">道具の一覧へ →</span><span class="en">See all tools →</span></a></p></nav>
+<div class="note"><span id="notesT"></span></div>
+</div>
+
+<script>
+(function () {
+  var LANG = {
+    ja: {
+      toggleTo: "English",
+      docTitle: "写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）| tukurimichi.com",
+      docDesc: "スマホ写真の位置情報（GPS・Exif）をまとめて消す無料ツール。カメラの時計のずれ（撮影日時）もまとめて直せます。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。",
+      back: "← つくるみち の道具箱へ", h1: "写真の位置情報を消す・撮影日時のずれを直す",
+      lead: "スマホやカメラの写真に入っている「撮った場所」「機種名」などをまとめて消します。カメラの時計がずれていたときの撮影日時もまとめて直せます。画質はそのまま。写真はこのブラウザの中だけで処理され、どこにも送信されません。",
+      dropTitle: "写真（JPG）をここにドラッグ＆ドロップ", dropSub: "またはクリックして選ぶ（何枚でも）",
+      lblMode: "消すもの", modes: ["位置情報だけ消す", "撮影情報をぜんぶ消す", "消さない（日時だけ直す）"],
+      hintModes: ["撮った場所（緯度・経度）を消します。機種名や撮影日時は残ります",
+                  "機種名・カメラの番号・レンズ・撮影場所・縮小画像などをまとめて消します。写真の向きと撮影日時だけ残します",
+                  "何も消さずに、撮影日時のずれだけ直します"],
+      lblShift: "撮影日時のずれを直す", uD: "日", uH: "時間", uM: "分",
+      hintShift: "カメラの時計がずれていたとき用です。入れた分だけ、全部の写真の撮影日時を同じようにずらします。0のままなら変えません。1枚だけ直すときは、その写真の「この1枚を直す」から",
+      hintShiftOff: "「ぜんぶ消す」でも撮影日時は残るので、ずれを直せます",
+      gps: "📍 撮影場所あり", gpsMap: "地図で見る", noGps: "撮影場所なし", noExif: "撮影情報なし",
+      model: "📷 ", taken: "撮影日時", none: "（なし）", fixOne: "この1枚を直す", fixOk: "決定",
+      notJpeg: "JPG以外は直せません", heic: "HEICは先に「HEIC→JPG変換」でJPGに（変換すると撮影情報は消えます）", broken: "読み込めませんでした",
+      done1: "保存しました", plan: function (n, k) { return n + "枚" + (k ? "（うち撮影場所あり " + k + "枚）" : ""); },
+      clear: "全部外す", go: "直して保存", goZip: "直してZIPで保存", nothing: "直すものがありません（消すもの・ずれを選んでください）",
+      working: function (i, n) { return "処理しています… " + i + "/" + n; },
+      done: function (n) { return n + "枚を保存しました"; }, failed: function (e) { return "うまくいきませんでした：" + e; },
+      dlEach: "1枚ずつ保存：", gone: "✓ 撮影場所を消しました",
+      notes: "・元の写真は書き換えません。直したものは新しいファイルとして保存されます（ファイル名は同じ）<br>・写真の絵そのものは作り直さないので、画質は落ちません<br>・設定はこの端末に覚えておきます（写真そのものは覚えません）<br>・工事写真・提出書類など、撮影日時を偽ってはいけない写真には使わないでください",
+      faq: "<h2>よくある質問</h2>"
+        + "<h3>安全ですか？写真はどこかに送られますか？</h3><p>送られません。読み込みも書き換えも、いま開いているブラウザの中だけで行います。サーバーにアップロードする仕組みがそもそも無いので、家族の写真でも安心して使えます。</p>"
+        + "<h3>写真の位置情報って何ですか？</h3><p>スマホで撮った写真には、撮った場所の緯度・経度が「Exif（イグジフ）」という形で入っていることがあります。写真をファイルのまま渡すと、自宅や子どもの学校の場所が分かってしまうことがあります。このページに入れると、入っているかどうかが一目で分かります。</p>"
+        + "<h3>SNSやLINEに送ると勝手に消えますか？</h3><p>多くのSNSは投稿するときに消しますが、サービスや送り方によって違います。メールの添付・クラウドでの共有・ファイルとしての送信では残ることがあります。心配なら、送る前にこのページで消しておくのが確実です。</p>"
+        + "<h3>画質は落ちますか？</h3><p>落ちません。写真の絵の部分には触らず、撮影情報の部分だけを書き換えます。</p>"
+        + "<h3>撮影日時のずれはどう直すの？</h3><p>デジカメの時計を合わせ忘れていた・海外で時差のまま撮った、というときに使います。「＋1時間」のように入れると、全部の写真の撮影日時が同じだけずれます。スマホとデジカメの写真を並べたときに順番がおかしいときにも使えます。</p>"
+        + "<h3>iPhoneの写真（HEIC）は使えますか？</h3><p>このページはJPGだけです。HEICは <a href=\"../heic/\">HEIC→JPG変換</a> でJPGにしてください。変換すると撮影情報はまとめて消えます。</p>"
+        + "<h3>ファイルの「更新日時」も変わりますか？</h3><p>保存したファイルの更新日時は保存した日時になります。写真アプリやGoogleフォトが並べるのに使う「撮影日時」は、写真の中に書かれたものの方です。</p>"
+        + "<h3>写真のサイズも小さくしたい</h3><p><a href=\"../image/\">画像の圧縮・リサイズ</a> を使ってください。小さくするときに位置情報も消えます。</p>"
+    },
+    en: {
+      toggleTo: "日本語",
+      docTitle: "Remove Photo Location & Fix Photo Dates – Free, No Upload | tukurimichi.com",
+      docDesc: "Remove GPS location and camera info (EXIF) from photos in bulk, and fix photo dates when your camera clock was wrong. No quality loss, no ads, no sign-up. Your photos never leave your browser.",
+      back: "← Back to the tukurimichi toolbox", h1: "Remove photo location & fix photo dates",
+      lead: "Remove the location, camera model and other details stored in photos — in bulk. You can also shift the date taken when your camera clock was off. No quality loss. Your photos are processed in this browser and never uploaded.",
+      dropTitle: "Drop photos (JPG) here", dropSub: "or click to choose (any number)",
+      lblMode: "What to remove", modes: ["Location only", "All photo info", "Nothing (fix dates only)"],
+      hintModes: ["Removes where the photo was taken. Camera model and date stay",
+                  "Removes camera model, serial number, lens, location, thumbnail and more. Keeps only orientation and date taken",
+                  "Removes nothing; only shifts the dates"],
+      lblShift: "Fix the date taken", uD: "days", uH: "hours", uM: "min",
+      hintShift: "For when the camera clock was wrong. Every photo is shifted by the same amount. Leave 0 to keep dates. To fix one photo, use “Fix this one” on it",
+      hintShiftOff: "Dates are kept even with “All photo info”, so you can still shift them",
+      gps: "📍 Has location", gpsMap: "Map", noGps: "No location", noExif: "No photo info",
+      model: "📷 ", taken: "Taken", none: "(none)", fixOne: "Fix this one", fixOk: "OK",
+      notJpeg: "Only JPG files can be edited", heic: "Convert HEIC with “HEIC to JPG” first (that removes the info too)", broken: "Could not read this file",
+      done1: "Saved", plan: function (n, k) { return n + " photo" + (n > 1 ? "s" : "") + (k ? " (" + k + " with location)" : ""); },
+      clear: "Clear all", go: "Fix and save", goZip: "Fix and save as ZIP", nothing: "Nothing to change — pick what to remove or a date shift",
+      working: function (i, n) { return "Working… " + i + "/" + n; },
+      done: function (n) { return "Saved " + n + " photo" + (n > 1 ? "s" : ""); }, failed: function (e) { return "Something went wrong: " + e; },
+      dlEach: "Save one by one:", gone: "✓ Location removed",
+      notes: "・Your original photos are not changed; fixed copies are saved as new files (same names)<br>・The image itself is not re-encoded, so there is no quality loss<br>・Settings are remembered on this device (the photos are not)<br>・Do not use this on photos whose dates must not be altered (inspection or legal records)",
+      faq: "<h2>FAQ</h2>"
+        + "<h3>Is it safe? Are my photos uploaded?</h3><p>No. Reading and editing happen inside your browser. There is no upload step.</p>"
+        + "<h3>What is photo location data?</h3><p>Phone photos often contain GPS coordinates in their EXIF data. Sharing the file can reveal your home or your child's school. This page shows which photos have it.</p>"
+        + "<h3>Don't social networks remove it?</h3><p>Many do, but not all — email attachments, cloud sharing and file transfers often keep it. Removing it first is the safe way.</p>"
+        + "<h3>Does quality drop?</h3><p>No. The image data is untouched; only the info block is rewritten.</p>"
+        + "<h3>How does the date fix work?</h3><p>If your camera clock was off or still on home time abroad, enter e.g. “+1 hour” and every photo shifts by the same amount.</p>"
+        + "<h3>iPhone photos (HEIC)?</h3><p>This page edits JPG only. Use <a href=\"../heic/\">HEIC to JPG</a> first; converting removes the info anyway.</p>"
+        + "<h3>Does the file's modified date change?</h3><p>The saved file's modified date is when you saved it. Photo apps sort by the date taken stored inside the photo.</p>"
+        + "<h3>I also want smaller photos</h3><p>Use <a href=\"../image/\">Compress Images</a>; it removes location too.</p>"
+    }
+  };
+
+  var KEY = "tukurimichi.exif.v1";
+  var st = { mode: "gps", sign: 1, d: 0, h: 0, m: 0 };
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in st) if (k in sv) st[k] = sv[k]; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ mode: st.mode, sign: st.sign, d: st.d, h: st.h, m: st.m })); } catch (e) {} }
+  var lang = "ja";
+  try { lang = localStorage.getItem("lang") || (navigator.language && navigator.language.indexOf("en") === 0 ? "en" : "ja"); } catch (e) {}
+  function T() { return LANG[lang]; }
+  var $ = function (id) { return document.getElementById(id); };
+  var items = []; // { id, name, bytes, info, kind:'jpeg'|'heic'|'other'|'broken', url, one: ms|null, editing }
+  var lastUrls = [], seq = 0;
+  function setStatus(t, k) { var s = $("status"); s.textContent = t || ""; s.className = "status" + (k ? " " + k : ""); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ================= JPEG と Exif を読む・書く =================
+  function segments(u8) {
+    if (u8[0] !== 0xFF || u8[1] !== 0xD8) return null;
+    var p = 2, out = [];
+    while (p + 3 < u8.length) {
+      if (u8[p] !== 0xFF) return null;
+      var m = u8[p + 1];
+      if (m === 0xFF) { p++; continue; }
+      if (m === 0xDA || m === 0xD9) { out.push({ m: m, start: p, end: u8.length }); return out; }
+      if ((m >= 0xD0 && m <= 0xD7) || m === 0x01) { p += 2; continue; }
+      var L = (u8[p + 2] << 8) | u8[p + 3];
+      if (L < 2 || p + 2 + L > u8.length) return null;
+      out.push({ m: m, start: p, end: p + 2 + L, ds: p + 4 });
+      p += 2 + L;
+    }
+    return out;
+  }
+  function startsWith(u8, at, s) { for (var i = 0; i < s.length; i++) if (u8[at + i] !== s.charCodeAt(i)) return false; return true; }
+  var SIZES = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 6: 1, 7: 1, 8: 2, 9: 4, 10: 8, 11: 4, 12: 8 };
+  var DATE_TAGS = { 0x0132: 1, 0x9003: 1, 0x9004: 1 };
+
+  // Exif を読む。返す位置はすべてファイルの先頭からの番地
+  function readExif(u8, seg) {
+    var base = seg.ds + 6, end = seg.end;
+    var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    var le = u8[base] === 0x49;
+    if (!le && u8[base] !== 0x4D) throw new Error("tiff");
+    function u16(a) { if (a + 2 > end) throw new Error("range"); return dv.getUint16(a, le); }
+    function u32(a) { if (a + 4 > end) throw new Error("range"); return dv.getUint32(a, le); }
+    var info = { base: base, end: end, le: le, dates: [], gpsIfd: null, model: "", make: "", orient: 0, lat: null, lon: null, taken: null };
+    function ifd(off, fn) {
+      var a = base + off; if (off < 8 || a + 2 > end) return;
+      var n = u16(a); if (n > 500) throw new Error("ifd");
+      for (var i = 0; i < n; i++) {
+        var e = a + 2 + i * 12, tag = u16(e), type = u16(e + 2), cnt = u32(e + 4), sz = (SIZES[type] || 1) * cnt;
+        var vat = sz <= 4 ? e + 8 : base + u32(e + 8);
+        if (vat + sz > end) continue;
+        fn(tag, type, cnt, vat, sz, e);
+      }
+      return a;
+    }
+    function ascii(at, n) { var s = ""; for (var i = 0; i < n; i++) { var c = u8[at + i]; if (!c) break; s += String.fromCharCode(c); } return s.trim(); }
+    function rat(at) { var d = u32(at + 4); return d ? u32(at) / d : 0; }
+    var exifOff = 0, gpsOff = 0;
+    ifd(u32(base + 4), function (tag, type, cnt, at, sz) {
+      if (tag === 0x010F) info.make = ascii(at, cnt);
+      else if (tag === 0x0110) info.model = ascii(at, cnt);
+      else if (tag === 0x0112) info.orient = u16(at);
+      else if (tag === 0x8769) exifOff = u32(at);
+      else if (tag === 0x8825) gpsOff = u32(at);
+      if (DATE_TAGS[tag] && type === 2 && cnt >= 19) info.dates.push({ tag: tag, at: at });
+    });
+    if (exifOff) ifd(exifOff, function (tag, type, cnt, at) {
+      if (DATE_TAGS[tag] && type === 2 && cnt >= 19) info.dates.push({ tag: tag, at: at });
+    });
+    if (gpsOff) {
+      var g = {};
+      info.gpsIfd = ifd(gpsOff, function (tag, type, cnt, at) {
+        if ((tag === 1 || tag === 3) && type === 2) g[tag] = String.fromCharCode(u8[at]);
+        if ((tag === 2 || tag === 4) && type === 5 && cnt >= 3) g[tag] = rat(at) + rat(at + 8) / 60 + rat(at + 16) / 3600;
+      });
+      if (g[2] != null && g[4] != null && (g[2] || g[4])) {
+        info.lat = g[2] * (g[1] === "S" ? -1 : 1); info.lon = g[4] * (g[3] === "W" ? -1 : 1);
+      }
+      info.hasGps = info.gpsIfd != null && u16(info.gpsIfd) > 0;
+    }
+    var pick = info.dates.filter(function (d) { return d.tag === 0x9003; })[0] || info.dates[0];
+    if (pick) info.taken = parseDT(ascii(pick.at, 19));
+    return info;
+  }
+  function parseDT(s) {
+    var m = /^(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)/.exec(s || "");
+    if (!m || +m[1] < 1900) return null;
+    return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+  }
+  function p2(n) { return (n < 10 ? "0" : "") + n; }
+  function fmtDT(ms, sep) {
+    var d = new Date(ms);
+    return d.getUTCFullYear() + sep + p2(d.getUTCMonth() + 1) + sep + p2(d.getUTCDate()) + " " + p2(d.getUTCHours()) + ":" + p2(d.getUTCMinutes()) + ":" + p2(d.getUTCSeconds());
+  }
+
+  // 位置情報の欄の中身を0で埋め、欄の数を0にする（ほかの場所の番地はずらさない）
+  function wipeGps(u8, info) {
+    if (info.gpsIfd == null) return;
+    var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), le = info.le, a = info.gpsIfd, n = dv.getUint16(a, le);
+    for (var i = 0; i < n; i++) {
+      var e = a + 2 + i * 12; if (e + 12 > info.end) break;
+      var type = dv.getUint16(e + 2, le), cnt = dv.getUint32(e + 4, le), sz = (SIZES[type] || 1) * cnt;
+      if (sz > 4) { var at = info.base + dv.getUint32(e + 8, le); for (var j = 0; j < sz && at + j < info.end; j++) u8[at + j] = 0; }
+    }
+    for (var k = a; k < Math.min(a + 2 + n * 12 + 4, info.end); k++) u8[k] = 0;
+  }
+  function shiftDates(u8, info, delta) {
+    info.dates.forEach(function (d) {
+      var s = ""; for (var i = 0; i < 19; i++) s += String.fromCharCode(u8[d.at + i]);
+      var ms = parseDT(s); if (ms == null) return;
+      var out = fmtDT(ms + delta, ":"); for (var j = 0; j < 19; j++) u8[d.at + j] = out.charCodeAt(j);
+    });
+  }
+  // 「ぜんぶ消す」で入れ直す小さな Exif（写真の向き＋撮影日時だけ）
+  function miniExif(orient, takenStr) {
+    var hasO = orient >= 1 && orient <= 8, hasT = !!takenStr;
+    if (!hasO && !hasT) return null;
+    var ifd0n = (hasO ? 1 : 0) + (hasT ? 1 : 0), ifd0 = 8, exifIfd = ifd0 + 2 + ifd0n * 12 + 4, dateAt = exifIfd + 2 + 12 + 4;
+    var len = hasT ? dateAt + 20 : exifIfd, b = new Uint8Array(6 + len), dv = new DataView(b.buffer, 6);
+    b.set([0x45, 0x78, 0x69, 0x66, 0, 0]);
+    b.set([0x4D, 0x4D, 0, 0x2A, 0, 0, 0, 8], 6);
+    dv.setUint16(ifd0, ifd0n); var e = ifd0 + 2;
+    if (hasO) { dv.setUint16(e, 0x0112); dv.setUint16(e + 2, 3); dv.setUint32(e + 4, 1); dv.setUint16(e + 8, orient); e += 12; }
+    if (hasT) { dv.setUint16(e, 0x8769); dv.setUint16(e + 2, 4); dv.setUint32(e + 4, 1); dv.setUint32(e + 8, exifIfd); e += 12; }
+    dv.setUint32(e, 0);
+    if (hasT) {
+      dv.setUint16(exifIfd, 1); dv.setUint16(exifIfd + 2, 0x9003); dv.setUint16(exifIfd + 4, 2); dv.setUint32(exifIfd + 6, 20); dv.setUint32(exifIfd + 10, dateAt); dv.setUint32(exifIfd + 14, 0);
+      for (var i = 0; i < 19; i++) b[6 + dateAt + i] = takenStr.charCodeAt(i);
+    }
+    var seg = new Uint8Array(4 + b.length); seg[0] = 0xFF; seg[1] = 0xE1; seg[2] = (b.length + 2) >> 8; seg[3] = (b.length + 2) & 255; seg.set(b, 4);
+    return seg;
+  }
+  function isExifSeg(u8, s) { return s.m === 0xE1 && startsWith(u8, s.ds, "Exif\0\0"); }
+  function isXmpSeg(u8, s) { return s.m === 0xE1 && startsWith(u8, s.ds, "http://ns.adobe.com/xap/1.0/"); }
+  function xmpHasGps(u8, s) { var t = ""; for (var i = s.ds; i < s.end; i++) t += String.fromCharCode(u8[i]); return /GPS(Latitude|Longitude)|exif:GPS/i.test(t); }
+
+  // 1枚を直す。返すのは新しいバイト列
+  function fixOne(src, mode, delta) {
+    var u8 = new Uint8Array(src.slice(0)), segs = segments(u8);   // 元のデータは書き換えない（2回目の保存で日時が二重にずれる）
+    if (!segs) throw new Error("jpeg");
+    var exSeg = segs.filter(function (s) { return isExifSeg(u8, s); })[0], info = null;
+    if (exSeg) { try { info = readExif(u8, exSeg); } catch (e) { info = null; } }
+    if (mode === "all") {
+      var taken = info && info.taken != null ? fmtDT(info.taken + (delta || 0), ":") : null;
+      var mini = miniExif(info ? info.orient : 0, taken), parts = [u8.subarray(0, 2)];
+      var placed = false;
+      segs.forEach(function (s) {
+        var drop = s.m === 0xE1 || s.m === 0xED || s.m === 0xFE;   // Exif・XMP・IPTC（場所の名前が入ることがある）・コメント
+        if (!placed && mini && s.m !== 0xE0) { parts.push(mini); placed = true; }
+        if (!drop) parts.push(u8.subarray(s.start, s.end));
+      });
+      var n = parts.reduce(function (a, p) { return a + p.length; }, 0), out = new Uint8Array(n), o = 0;
+      parts.forEach(function (p) { out.set(p, o); o += p.length; });
+      return out;
+    }
+    if (info) {
+      if (mode === "gps") wipeGps(u8, info);
+      if (delta) shiftDates(u8, info, delta);
+    }
+    if (mode === "gps") {   // XMP にも座標が入っていることがある → その区切りごと外す
+      var bad = segs.filter(function (s) { return isXmpSeg(u8, s) && xmpHasGps(u8, s); });
+      if (bad.length) {
+        var keep = [u8.subarray(0, 2)]; segs.forEach(function (s) { if (bad.indexOf(s) < 0) keep.push(u8.subarray(s.start, s.end)); });
+        var n2 = keep.reduce(function (a, p) { return a + p.length; }, 0), out2 = new Uint8Array(n2), o2 = 0;
+        keep.forEach(function (p) { out2.set(p, o2); o2 += p.length; });
+        return out2;
+      }
+    }
+    return u8;
+  }
+  function inspect(bytes) {
+    var u8 = new Uint8Array(bytes), segs = segments(u8);
+    if (!segs) return null;
+    var exSeg = segs.filter(function (s) { return isExifSeg(u8, s); })[0];
+    var info = { exif: false, hasGps: false, lat: null, lon: null, model: "", taken: null, xmpGps: false };
+    segs.forEach(function (s) { if (isXmpSeg(u8, s) && xmpHasGps(u8, s)) info.xmpGps = true; });
+    if (exSeg) { try { var r = readExif(u8, exSeg); info.exif = true; info.hasGps = !!r.hasGps; info.lat = r.lat; info.lon = r.lon; info.taken = r.taken; info.model = [r.make, r.model].filter(Boolean).join(" ").replace(/^(\S+) \1/, "$1"); } catch (e) { info.exif = true; info.unreadable = true; } }
+    info.hasGps = info.hasGps || info.xmpGps;
+    return info;
+  }
+
+  // ================= 画面 =================
+  function shiftMs() { var v = (Math.abs(+st.d || 0) * 1440 + Math.abs(+st.h || 0) * 60 + Math.abs(+st.m || 0)) * 60000; return v * (+st.sign < 0 ? -1 : 1); }
+  function deltaOf(it) { return it.one != null && it.info && it.info.taken != null ? it.one - it.info.taken : shiftMs(); }
+  function addFiles(list) {
+    clearResults();
+    [].forEach.call(list, function (f) {
+      var it = { id: ++seq, name: f.name, url: URL.createObjectURL(f), kind: "jpeg", info: null, one: null };
+      items.push(it);
+      f.arrayBuffer().then(function (b) {
+        var u = new Uint8Array(b);
+        if (/\.(heic|heif)$/i.test(f.name) || startsWith(u, 4, "ftyp")) it.kind = "heic";
+        else if (u[0] !== 0xFF || u[1] !== 0xD8) it.kind = "other";
+        else { it.bytes = b; it.info = inspect(b); if (!it.info) it.kind = "broken"; }
+        render();
+      });
+    });
+    $("work").hidden = false; render();
+    if (window.gtag) gtag("event", "exif_add", { files: list.length });
+  }
+  function render() {
+    var L = T(), html = "", nGps = 0, nOk = 0;
+    items.forEach(function (it) {
+      var i = it.info, tags = "", dt = "";
+      if (it.kind === "heic") tags = '<span class="tag ng">' + L.heic + "</span>";
+      else if (it.kind === "other") tags = '<span class="tag ng">' + L.notJpeg + "</span>";
+      else if (it.kind === "broken") tags = '<span class="tag ng">' + L.broken + "</span>";
+      else if (i) {
+        nOk++;
+        if (it.done && it.doneGps === false && i.hasGps) tags += '<span class="tag ok">' + L.gone + "</span>";
+        else if (i.hasGps) {
+          nGps++;
+          tags += '<span class="tag gps">' + L.gps + (i.lat != null ? " " + i.lat.toFixed(4) + ", " + i.lon.toFixed(4)
+            + ' · <a href="https://www.google.com/maps?q=' + i.lat.toFixed(5) + "," + i.lon.toFixed(5) + '" target="_blank" rel="noopener">' + L.gpsMap + "</a>" : "") + "</span>";
+        } else tags += '<span class="tag">' + (i.exif ? L.noGps : L.noExif) + "</span>";
+        if (i.model) tags += '<span class="tag">' + L.model + esc(i.model) + "</span>";
+        if (i.taken != null) {
+          var d = deltaOf(it);
+          dt = L.taken + ' <b>' + fmtDT(i.taken, "/").slice(0, 16) + "</b>" + (d ? ' → <span class="to">' + fmtDT(i.taken + d, "/").slice(0, 16) + "</span>" : "");
+          dt += it.editing
+            ? ' <input type="datetime-local" step="60" data-one="' + it.id + '" value="' + fmtDT(it.one != null ? it.one : i.taken + shiftMs(), "-").replace(" ", "T").slice(0, 16) + '"> <button type="button" data-ok="' + it.id + '">' + L.fixOk + "</button>"
+            : ' <button type="button" data-edit="' + it.id + '">' + L.fixOne + "</button>";
+        } else dt = L.taken + " " + L.none;
+      }
+      html += '<li class="item"><img src="' + it.url + '" alt="" loading="lazy"><div><div class="nm"><span>' + esc(it.name) + '</span><button class="x" type="button" data-x="' + it.id + '">✕</button></div>'
+        + '<div class="tags">' + tags + "</div>" + (dt ? '<div class="dt">' + dt + "</div>" : "") + "</div></li>";
+    });
+    $("list").innerHTML = html;
+    $("plan").textContent = items.length ? L.plan(nOk, nGps) : "";
+    $("goBtn").disabled = !nOk; $("goBtn").textContent = nOk > 1 ? L.goZip : L.go;
+    if (!items.length) $("work").hidden = true;
+  }
+  $("list").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var id = +(b.dataset.x || b.dataset.edit || b.dataset.ok), it = items.filter(function (x) { return x.id === id; })[0]; if (!it) return;
+    if (b.dataset.x) { URL.revokeObjectURL(it.url); items.splice(items.indexOf(it), 1); }
+    else if (b.dataset.edit) it.editing = true;
+    else if (b.dataset.ok) {
+      var inp = $("list").querySelector('input[data-one="' + id + '"]'), v = inp && inp.value;
+      var m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(v || "");
+      if (m) it.one = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], new Date(it.info.taken).getUTCSeconds());
+      it.editing = false;
+    }
+    render();
+  };
+
+  function clearResults() { lastUrls.forEach(function (u) { URL.revokeObjectURL(u); }); lastUrls = []; $("results").innerHTML = ""; setStatus(""); }
+  function download(blob, name) {
+    var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  $("goBtn").onclick = function () {
+    var L = T(), ok = items.filter(function (it) { return it.bytes && it.info; });
+    var anyShift = ok.some(function (it) { return deltaOf(it) && it.info.taken != null; });
+    if (st.mode === "none" && !anyShift) { setStatus(L.nothing, "ng"); return; }
+    clearResults(); var outs = [], used = {};
+    try {
+      ok.forEach(function (it, i) {
+        setStatus(L.working(i + 1, ok.length));
+        var b = fixOne(it.bytes, st.mode, it.info.taken != null ? deltaOf(it) : 0);
+        var name = it.name, k = 2; while (used[name.toLowerCase()]) name = it.name.replace(/(\.[^.]+)?$/, "_" + (k++) + "$1"); used[name.toLowerCase()] = 1;
+        outs.push({ name: name, bytes: b, it: it });
+      });
+    } catch (e) { setStatus(L.failed(String(e && e.message || e)), "ng"); return; }
+    if (outs.length === 1) download(new Blob([outs[0].bytes], { type: "image/jpeg" }), outs[0].name);
+    else download(zip(outs), (lang === "en" ? "photos_fixed" : "写真_撮影情報を直した") + ".zip");
+    var html = outs.length > 1 ? "<b>" + L.dlEach + "</b> " : "";
+    if (outs.length > 1) outs.forEach(function (o) { var u = URL.createObjectURL(new Blob([o.bytes], { type: "image/jpeg" })); lastUrls.push(u); html += '<a href="' + u + '" download="' + esc(o.name) + '">' + esc(o.name) + "</a>"; });
+    outs.forEach(function (o) { var chk = inspect(o.bytes.buffer.slice(o.bytes.byteOffset, o.bytes.byteOffset + o.bytes.byteLength)); o.it.done = true; o.it.doneGps = !!(chk && chk.hasGps); });
+    $("results").innerHTML = html; render();
+    setStatus(L.done(outs.length), "ok");
+    if (window.gtag) gtag("event", "exif_save", { mode: st.mode, shifted: anyShift ? 1 : 0, files: outs.length });
+  };
+
+  // ---- ZIP（圧縮なしでまとめる）----
+  var CRC = (function () { var t = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date();
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.bytes, crc = crc32(data);
+      var h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+      h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+      c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+      c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var csize = central.reduce(function (s, x) { return s + x.length; }, 0);
+    var e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(e.buffer)]), { type: "application/zip" });
+  }
+
+  // ---- 操作 ----
+  var drop = $("drop"), picker = $("picker");
+  drop.onclick = function () { picker.click(); };
+  picker.onchange = function () { if (picker.files.length) addFiles(picker.files); picker.value = ""; };
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+  $("clearBtn").onclick = function () { items.forEach(function (it) { URL.revokeObjectURL(it.url); }); items = []; clearResults(); render(); };
+  $("segMode").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.mode = b.dataset.v; save(); markMode(); render(); };
+  function markMode() {
+    [].forEach.call($("segMode").children, function (b) { b.classList.toggle("on", b.dataset.v === st.mode); });
+    $("hintMode").textContent = T().hintModes[["gps", "all", "none"].indexOf(st.mode)];
+  }
+  [["shSign", "sign"], ["shD", "d"], ["shH", "h"], ["shM", "m"]].forEach(function (p) {
+    var el = $(p[0]); el.value = st[p[1]];
+    el.oninput = el.onchange = function () { st[p[1]] = el.value; save(); render(); };
+  });
+
+  function applyLang() {
+    var L = T();
+    document.documentElement.lang = lang;
+    $("pageTitle").textContent = L.docTitle; $("metaDesc").setAttribute("content", L.docDesc);
+    $("backLink").textContent = L.back; $("h1t").textContent = L.h1; $("leadT").textContent = L.lead;
+    $("dropTitle").textContent = L.dropTitle; $("dropSub").textContent = L.dropSub;
+    $("lblMode").textContent = L.lblMode; [].forEach.call($("segMode").children, function (b, i) { b.textContent = L.modes[i]; });
+    $("lblShift").textContent = L.lblShift; $("uD").textContent = L.uD; $("uH").textContent = L.uH; $("uM").textContent = L.uM; $("hintShift").textContent = L.hintShift;
+    $("clearBtn").textContent = L.clear;
+    $("faqT").innerHTML = L.faq; $("notesT").innerHTML = L.notes; $("langBtn").textContent = L.toggleTo;
+    markMode(); render();
+  }
+  $("langBtn").onclick = function () { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); };
+  applyLang();
+  window.__exif = { st: st, items: items, fix: fixOne, inspect: inspect }; // 試験用
+})();
+</script>
+</body>
+</html>
