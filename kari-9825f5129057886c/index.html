@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>仮賭けの記録</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1d2330;--mut:#6b7385;--card:#fff;--line:#dfe3ea;--ac:#1f6feb;--hit:#fff3c4;--plus:#1a7f37;--minus:#c33}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8ebf2;--mut:#98a1b3;--card:#1d222c;--line:#2e3542;--ac:#6ea8ff;--hit:#3a331a;--plus:#56d364;--minus:#ff7b72}}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,"Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:720px;margin:0 auto;padding:14px 16px 40px}
+h1{font-size:19px;margin:4px 0}.sub{color:var(--mut);font-size:13px;margin-bottom:12px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.box b{display:block;font-size:20px}.box span{color:var(--mut);font-size:12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-size:14px}
+th{color:var(--mut);font-size:12px;font-weight:600}th:first-child,td:first-child{text-align:left}
+tr.hit td{background:var(--hit);font-weight:700}.plus{color:var(--plus)}.minus{color:var(--minus)}
+a{color:var(--ac)}footer{color:var(--mut);font-size:12px;margin-top:16px}
+</style></head><body><main>
+<h1>仮賭けの記録（実際のお金は使っていません）</h1>
+<div class="sub" id="rule"></div>
+<div class="sum" id="sum"></div>
+<table><thead><tr><th>レース</th><th>馬番</th><th>前売倍率</th><th>賭け</th><th>結果</th></tr></thead><tbody id="tb"></tbody></table>
+<footer>1番人気に機械的に賭けた基準値です。払戻は発売締切時の最終オッズで決まるため、前売倍率とは違います。データ：netkeiba。</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id),yen=n=>Math.round(n).toLocaleString()+"円";
+fetch("bet.json?"+Date.now()).then(r=>r.json()).then(d=>{
+ $("rule").textContent=d.rule+"　記録 "+d.placed;
+ const done=d.bets.some(b=>"hit" in b);
+ const inn=d.bets.reduce((s,b)=>s+b.stake,0),out=d.bets.reduce((s,b)=>s+(b.payout||0),0),hits=d.bets.filter(b=>b.hit).length;
+ let h=`<div class="box"><b>${yen(inn)}</b><span>賭け金（${d.bets.length}点）</span></div>`;
+ if(done){const p=out-inn;h+=`<div class="box"><b>${yen(out)}</b><span>払戻</span></div><div class="box"><b class="${p>=0?"plus":"minus"}">${p>=0?"+":""}${yen(p)}</b><span>収支</span></div><div class="box"><b>${(out/inn*100).toFixed(1)}%</b><span>回収率</span></div><div class="box"><b>${hits}/${d.bets.length}</b><span>的中</span></div>`}
+ else h+=`<div class="box"><b>結果待ち</b><span>10/10 のレース後に更新</span></div>`;
+ $("sum").innerHTML=h;
+ $("tb").innerHTML=d.bets.map(b=>`<tr class="${b.hit?"hit":""}"><td>${b.venue} ${b.r}R</td><td>${b.umaban}</td><td>${b.odds.toFixed(1)}倍</td><td>${b.stake}円</td><td>${"hit" in b?(b.hit?"的中 "+yen(b.payout):(b.winner?"外れ（勝ち "+b.winner+"番）":"未取得")):"—"}</td></tr>`).join("");
+}).catch(()=>{$("rule").textContent="bet.json を読めませんでした"});
+</script></body></html>
