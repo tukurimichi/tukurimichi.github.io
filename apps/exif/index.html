@@ -5,16 +5,16 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title id="pageTitle">写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）| tukurimichi.com</title>
-<meta name="description" id="metaDesc" content="スマホ写真の位置情報（GPS・Exif）をまとめて消す無料ツール。カメラの時計のずれ（撮影日時）もまとめて直せます。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。">
-<meta property="og:title" content="写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）">
+<title id="pageTitle">写真の位置情報を消す（削除）｜フリマ・SNS対応・送信なし・無料 | tukurimichi.com</title>
+<meta name="description" id="metaDesc" content="メルカリなどのフリマやSNSに載せる前に、写真の位置情報（GPS・Exif）をまとめて消す無料ツール。自宅や撮影場所を特定されたくないときに。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。デジカメの時計のずれ（撮影日時）も直せます。">
+<meta property="og:title" content="写真の位置情報を消す（削除）｜フリマ・SNS対応・送信なし・無料">
 <meta property="og:description" content="写真に入っている撮影場所・機種名をまとめて消す。カメラの時計のずれも直せる。写真はどこにも送られません。">
 <meta property="og:url" content="https://tukurimichi.com/apps/exif/">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="tukurimichi.com">
 <meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）">
+<meta name="twitter:title" content="写真の位置情報を消す（削除）｜フリマ・SNS対応・送信なし・無料">
 <meta name="twitter:description" content="写真に入っている撮影場所・機種名をまとめて消す。カメラの時計のずれも直せる。写真はどこにも送られません。">
 <meta name="twitter:image" content="https://tukurimichi.com/ogp.jpg">
 <link rel="canonical" href="https://tukurimichi.com/apps/exif/">
@@ -99,7 +99,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
     <a class="back" href="../../tools.html" id="backLink">← つくるみち の道具箱へ</a>
     <button id="langBtn" class="langToggle" type="button">English</button>
   </div>
-  <h1 id="h1t">写真の位置情報を消す・撮影日時のずれを直す</h1>
+  <h1 id="h1t">出品・投稿する写真から位置情報（GPS）を消す</h1>
   <p class="lead" id="leadT">スマホやカメラの写真に入っている「撮った場所」「機種名」などをまとめて消します。カメラの時計がずれていたときの撮影日時もまとめて直せます。画質はそのまま。写真はこのブラウザの中だけで処理され、どこにも送信されません。</p>
 
   <div class="drop" id="drop"><div class="drop-title" id="dropTitle"></div><div class="drop-sub" id="dropSub"></div></div>
@@ -139,9 +139,9 @@ html:not([lang="en"]) .more-tools .en{display:none}
   var LANG = {
     ja: {
       toggleTo: "English",
-      docTitle: "写真の位置情報を消す・撮影日時のずれを直す（無料・広告なし・送信なし）| tukurimichi.com",
-      docDesc: "スマホ写真の位置情報（GPS・Exif）をまとめて消す無料ツール。カメラの時計のずれ（撮影日時）もまとめて直せます。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。",
-      back: "← つくるみち の道具箱へ", h1: "写真の位置情報を消す・撮影日時のずれを直す",
+      docTitle: "写真の位置情報を消す（削除）｜フリマ・SNS対応・送信なし・無料 | tukurimichi.com",
+      docDesc: "メルカリなどのフリマやSNSに載せる前に、写真の位置情報（GPS・Exif）をまとめて消す無料ツール。自宅や撮影場所を特定されたくないときに。画質はそのまま。広告なし・登録なし。写真はサーバーに送られず、ブラウザの中だけで処理します。デジカメの時計のずれ（撮影日時）も直せます。",
+      back: "← つくるみち の道具箱へ", h1: "出品・投稿する写真から位置情報（GPS）を消す",
       lead: "スマホやカメラの写真に入っている「撮った場所」「機種名」などをまとめて消します。カメラの時計がずれていたときの撮影日時もまとめて直せます。画質はそのまま。写真はこのブラウザの中だけで処理され、どこにも送信されません。",
       dropTitle: "写真（JPG）をここにドラッグ＆ドロップ", dropSub: "またはクリックして選ぶ（何枚でも）",
       lblMode: "消すもの", modes: ["位置情報だけ消す", "撮影情報をぜんぶ消す", "消さない（日時だけ直す）"],
@@ -172,9 +172,9 @@ html:not([lang="en"]) .more-tools .en{display:none}
     },
     en: {
       toggleTo: "日本語",
-      docTitle: "Remove Photo Location & Fix Photo Dates – Free, No Upload | tukurimichi.com",
-      docDesc: "Remove GPS location and camera info (EXIF) from photos in bulk, and fix photo dates when your camera clock was wrong. No quality loss, no ads, no sign-up. Your photos never leave your browser.",
-      back: "← Back to the tukurimichi toolbox", h1: "Remove photo location & fix photo dates",
+      docTitle: "Remove Photo Location (GPS) Before Posting – Free, No Upload | tukurimichi.com",
+      docDesc: "Strip GPS location and camera info (EXIF) from photos in bulk before posting to social media or a flea-market app. No quality loss, no ads, no sign-up. Your photos never leave your browser. You can also fix photo dates when your camera clock was wrong.",
+      back: "← Back to the tukurimichi toolbox", h1: "Remove location (GPS) from photos before you post or sell",
       lead: "Remove the location, camera model and other details stored in photos — in bulk. You can also shift the date taken when your camera clock was off. No quality loss. Your photos are processed in this browser and never uploaded.",
       dropTitle: "Drop photos (JPG) here", dropSub: "or click to choose (any number)",
       lblMode: "What to remove", modes: ["Location only", "All photo info", "Nothing (fix dates only)"],
