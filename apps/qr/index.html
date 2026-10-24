@@ -185,6 +185,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
       <div class="btns">
         <button type="button" class="btn primary" id="dlPng" disabled>PNGで保存</button>
         <button type="button" class="btn ghost" id="dlSvg" disabled>SVGで保存</button>
+        <button type="button" class="btn ghost" id="clearInput">入力を消す</button>
       </div>
       <div class="meta" id="meta"></div>
     </div>
@@ -222,7 +223,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
       hintEcc: "強くするほど、汚れや欠けがあっても読めます。そのぶん点が細かくなります。ふつうは M で十分です。",
       lblColor: "色", lblFg: "点の色", lblBg: "背景の色", resetColor: "黒と白に戻す",
       empty: "左に内容を入れると、ここにQRコードが出ます。",
-      dlPng: "PNGで保存", dlSvg: "SVGで保存",
+      dlPng: "PNGで保存", dlSvg: "SVGで保存", clearInput: "入力を消す",
       count: function (n) { return n + " バイト（最大 約2,900 バイト。日本語は1文字3バイト）"; },
       tooLong: "長すぎてQRコードにできません。短くするか、デザインを「ふつう」にして汚れへの強さを L にしてください。",
       lowContrast: "点と背景の色が近いと、読み取れないことがあります。点を濃く・背景を薄くしてください。",
@@ -232,7 +233,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
       fileBasePlain: "qrcode",
       credit: "QRコードの作成に <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4（MIT / © 2009 Kazuhiko Arase、<a href=\"LICENSE-qrcode-generator.txt\">全文</a>）を使用しています。「QRコード」は株式会社デンソーウェーブの登録商標です。",
       notes: "・作ったQRコードは、商用・個人を問わず自由に使えます（チラシ・名刺・店頭・Webなど）<br>"
-        + "・入力した内容と設定はこの端末に覚えておくので、ページを開き直しても続きから使えます<br>"
+        + "・入力した内容と設定はこの端末に覚えておくので、ページを開き直しても続きから使えます（共用のパソコンでは、使い終わったら「入力を消す」を押してください）<br>"
         + "・読めるかどうかは、印刷する前に必ずスマホのカメラで確かめてください",
       faq: "<h2>よくある質問</h2>"
         + "<h3>バーコード（JAN・CODE128）を作りたい</h3>"
@@ -277,7 +278,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
       hintEcc: "Higher levels still scan when the code is dirty or partly covered, but the dots get finer. M is fine for most uses.",
       lblColor: "Colors", lblFg: "Dots", lblBg: "Background", resetColor: "Back to black & white",
       empty: "Type something on the left and your QR code shows up here.",
-      dlPng: "Save as PNG", dlSvg: "Save as SVG",
+      dlPng: "Save as PNG", dlSvg: "Save as SVG", clearInput: "Clear input",
       count: function (n) { return n + " bytes (up to about 2,900)"; },
       tooLong: "Too long for a QR code. Shorten it, or switch the design to Plain and set damage tolerance to L.",
       lowContrast: "If the dots and background are too similar, phones may not read it. Use dark dots on a light background.",
@@ -287,7 +288,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
       fileBasePlain: "qrcode",
       credit: "QR codes are made with <a href=\"https://github.com/kazuhikoarase/qrcode-generator\" target=\"_blank\" rel=\"noopener\">qrcode-generator</a> v1.4.4 (MIT / © 2009 Kazuhiko Arase, <a href=\"LICENSE-qrcode-generator.txt\">full text</a>). “QR Code” is a registered trademark of DENSO WAVE INCORPORATED.",
       notes: "・You may use the codes you make freely, for personal or business use (flyers, business cards, shop windows, websites)<br>"
-        + "・Your text and settings are remembered on this device, so you can pick up where you left off<br>"
+        + "・Your text and settings are remembered on this device, so you can pick up where you left off (on a shared computer, press “Clear input” when you are done)<br>"
         + "・Always test the code with a phone camera before printing",
       faq: "<h2>FAQ</h2>"
         + "<h3>I need a barcode (EAN, Code 128)</h3>"
@@ -499,6 +500,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
   cap.oninput = function () { st.cap = cap.value; save(); draw(); };
   fg.oninput = function () { st.fg = fg.value; save(); draw(); };
   bg.oninput = function () { st.bg = bg.value; save(); draw(); };
+  $("clearInput").onclick = function () { st.txt = txt.value = ""; st.cap = cap.value = ""; save(); draw(); txt.focus(); };
   $("resetColor").onclick = function () { st.fg = fg.value = "#000000"; st.bg = bg.value = "#ffffff"; save(); draw(); };
 
   function applyLang() {
@@ -509,7 +511,7 @@ html:not([lang="en"]) .more-tools .en{display:none}
     $("backLink").textContent = L.back;
     $("h1t").textContent = L.h1;
     $("leadT").textContent = L.lead;
-    ["lblTxt", "lblCap", "lblStyle", "lblSize", "hintSize", "lblEcc", "hintEcc", "lblColor", "lblFg", "lblBg", "resetColor", "dlPng", "dlSvg"].forEach(function (k) { $(k).textContent = L[k]; });
+    ["lblTxt", "lblCap", "lblStyle", "lblSize", "hintSize", "lblEcc", "hintEcc", "lblColor", "lblFg", "lblBg", "resetColor", "dlPng", "dlSvg", "clearInput"].forEach(function (k) { $(k).textContent = L[k]; });
     $("emptyT").textContent = L.empty;
     cap.placeholder = L.capPh;
     $("notesT").innerHTML = L.notes;
