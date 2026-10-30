@@ -38,6 +38,10 @@ button:active{transform:scale(.94)}
 #dock button .e{font-size:20px}
 #dock button.on{background:#ffd9c7;box-shadow:inset 0 0 0 2px #ff9a76}
 #toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.8);padding:14px 20px;font-size:15px;text-align:center;opacity:0;transition:all .25s;pointer-events:none}
+#mini{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:20}
+#mini .box{background:#fff7ee;border-radius:20px;padding:12px;text-align:center;width:min(92vw,420px)}
+#mini canvas{width:100%;height:auto;border-radius:14px;background:#cfeaf7;touch-action:none;display:block;margin:8px 0}
+#helpBtn{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;display:none;background:#ffd166;box-shadow:0 3px 12px #0003;font-weight:bold;padding:10px 18px;border-radius:99px}
 #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .big{background:#ffd9c7}
 #back{position:fixed;left:10px;bottom:16px;font-size:11px;color:#8a7a6a;text-decoration:none;background:#fffd;padding:4px 10px;border-radius:99px}
@@ -55,6 +59,8 @@ button:active{transform:scale(.94)}
 <div id="dock" class="glass"></div>
 <div id="sheet" class="glass"></div>
 <div id="toast" class="glass"></div>
+<button id="helpBtn"></button>
+<div id="mini"><div class="box"><div id="miniTitle" style="font-weight:bold;font-size:16px"></div><canvas id="miniCv" width="400" height="460"></canvas><div id="miniInfo"></div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -340,12 +346,40 @@ const coins=[];function coin(v){const s=new THREE.Sprite(bub('🪙'));s.scale.se
 let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+0.2)}catch(e){}}
 
 const clerk=makeCustomer('adult');clerk.position.set(2.7,0,0.25);scene.add(clerk);setTimeout(()=>{clerk.userData.P.face.material=faceMat('happy')},0);
+// ================= おてつだい（ミニゲーム）=================
+// お金が少ないときだけ遊べる。おちてくる くだものを タッチして集めると、お手つだいの お礼がもらえる（1日3回まで）
+const HELP_PER_DAY=3,HELP_TIME=15,HELP_COIN=40;
+function canHelp(){return S.money<500&&(S.helpDay!==S.day||(S.helpN||0)<HELP_PER_DAY)}
+function paintHelp(){const b=$('helpBtn');if(!b)return;const n=S.helpDay===S.day?(S.helpN||0):0;b.style.display=canHelp()&&!miniOn?'block':'none';
+ b.textContent=L(`🧺 おてつだいで お金を もらう（のこり ${HELP_PER_DAY-n}かい）`,`🧺 Help out to earn money (${HELP_PER_DAY-n} left)`)}
+let miniOn=false;
+function startMini(){if(!canHelp())return;if(S.helpDay!==S.day){S.helpDay=S.day;S.helpN=0}S.helpN++;save();
+ miniOn=true;const prevSpeed=ui.speed;ui.speed=0;paintHelp();$('mini').style.display='flex';
+ $('miniTitle').textContent=L('🍎 くだものを タッチして あつめよう！','🍎 Tap the falling fruit!');
+ const cv=$('miniCv'),x=cv.getContext('2d'),W=cv.width,H=cv.height,FR=['🍎','🍐','🍊','🍇','🍓','🍌'];let items=[],pops=[],got=0,t=0,last=performance.now(),spawnT=0,done=false;
+ const tap=e=>{const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width,py=(e.clientY-r.top)*H/r.height;
+  for(let i=items.length-1;i>=0;i--){const it=items[i];if(Math.hypot(px-it.x,py-it.y)<34){items.splice(i,1);got++;pops.push({x:it.x,y:it.y,t:0});blip(900+got*10,0.08);navigator.vibrate?.(8);break}}};
+ cv.onpointerdown=tap;
+ function frame(now){if(done)return;const dt=Math.min(0.05,(now-last)/1000);last=now;t+=dt;spawnT-=dt;
+  if(spawnT<=0){items.push({x:30+Math.random()*(W-60),y:-30,v:120+Math.random()*90+t*6,e:FR[Math.random()*FR.length|0],r:(Math.random()-.5)*2});spawnT=0.45-Math.min(0.2,t*0.01)}
+  x.clearRect(0,0,W,H);x.fillStyle='#a8d98a';x.fillRect(0,H-40,W,40);
+  x.font='44px sans-serif';x.textAlign='center';x.textBaseline='middle';
+  for(let i=items.length-1;i>=0;i--){const it=items[i];it.y+=it.v*dt;if(it.y>H-30){items.splice(i,1);continue}x.save();x.translate(it.x,it.y);x.rotate(Math.sin(t*3+it.r)*0.3);x.fillText(it.e,0,0);x.restore()}
+  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;x.globalAlpha=1-p.t;x.fillStyle='#e8606a';x.font='bold 26px sans-serif';x.fillText('+'+HELP_COIN,p.x,p.y-p.t*50);x.globalAlpha=1;x.font='44px sans-serif';if(p.t>1)pops.splice(i,1)}
+  const left=Math.max(0,HELP_TIME-t);
+  $('miniInfo').innerHTML=L(`のこり <b>${Math.ceil(left)}</b>びょう　あつめた <b>${got}</b>こ（¥${got*HELP_COIN}）`,`<b>${Math.ceil(left)}</b>s left　caught <b>${got}</b> (¥${got*HELP_COIN})`);
+  if(left<=0){done=true;const pay=got*HELP_COIN;S.money+=pay;save();hud();
+   $('miniInfo').innerHTML=L(`🎉 おつかれさま！ おてつだいの おれい <b>¥${pay}</b><br><small>しいれは うれる分だけに しようね</small>`,`🎉 Great job! You earned <b>¥${pay}</b><br><small>Only buy what you can sell!</small>`)+`<br><button id="miniOk" class="big" style="margin-top:8px">${L('お店に もどる','Back to the shop')}</button>`;
+   blip(880);blip(1320,0.08,0.12);$('miniOk').onclick=()=>{$('mini').style.display='none';miniOn=false;ui.speed=prevSpeed||1;paintHelp();hud()};return}
+  requestAnimationFrame(frame)}
+ requestAnimationFrame(frame)}
+document.getElementById('helpBtn').onclick=startMini;
 // ================= 1日 =================
 function endDay(){const t=S.today,bal=t.sale-t.buy-RENT;S.money-=RENT;
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
  toast(L(`🌙 ${S.day}日目 おしまい<br>うれた お金 ${yen(t.sale)}　しいれ ${yen(t.buy)}　お店の やちん ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>`,
   `🌙 End of day ${S.day}<br>Sales ${yen(t.sale)}　Stock ${yen(t.buy)}　Rent ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
- S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。しいれすぎ・高すぎに 気をつけてね','⚠️ You are in the red. Watch your stock and prices.');hud();save()}
+ S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。下の「おてつだい」で お金を もらえるよ','⚠️ You are in the red. Tap "Help out" below to earn money.');hud();save()}
 
 // ================= 操作 =================
 let mode='look';
@@ -415,7 +449,7 @@ function hint(){if(mode==='place')return L(`🪵 オレンジの 丸に たな�
  if(S.day===1)return L('🏪 あなたは 小さな お店の てんちょう。たなを タッチすると、しなものを かったり、ねだんを きめたり できるよ。夜に お店の やちん ¥400を はらうよ','🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ¥400 is due each night.');
  return S.msgs||L('お客さんの ふきだしは ほしい もの。ない ものが 多かったら、あたらしい たなを おいてみよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
 function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
- const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint()}
+ const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
 
 // ================= ループ =================
 buildShop();rebuildShelves();paintDock();hud();if(ui.sel!=null)openShelf();
