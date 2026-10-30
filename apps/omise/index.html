@@ -26,7 +26,7 @@ canvas{display:block;touch-action:none}
 button{font:inherit;color:inherit;border:0;background:#fff3e6;border-radius:12px;padding:6px 12px;cursor:pointer}
 button:active{transform:scale(.94)}
 #hint{position:fixed;left:50%;top:56px;transform:translateX(-50%);padding:7px 14px;max-width:92%;text-align:center;pointer-events:none}
-#sheet{position:fixed;left:10px;right:10px;bottom:10px;padding:12px;display:none;max-width:480px;margin:0 auto}
+#sheet{position:fixed;left:10px;right:10px;bottom:84px;padding:12px;display:none;max-width:480px;margin:0 auto}
 #sheet h3{margin:0 0 8px;font-size:15px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
 .items{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
@@ -81,13 +81,22 @@ const ITEMS={
  cake:{en:'Cake',n:'ケーキ',e:'🍰',cost:180,base:380,col:'#ffe0e8',star:3},
  toy:{en:'Toys',n:'おもちゃ',e:'🧸',cost:300,base:620,col:'#c99a6e',star:4}};
 const nm=it=>L(it.n,it.en);
-const SLOTS=[[-2.2,-1.6],[-0.8,-1.6],[0.6,-1.6],[2.0,-1.6],[-2.2,0.0],[-0.8,0.0],[0.6,0.0]]; // 棚を置ける場所（x,z）
+const SLOTS=[[-2.2,-1.6],[-0.8,-1.6],[0.6,-1.6],[2.0,-1.6],[-2.2,0.0],[-0.8,0.0],[0.6,0.0],[-3.6,-1.6],[-5.0,-1.6],[-3.6,0.0],[-5.0,0.0]]; // 棚を置ける場所（x,z）。うしろ4つは広くしたときだけ
+const slotOK=i=>i<7||S.deco.big;
+const WALLS=[['#fff1dc','クリーム','Cream',0],['#ffd6e0','ピンク','Pink',500],['#d6ecff','みずいろ','Sky blue',500],['#dff3d6','わかば','Leaf green',500],['#efe0ff','ふじいろ','Lilac',500],['#fff3a8','レモン','Lemon',500]];
+const FLOORS=[[['#f3e3c8','#e8d3b0'],'いちまつ','Checks',0],[['#d9a877','#c9935f'],'木の ゆか','Wood',800],[['#d7f2ea','#c3e8de'],'ミントの タイル','Mint tiles',800],[['#ffe3ea','#ffffff'],'いちごミルク','Strawberry milk',800]];
+const AWNS=[['#ff8f80','あか','Red',0],['#7cc8f0','あお','Blue',400],['#8fd19e','みどり','Green',400],['#ffb46a','オレンジ','Orange',400],['#c79be0','むらさき','Purple',400]];
+const EXTRAS=[['plant','🪴','うえきばち','Potted plant',300,4,2],['bench','🪑','そとの ベンチ','Bench outside',600,1,4],['lamp','💡','おしゃれな ランプ','Fancy lamps',700,1,4],['flag','🎏','のぼり','Shop flags',500,1,3]];
+const SHAPES=[['flat','ひらや','One floor',0],['tri','とんがり やね','Pointy roof',6000],['two','2かいだて','Two floors',15000]];
+const BIG_COST=8000;
+const styleScore=()=>{const d=S.deco;let n=(d.own||[]).length;for(const e of EXTRAS)n+=(d.ex[e[0]]||0)*e[6];if(d.big)n+=6;n+={flat:0,tri:5,two:10}[d.shape];return n};
 const SHELF_COST=n=>800+n*600;
 const RENT=400;            // 1日の家賃
 const DAY_SEC=70;          // 1日の長さ（秒・ふつうの速さ）
 function fresh(){return {money:3000,day:1,t:0,star:0,fans:0,shelves:[{slot:0,item:'bread',stock:6,price:130},{slot:1,item:'apple',stock:6,price:90}],
- today:{sale:0,buy:0,guests:0,sad:0},msgs:''}}
+ today:{sale:0,buy:0,guests:0,sad:0},msgs:'',deco:{wall:0,floor:0,awn:0,shape:'flat',big:0,ex:{},own:[]}}}
 let S;try{S=JSON.parse(localStorage.getItem(SAVE))}catch(e){}if(!S||!S.shelves)S=fresh();
+if(!S.deco)S.deco=fresh().deco;
 let ui={speed:1,sel:null};try{Object.assign(ui,JSON.parse(localStorage.getItem(SAVE+'.ui'))||{})}catch(e){}
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));localStorage.setItem(SAVE+'.ui',JSON.stringify({speed:ui.speed,sel:ui.sel,cam:{p:cam.position.toArray(),t:ctl.target.toArray(),z:cam.zoom}}))}catch(e){}}
 const rnd=Math.random;
@@ -118,30 +127,43 @@ const G=(k,f)=>{if(!gC.has(k))gC.set(k,f());return gC.get(k)};
 const mesh=(g,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;return o};
 const rbox=(w,h,d,r,c,x,y,z)=>mesh(RB(w,h,d,r),M(c),x,y,z);
 
-// 台座・床・壁・外の歩道
-scene.add(rbox(9.6,0.8,7.6,0.12,'#7a5236',0,-0.75,0.4));
-scene.add(rbox(9.2,0.3,7.2,0.1,'#c99b6d',0,-0.25,0.4));
-for(let x=0;x<7;x++)for(let z=0;z<4;z++){const t=rbox(1.12,0.08,1.12,0.03,(x+z)%2?'#f3e3c8':'#e8d3b0',-3.36+x*1.12,-0.06,-1.9+z*1.12);scene.add(t)}
-scene.add(rbox(8.8,0.1,2.2,0.04,'#cfc6bb',0,-0.07,2.95)); // 歩道
-for(let i=0;i<8;i++)scene.add(rbox(0.9,0.02,0.06,0.01,'#b9b0a4',-3.5+i*1,0,2.2));
-scene.add(rbox(8,3,0.25,0.06,'#fff1dc',0,1.45,-2.55));           // 奥の壁
-scene.add(rbox(0.25,3,4.6,0.06,'#ffe6cf',-4.05,1.45,-0.35));     // 左の壁
-scene.add(rbox(8.2,0.12,0.4,0.04,'#e57373',0,2.95,-2.4));
-// 看板と日よけ
-const awn=new THREE.Group();awn.position.set(0,2.9,2.0);for(let i=0;i<10;i++){const s=rbox(0.82,0.06,0.35,0.03,i%2?'#fff':'#ff8f80',-3.7+i*0.82,0,0);s.rotation.x=0.35;awn.add(s)}scene.add(awn);
-const sign=rbox(2.6,0.6,0.12,0.12,'#ff8f80',0,3.35,-2.35);scene.add(sign);
-{const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle='#ff8f80';x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L('ちいさな おみせ','Tiny Shop'),256,64);
- const p=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.55),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));p.position.set(0,3.35,-2.28);scene.add(p)}
-// 柱・レジ・窓
-scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',-3.95,1.45,1.7));scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',3.95,1.45,1.7));
+// お店の建物（かいそうで作り直す）。レジと店員さんは右にずっといる
+const shopG=new THREE.Group();scene.add(shopG);
+function plant(x,z,par){const g=new THREE.Group();g.add(mesh(G('pot',()=>new THREE.CylinderGeometry(0.18,0.14,0.3,14)),M('#d78b7a'),0,0.15,0));g.add(mesh(G('leaf',()=>new THREE.IcosahedronGeometry(0.3,1)),M('#86cc6f',{flatShading:true}),0,0.48,0));g.position.set(x,0,z);par.add(g)}
+function signTex(col){const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle=col;x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L('ちいさな おみせ','Tiny Shop'),256,64);return new THREE.CanvasTexture(cv)}
+function buildShop(){shopG.clear();const d=S.deco,A=(o)=>{shopG.add(o);return o};
+ const Lx=d.big?-5.65:-4.05,Rx=4.05,w=Rx-Lx,cx=(Lx+Rx)/2;
+ const wall=WALLS[d.wall][0],[f1,f2]=FLOORS[d.floor][0],aw=AWNS[d.awn][0];
+ A(rbox(w+1.5,0.8,7.6,0.12,'#7a5236',cx,-0.75,0.4));A(rbox(w+1.1,0.3,7.2,0.1,'#c99b6d',cx,-0.25,0.4));
+ const nx=Math.round((w-0.2)/1.12);for(let i=0;i<nx;i++)for(let z=0;z<4;z++)A(rbox(1.12,0.08,1.12,0.03,(i+z)%2?f1:f2,Rx-0.1-0.56-i*1.12,-0.06,-1.9+z*1.12));
+ A(rbox(w+0.7,0.1,2.2,0.04,'#cfc6bb',cx,-0.07,2.95));for(let i=0;i<Math.round(w);i++)A(rbox(0.9,0.02,0.06,0.01,'#b9b0a4',Lx+0.5+i,0,2.2));
+ A(rbox(w,3,0.25,0.06,wall,cx,1.45,-2.55));A(rbox(0.25,3,4.6,0.06,wall,Lx,1.45,-0.35));
+ A(rbox(w+0.2,0.12,0.4,0.04,aw,cx,2.95,-2.4));
+ // 窓
+ for(let x=Rx-1.6;x>Lx+0.8;x-=2.4)A(rbox(1.4,1,0.06,0.04,'#bfe8ff',x,1.8,-2.4));
+ // 日よけ
+ const awn=new THREE.Group();awn.position.set(cx,2.9,2.0);const na=Math.round(w/0.82);for(let i=0;i<na;i++){const st=rbox(0.82,0.06,0.35,0.03,i%2?'#fff':aw,-w/2+0.41+i*0.82,0,0);st.rotation.x=0.35;awn.add(st)}A(awn);
+ // 看板
+ A(rbox(2.6,0.6,0.12,0.12,aw,cx,3.35,-2.35));const sp=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.55),new THREE.MeshBasicMaterial({map:signTex(aw)}));sp.position.set(cx,3.35,-2.28);A(sp);
+ // 柱
+ A(rbox(0.2,3,0.2,0.06,'#c99a6e',Lx+0.1,1.45,1.7));A(rbox(0.2,3,0.2,0.06,'#c99a6e',Rx-0.1,1.45,1.7));
+ // お店の かたち
+ // やね：板を2まい ななめに あわせる
+ const gable=(y,z,dep,h)=>{const ang=Math.atan2(h,dep/2),len=Math.hypot(h,dep/2)+0.12;for(const sgn of [-1,1]){const pl=rbox(w+0.4,0.12,len,0.05,aw,cx,y+h/2,z+sgn*dep/4);pl.rotation.x=sgn*ang;A(pl)}};
+ if(d.shape==='two'){A(rbox(w,1.8,0.9,0.08,wall,cx,3.95,-2.25));for(let x=Rx-1.4;x>Lx+0.6;x-=1.8)A(rbox(0.8,0.8,0.06,0.04,'#bfe8ff',x,4.0,-1.78));
+  A(rbox(w+0.2,0.1,0.45,0.04,'#c99a6e',cx,3.15,-1.6));for(let x=Lx+0.3;x<Rx;x+=0.6)A(rbox(0.05,0.35,0.05,0.02,'#c99a6e',x,3.35,-1.42));gable(4.85,-2.25,1.2,0.7)}
+ if(d.shape==='tri')gable(3.0,-2.35,1.0,0.8);
+ // かざり
+ const ex=d.ex;const plants=[[Lx+0.45,1.3],[Rx-0.35,-2.0],[Lx+0.45,-2.0],[Rx-0.35,0.2],[Lx+1.3,2.6],[Rx-1.2,2.6]];for(let i=0;i<2+(ex.plant||0);i++)plant(...plants[i],shopG);
+ if(ex.bench){A(rbox(1.4,0.1,0.45,0.04,'#c99a6e',Lx+1.6,0.45,2.95));for(const bx of [-0.55,0.55])A(rbox(0.1,0.45,0.4,0.03,'#8a6a4a',Lx+1.6+bx,0.22,2.95))}
+ if(ex.lamp)for(const x of [Lx+1.2,cx,Rx-1.6]){A(mesh(G('lcord',()=>new THREE.CylinderGeometry(0.01,0.01,0.5,6)),M('#8a7a6a'),x,2.65,-0.3));A(mesh(G('lshade',()=>new THREE.ConeGeometry(0.2,0.2,16)),M('#ffd166',{emissive:'#ffb300',emissiveIntensity:0.5}),x,2.35,-0.3))}
+ if(ex.flag)for(const x of [Lx+0.3,Rx-0.3]){A(mesh(G('pole',()=>new THREE.CylinderGeometry(0.025,0.025,1.6,8)),M('#c9c0b4'),x,0.8,2.5));A(rbox(0.04,0.9,0.36,0.02,aw,x,1.0,2.7))}
+ // 棚を置ける丸の数も変わる
+ slotMarks.forEach((m,i)=>m.userData.ok=slotOK(i));markSel()}
 const counter=new THREE.Group();counter.position.set(2.7,0,1.0);
 counter.add(rbox(1.6,0.9,0.7,0.08,'#c99a6e',0,0.45,0));counter.add(rbox(1.7,0.08,0.8,0.03,'#fff8ec',0,0.94,0));
 counter.add(rbox(0.5,0.32,0.4,0.06,'#7cc8f0',-0.3,1.14,0));counter.add(rbox(0.3,0.1,0.3,0.03,'#ffd166',0.4,1.02,0));scene.add(counter);
 const clerk=person('#7cc8f0','#ffd166');clerk.position.set(2.7,0,0.25);clerk.rotation.y=0;scene.add(clerk);
-for(const x of [-2.4,0,2.4]){scene.add(rbox(1.4,1,0.06,0.04,'#bfe8ff',x,1.8,-2.4))}
-// 鉢植え
-function plant(x,z){const g=new THREE.Group();g.add(mesh(G('pot',()=>new THREE.CylinderGeometry(0.18,0.14,0.3,14)),M('#d78b7a'),0,0.15,0));g.add(mesh(G('leaf',()=>new THREE.IcosahedronGeometry(0.3,1)),M('#86cc6f',{flatShading:true}),0,0.48,0));g.position.set(x,0,z);scene.add(g)}
-plant(-3.6,1.3);plant(3.7,-2.0);
 
 function person(body,hair){const g=new THREE.Group();
  g.add(mesh(G('pb',()=>new THREE.CapsuleGeometry(0.17,0.32,4,10)),M(body),0,0.38,0));
@@ -171,7 +193,7 @@ function rebuildShelves(){for(const o of shelfObjs.values())scene.remove(o);shel
 // 空いている場所の印
 const slotMarks=SLOTS.map(([x,z],i)=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.35,0.45,32),new THREE.MeshBasicMaterial({color:'#ff9a76',transparent:true,opacity:0.7}));m.rotation.x=-Math.PI/2;m.position.set(x,0.02,z);m.userData.slot=i;m.userData.empty=1;scene.add(m);return m});
 const selRing=new THREE.Mesh(new THREE.RingGeometry(0.75,0.85,40),new THREE.MeshBasicMaterial({color:'#ff9a76'}));selRing.rotation.x=-Math.PI/2;selRing.visible=false;scene.add(selRing);
-function markSel(){const used=new Set(S.shelves.map(s=>s.slot));slotMarks.forEach((m,i)=>m.visible=!used.has(i)&&mode==='place');
+function markSel(){const used=new Set(S.shelves.map(s=>s.slot));slotMarks.forEach((m,i)=>m.visible=!used.has(i)&&mode==='place'&&slotOK(i));
  if(ui.sel!=null&&used.has(ui.sel)){const [x,z]=SLOTS[ui.sel];selRing.position.set(x,0.03,z);selRing.visible=true}else selRing.visible=false}
 
 // ================= お客さん =================
@@ -243,12 +265,35 @@ function openPlace(slot){const cost=SHELF_COST(S.shelves.length);$('sheet').styl
  $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{if(S.money<cost){toast(L('💸 お金が足りない','💸 Not enough money'));return}const k=b.dataset.k;S.money-=cost;
   const sh={slot,item:k,stock:0,price:ITEMS[k].base};S.shelves.push(sh);ui.sel=slot;mode='look';rebuildShelves();paintDock();blip(880);hud();save();openShelf()});
  $('close').onclick=closeSheet}
+function openDeco(){const d=S.deco;$('sheet').style.display='block';
+ const own=k=>(d.own||[]).includes(k);
+ const colorBtns=(list,key,cat)=>list.map(([c,ja,en,price],i)=>{const k=cat+i,have=price===0||own(k),now=d[key]===i;
+   const sw=Array.isArray(c)?`linear-gradient(90deg,${c[0]} 50%,${c[1]} 50%)`:c;
+   return `<button data-cat="${cat}" data-i="${i}" style="${now?'box-shadow:inset 0 0 0 2px #ff9a76':''}"><span style="display:inline-block;width:22px;height:22px;border-radius:7px;background:${sw};border:1px solid #0002"></span>${L(ja,en)}<small>${now?L('いま','now'):have?L('つかう','use'):yen(price)}</small></button>`}).join('');
+ const style=styleScore();
+ $('sheet').innerHTML=`<h3>🔨 ${L('お店を かいそう','Remodel your shop')} <small style="font-weight:normal;opacity:.7">${L('おしゃれ ど','Style')} ${style}・${L('おしゃれだと お客さんが ふえるよ','stylish shops get more customers')}</small></h3>
+ <div style="max-height:46vh;overflow:auto">
+ <div class="row"><b>${L('かべの いろ','Wall color')}</b></div><div class="items">${colorBtns(WALLS,'wall','w')}</div>
+ <div class="row"><b>${L('ゆかの もよう','Floor')}</b></div><div class="items">${colorBtns(FLOORS,'floor','f')}</div>
+ <div class="row"><b>${L('ひさしと かんばんの いろ','Awning & sign color')}</b></div><div class="items">${colorBtns(AWNS,'awn','a')}</div>
+ <div class="row"><b>${L('かざり','Decorations')}</b></div><div class="items">${EXTRAS.map(([id,e,ja,en,price,max])=>{const n=d.ex[id]||0;return `<button data-ex="${id}" ${n>=max?'disabled':''}><span class="e">${e}</span>${L(ja,en)}<small>${n>=max?L('もってる','owned'):yen(price)}${max>1?` (${n}/${max})`:''}</small></button>`}).join('')}</div>
+ <div class="row"><b>${L('お店の かたち','Shop shape')}</b></div><div class="items">${SHAPES.map(([id,ja,en,price])=>{const have=price===0||own('s'+id),now=d.shape===id;return `<button data-shape="${id}" style="${now?'box-shadow:inset 0 0 0 2px #ff9a76':''}"><span class="e">${{flat:'🏠',tri:'⛺',two:'🏢'}[id]}</span>${L(ja,en)}<small>${now?L('いま','now'):have?L('つかう','use'):yen(price)}</small></button>`}).join('')}
+  <button data-big="1" ${d.big?'disabled':''}><span class="e">📐</span>${L('お店を ひろく','Make it bigger')}<small>${d.big?L('ひろく なった','done'):yen(BIG_COST)+L('・たな＋4','・+4 shelves')}</small></button></div>
+ </div><div class="row"><button id="close">${L('とじる','Close')}</button></div>`;
+ const pay=(price,ok)=>{if(S.money<price){toast(L(`💸 あと ${yen(price-S.money)} たりないよ。お金を ためよう`,`💸 You need ${yen(price-S.money)} more. Keep saving!`));return}S.money-=price;ok();blip(880);blip(1320,0.08,0.1);navigator.vibrate?.([10,40,10]);buildShop();hud();save();openDeco()};
+ const pick=(list,key,cat,i)=>{const k=cat+i,price=list[i][3];if(price===0||own(k)){d[key]=i;buildShop();save();openDeco();return}pay(price,()=>{(d.own=d.own||[]).push(k);d[key]=i})};
+ $('sheet').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,c=b.dataset.cat;if(c==='w')pick(WALLS,'wall','w',i);if(c==='f')pick(FLOORS,'floor','f',i);if(c==='a')pick(AWNS,'awn','a',i)});
+ $('sheet').querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{const e=EXTRAS.find(x=>x[0]===b.dataset.ex);pay(e[4],()=>{d.ex[e[0]]=(d.ex[e[0]]||0)+1})});
+ $('sheet').querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{const sh=SHAPES.find(x=>x[0]===b.dataset.shape);if(sh[3]===0||own('s'+sh[0])){d.shape=sh[0];buildShop();save();openDeco();return}
+  pay(sh[3],()=>{(d.own=d.own||[]).push('s'+sh[0]);d.shape=sh[0];toast(L(`🎉 お店が「${sh[1]}」に なった！`,`🎉 Your shop now has: ${sh[2]}!`))})});
+ $('sheet').querySelector('[data-big]').onclick=()=>{if(d.big)return;pay(BIG_COST,()=>{d.big=1;toast(L('🎉 お店が ひろく なった！<br>たなを 4つ ふやせるよ','🎉 Your shop got bigger!<br>Room for 4 more shelves'))})};
+ $('close').onclick=closeSheet}
 function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save()}
 const dock=$('dock');
-function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
- b.onclick=()=>{mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
+function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')],['deco','🔨',L('かいそう','Remodel')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
+ b.onclick=()=>{if(id==='deco'){mode='look';paintDock();ui.sel=null;markSel();openDeco();return}mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
 $('speed').onclick=()=>{ui.speed=(ui.speed+1)%3;hud();save()};
-$('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;paintDock();if(ui.sel!=null)openShelf();hud()};
+$('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;buildShop();paintDock();if(ui.sel!=null)openShelf();hud()};
 document.documentElement.lang=lang;
 function toast(s,ms=2400){const t=$('toast');t.innerHTML=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
 function hint(){if(mode==='place')return L(`🪵 オレンジの 丸に たなを おけるよ（${yen(SHELF_COST(S.shelves.length))}）`,`🪵 Tap an orange circle to place a shelf (${yen(SHELF_COST(S.shelves.length))})`);
@@ -259,12 +304,12 @@ function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+
  const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint()}
 
 // ================= ループ =================
-rebuildShelves();paintDock();hud();if(ui.sel!=null)openShelf();
+buildShop();rebuildShelves();paintDock();hud();if(ui.sel!=null)openShelf();
 const clock=new THREE.Clock();let spawnT=0,hudT=0;
 renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*[0,1,2.5][ui.speed];
  if(dt){S.t+=dt;spawnT-=dt;
   // お客さんの来やすさ：評判とファンで増える。夜（最後の1割）は来ない
-  const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(2.2,7-S.star*0.8-S.fans*0.02)*(0.6+rnd()*0.8)}
+  const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(1.8,7-S.star*0.8-S.fans*0.02-styleScore()*0.08)*(0.6+rnd()*0.8)}
   if(S.t>=DAY_SEC&&!guests.length)endDay()}
  guestTick(dt);
  for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.t+=raw;c.s.position.y=1.6+c.t*1.2;c.s.material.opacity=1-c.t;if(c.t>1){scene.remove(c.s);coins.splice(i,1)}}
