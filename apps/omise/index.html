@@ -205,7 +205,7 @@ const bubCache={};const bub=t=>bubCache[t]||(bubCache[t]=bubbleTex(t));
 function spawn(){const want=pickWant();const p=person(BODY[rnd()*6|0],HAIR[rnd()*4|0]);const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
  const sp=new THREE.Sprite(bub(ITEMS[want].e));sp.scale.setScalar(0.55);sp.position.y=1.35;sp.renderOrder=9;p.add(sp);
  const g={o:p,sp,want,path:[DOOR.clone()],state:'in',speed:1.1+rnd()*0.4,wait:0,from};
- const sh=S.shelves.find(s=>s.item===want);if(sh){const [x,z]=SLOTS[sh.slot];g.path.push(new THREE.Vector3(x,0,z+0.75));g.shelf=sh}else g.state='none';
+ const same=S.shelves.filter(s=>s.item===want),stocked=same.filter(s=>s.stock>0),sh=(stocked.length?stocked:same)[Math.random()*(stocked.length||same.length)|0];if(sh){const [x,z]=SLOTS[sh.slot];g.path.push(new THREE.Vector3(x,0,z+0.75));g.shelf=sh}else g.state='none';
  guests.push(g);S.today.guests++}
 function pickWant(){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
  // たいていは置いてある物、ときどき置いていない物がほしい人も来る
@@ -220,9 +220,9 @@ function guestTick(dt){
   if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 「${nm(ITEMS[g.want])}は ないの？」と お客さんが 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A customer left.`);continue}
   if(g.state==='in'){g.state='look';g.wait=0.8;continue}
   if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
-   if(!S.shelves.includes(sh)||sh.stock<=0){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、お客さんが がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
+   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、お客さんが がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
    // 値段がふつうより高いほど買わない
-   const r=sh.price/ITEMS[sh.item].base,p=Math.max(0,Math.min(1,1.35-r*0.75+S.fans*0.004));
+   const r=sh.price/ITEMS[sh.item].base,p=Math.max(0,Math.min(1,1.6-r*0.7+S.fans*0.004));
    if(rnd()>p){leave(g,'💸');S.msgs=L(`💸 「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
    sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price;g.sp.material=bub(ITEMS[sh.item].e);g.path=[PAY.clone()];g.state='pay';continue}
   if(g.state==='pay'){g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
