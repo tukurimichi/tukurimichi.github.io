@@ -34,7 +34,7 @@ button:active{transform:scale(.94)}
 .items button .e{font-size:22px}
 .items button[disabled]{opacity:.35}
 #dock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:8px;padding:7px}
-#dock button{width:64px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;background:#fff7ee}
+#dock button{width:58px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;background:#fff7ee}
 #dock button .e{font-size:20px}
 #dock button.on{background:#ffd9c7;box-shadow:inset 0 0 0 2px #ff9a76}
 #toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.8);padding:14px 20px;font-size:15px;text-align:center;opacity:0;transition:all .25s;pointer-events:none}
@@ -227,12 +227,18 @@ const KINDS={
  kid:{ja:'小学生',en:'Schoolkid',share:0.25,tol:0.6,look:1.8,speed:1.45,likes:['apple','toy','cake']},
  granny:{ja:'おばあちゃん',en:'Grandma',share:0.2,tol:1.4,look:1.2,speed:0.7,likes:['bread','flower'],two:true},
  cat:{ja:'ねこ',en:'Cat',share:0.15,tol:1.0,look:0.6,speed:1.7,likes:['milk']},
- adult:{ja:'おとな',en:'Grown-up',share:0.4,tol:1.0,look:0.8,speed:1.15,likes:[]}};
-const pickKind=()=>{let r=rnd();for(const [k,v] of Object.entries(KINDS)){if((r-=v.share)<0)return k}return 'adult'};
+ adult:{ja:'おとな',en:'Grown-up',share:0.25,tol:1.0,look:0.8,speed:1.15,likes:[]},
+ worker:{ja:'かいしゃいん',en:'Office worker',share:0.15,tol:1.0,look:0.4,speed:1.6,likes:['bread','milk']},
+ bear:{ja:'くま',en:'Bear',share:0.1,tol:1.1,look:1.0,speed:0.8,likes:['apple','cake'],star:1},
+ rich:{ja:'おかねもち',en:'Rich person',share:0.05,tol:2.2,look:0.8,speed:0.9,likes:['flower','cake'],three:true,star:2},
+ wizard:{ja:'まほうつかい',en:'Wizard',share:0.04,tol:3,look:1.4,speed:1.0,likes:['toy'],priciest:true,star:3}};
+for(const k of ['kid','granny','cat'])KINDS[k].star=0;KINDS.adult.star=0;KINDS.worker.star=0;
+const pickKind=()=>{const ok=Object.entries(KINDS).filter(([k,v])=>(v.star||0)<=S.star);const tot=ok.reduce((a,[k,v])=>a+v.share,0);let r=rnd()*tot;for(const [k,v] of ok){if((r-=v.share)<0)return k}return 'adult'};
 const cap=(r,l,c)=>mesh(G('cap'+r+l,()=>new THREE.CapsuleGeometry(r,l,4,10)),M(c));
 const ball=(r,c)=>mesh(G('ball'+r,()=>new THREE.SphereGeometry(r,16,12)),M(c));
 function limb(r,l,c,x,y){const pv=new THREE.Group();pv.position.set(x,y,0);const m=cap(r,l,c);m.position.y=-(l/2+r*0.6);pv.add(m);return pv}
-function makeCustomer(kind){const o=new THREE.Group(),bod=new THREE.Group();o.add(bod);const P={bod,kind};
+function seeded(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function makeCustomer(kind,seed){seed=seed??(Math.random()*1e9|0);const rnd=seeded(seed??(Math.random()*1e9|0));const o=new THREE.Group(),bod=new THREE.Group();o.add(bod);const P={bod,kind};
  const col=BODY[rnd()*6|0],hair=HAIR[rnd()*4|0];
  if(kind==='cat'){const fur=['#f2a65a','#9a8f86','#3e3a38','#f5efe6'][rnd()*4|0];
   const body=cap(0.13,0.26,fur);body.rotation.x=Math.PI/2;body.position.set(0,0.22,-0.05);bod.add(body);
@@ -241,23 +247,37 @@ function makeCustomer(kind){const o=new THREE.Group(),bod=new THREE.Group();o.ad
   for(const sx of [-1,1]){const e=mesh(G('ear',()=>new THREE.ConeGeometry(0.06,0.12,4)),M(fur),sx*0.1,0.16,0);e.rotation.z=-sx*0.3;head.add(e)}
   const tail=new THREE.Group();tail.position.set(0,0.28,-0.28);const tm=cap(0.03,0.24,fur);tm.position.y=0.13;tail.add(tm);tail.rotation.x=-0.5;bod.add(tail);P.tail=tail;
   const face=new THREE.Mesh(G('facep',()=>new THREE.PlaneGeometry(0.3,0.3)),faceMat('normal',1));face.position.set(0,0,0.172);head.add(face);P.face=face;P.cat=1;P.h=0.85}
+ else if(kind==='bear'){const fur=['#a5714a','#7a5236','#e8d8c4'][rnd()*3|0];
+  P.legL=limb(0.08,0.12,fur,-0.1,0.28);P.legR=limb(0.08,0.12,fur,0.1,0.28);bod.add(P.legL,P.legR);
+  const belly=ball(0.26,fur);belly.scale.set(1,1.05,0.85);belly.position.y=0.5;bod.add(belly);const tummy=ball(0.16,'#f3dcc0');tummy.scale.set(1,1.1,0.5);tummy.position.set(0,0.47,0.14);bod.add(tummy);
+  P.armL=limb(0.07,0.14,fur,-0.25,0.62);P.armR=limb(0.07,0.14,fur,0.25,0.62);bod.add(P.armL,P.armR);
+  const head=new THREE.Group();head.position.set(0,0.92,0);bod.add(head);P.head=head;head.add(ball(0.21,fur));
+  for(const sx of [-1,1]){const e=ball(0.07,fur);e.position.set(sx*0.15,0.16,0);head.add(e);const ei=ball(0.035,'#f3dcc0');ei.position.set(sx*0.15,0.16,0.04);head.add(ei)}
+  const snout=ball(0.08,'#f3dcc0');snout.scale.set(1,0.75,0.7);snout.position.set(0,-0.06,0.17);head.add(snout);
+  const face=new THREE.Mesh(G('facep',()=>new THREE.PlaneGeometry(0.3,0.3)),faceMat('normal'));face.position.set(0,0.0,0.212);head.add(face);P.face=face;P.h=1.4}
  else{const kid=kind==='kid',gr=kind==='granny',s=kid?0.78:1;
   const legC=gr?'#7a6a5a':kid?'#4a5a8a':'#5a5a6a';
   P.legL=limb(0.055,0.16,legC,-0.07,0.3);P.legR=limb(0.055,0.16,legC,0.07,0.3);bod.add(P.legL,P.legR);
-  const shirt=gr?'#b59bd6':col;const torso=rbox(0.3,0.32,0.2,0.09,shirt,0,0.44,0);bod.add(torso);
+  const shirt=gr?'#b59bd6':kind==='worker'?'#3e4a6a':kind==='wizard'?'#6a4fb0':kind==='rich'?'#e0b84a':col;const torso=rbox(0.3,0.32,0.2,0.09,shirt,0,0.44,0);bod.add(torso);
   P.armL=limb(0.045,0.17,shirt,-0.19,0.56);P.armR=limb(0.045,0.17,shirt,0.19,0.56);bod.add(P.armL,P.armR);
   for(const a of [P.armL,P.armR]){const hand=ball(0.045,'#ffe0c2');hand.position.y=-0.27;a.add(hand)}
   const head=new THREE.Group();head.position.set(0,0.82,0);bod.add(head);P.head=head;const hs=kid?1.12:1;
   head.add(ball(0.2*hs,'#ffe0c2'));
-  const hcol=gr?'#d9d4cf':hair;const cap1=mesh(G('hair'+hs,()=>new THREE.SphereGeometry(0.21*hs,16,12,0,Math.PI*2,0,Math.PI/2)),M(hcol),0,0.03,-0.01);cap1.rotation.x=-0.25;head.add(cap1);
+  const hcol=gr||kind==='wizard'?'#d9d4cf':hair;const cap1=mesh(G('hair'+hs,()=>new THREE.SphereGeometry(0.21*hs,16,12,0,Math.PI*2,0,Math.PI/2)),M(hcol),0,0.03,-0.01);cap1.rotation.x=-0.25;head.add(cap1);
   if(gr){const bun=ball(0.08,hcol);bun.position.set(0,0.2,-0.12);head.add(bun);const bag=rbox(0.14,0.12,0.06,0.03,'#d78b7a',0,-0.2,0.05);P.armR.add(bag)}
   if(kid){const hat=mesh(G('khat',()=>new THREE.SphereGeometry(0.235,16,10,0,Math.PI*2,0,Math.PI/2.3)),M('#ffd166'),0,0.04,0);head.add(hat);
    const brim=mesh(G('kbrim',()=>new THREE.CylinderGeometry(0.27,0.27,0.02,20)),M('#ffd166'),0,0.06,0.02);head.add(brim);
    const rand=rbox(0.26,0.28,0.12,0.05,['#e85d5d','#2f2a26','#c79be0'][rnd()*3|0],0,0.48,-0.16);bod.add(rand)}
+  if(kind==='worker'){const tie=rbox(0.05,0.18,0.02,0.01,'#e85d5d',0,0.47,0.105);bod.add(tie);const col2=rbox(0.14,0.05,0.03,0.01,'#ffffff',0,0.58,0.1);bod.add(col2);const case1=rbox(0.22,0.15,0.06,0.02,'#3a2e26',0,-0.24,0.04);P.armL.add(case1)}
+  if(kind==='wizard'){const robe=mesh(G('robe',()=>new THREE.ConeGeometry(0.26,0.55,16)),M('#6a4fb0'),0,0.3,0);bod.add(robe);
+   const hat=mesh(G('whatc',()=>new THREE.ConeGeometry(0.2,0.5,16)),M('#4a3590'),0,0.33,0);hat.rotation.z=0.15;head.add(hat);const hb=mesh(G('whb',()=>new THREE.CylinderGeometry(0.3,0.3,0.03,20)),M('#4a3590'),0,0.12,0);head.add(hb);
+   const star=mesh(G('wst',()=>new THREE.OctahedronGeometry(0.06)),M('#ffd166',{emissive:'#ffb300',emissiveIntensity:0.8}),0,-0.3,0.05);P.armR.add(star);const beard=mesh(G('beard',()=>new THREE.ConeGeometry(0.12,0.22,12)),M('#f5f5f5'),0,-0.2,0.1);beard.rotation.x=Math.PI;head.add(beard);P.sparkle=1}
+  if(kind==='rich'){const top=mesh(G('tophat',()=>new THREE.CylinderGeometry(0.13,0.13,0.24,16)),M('#2f2a26'),0,0.27,0);head.add(top);const brim=mesh(G('tbrim',()=>new THREE.CylinderGeometry(0.22,0.22,0.02,20)),M('#2f2a26'),0,0.15,0);head.add(brim);
+   const bow=rbox(0.1,0.05,0.03,0.01,'#e85d5d',0,0.6,0.105);bod.add(bow);for(const a of [P.armL,P.armR]){const ring=mesh(G('ring',()=>new THREE.TorusGeometry(0.03,0.01,6,12)),M('#ffd166',{metalness:0.6,roughness:0.3}),0,-0.27,0.04);a.add(ring)}}
   if(kind==='adult'&&rnd()<0.5){const bag=rbox(0.18,0.14,0.06,0.03,['#c99a6e','#5a4a3c','#7cc8f0'][rnd()*3|0],0,-0.22,0.05);P.armL.add(bag)}
   const face=new THREE.Mesh(G('facep'+hs,()=>new THREE.PlaneGeometry(0.34*hs,0.34*hs)),faceMat('normal'));face.position.set(0,-0.01,0.2*hs+0.004);head.add(face);P.face=face;
   bod.scale.setScalar(s);P.h=kid?1.15:1.35}
- o.userData.P=P;return o}
+ o.userData.P=P;o.userData.seed=seed;return o}
 const setFace=(g,k)=>{g.P.face.material=faceMat(k,g.P.cat)};
 // 手と足をふって歩く／立ちどまると止まる
 function animate(g,dt,moving){const P=g.P;g.ph=(g.ph||0)+(moving?dt*g.speed*9:0);const sw=moving?Math.sin(g.ph):0,k=1-Math.exp(-dt*10);
@@ -270,11 +290,19 @@ function animate(g,dt,moving){const P=g.P;g.ph=(g.ph||0)+(moving?dt*g.speed*9:0)
  // 小学生は まよっている間 ときどき ぴょんと とぶ
  if(g.kind==='kid'&&peek)g.o.position.y=Math.max(0,Math.sin(performance.now()/180+g.seed))*0.12;else if(!moving)g.o.position.y=0}
 
-function spawn(){if(guests.length>=8)return;const kind=pickKind(),K=KINDS[kind],want=pickWant(kind);const p=makeCustomer(kind);const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
+const NAMES={ja:['ゆいちゃん','そうたくん','はなこさん','けんじさん','みみ','ポン太','ひかりちゃん','たろうさん','モモ','ゴロー'],en:['Yui','Sota','Hanako','Kenji','Mimi','Ponta','Hikari','Taro','Momo','Goro']};
+function spawn(){if(guests.length>=8)return;S.book=S.book||{};S.regs=S.regs||[];
+ // 常連さんは ときどき また来る（同じ見た目）
+ let reg=null;const regsOK=S.regs.filter(r=>!guests.some(g=>g.reg===r)&&(KINDS[r.kind].star||0)<=S.star);if(regsOK.length&&rnd()<0.3)reg=regsOK[rnd()*regsOK.length|0];
+ const kind=reg?reg.kind:pickKind(),K=KINDS[kind],want=K.priciest?priciest()||pickWant(kind):pickWant(kind);const p=makeCustomer(kind,reg?reg.seed:rnd()*1e9|0);
+ if(!S.book[kind]){S.book[kind]=0;toast(L(`📖 はじめての お客さん！<br><b>${K.ja}</b>が 来たよ`,`📖 A new kind of customer!<br><b>${K.en}</b>`));blip(990);blip(1320,0.08,0.12)}S.book[kind]++;
+ if(reg){reg.visits++;const tag=new THREE.Sprite(nameMat(reg.name+' ♡'));tag.scale.set(0.9,0.22,1);tag.position.y=p.userData.P.h+0.55;tag.renderOrder=9;p.add(tag)}const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
  const sp=new THREE.Sprite(bub(ITEMS[want].e));sp.scale.setScalar(0.55);sp.position.y=p.userData.P.h+0.15;sp.renderOrder=9;p.add(sp);
- const g={o:p,P:p.userData.P,kind,sp,want,path:[DOOR.clone()],state:'in',speed:K.speed*(0.9+rnd()*0.2),wait:0,from,seed:rnd()*10};
+ const g={reg,seed:p.userData.seed,o:p,P:p.userData.P,kind,sp,want,path:[DOOR.clone()],state:'in',speed:K.speed*(0.9+rnd()*0.2),wait:0,from,seed:rnd()*10};
  const same=S.shelves.filter(s=>s.item===want),stocked=same.filter(s=>s.stock>0),sh=(stocked.length?stocked:same)[Math.random()*(stocked.length||same.length)|0];if(sh){const [x,z]=SLOTS[sh.slot];g.path.push(new THREE.Vector3(x,0,z+0.75));g.shelf=sh}else g.state='none';
  guests.push(g);S.today.guests++}
+function priciest(){const st=S.shelves.filter(s=>s.stock>0);if(!st.length)return null;return st.sort((a,b)=>b.price-a.price)[0].item}
+const nameCache={};function nameMat(t){if(nameCache[t])return nameCache[t];const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.fillStyle='#ffffffee';x.beginPath();x.roundRect(4,8,248,48,24);x.fill();x.fillStyle='#e8606a';x.font='bold 30px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,128,34);return nameCache[t]=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false})}
 function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
  // 大すきな物がお店にあれば、それをほしがりやすい
  const fav=KINDS[kind].likes.filter(k=>own.includes(k));if(fav.length&&rnd()<0.6)return fav[rnd()*fav.length|0];
@@ -297,11 +325,16 @@ function guestTick(dt){
    const K=KINDS[g.kind],r=sh.price/ITEMS[sh.item].base;let p=1.6-r*0.7/K.tol+S.fans*0.004;if(K.likes.includes(sh.item))p+=0.25;p=Math.max(0,Math.min(1,p));
    if(rnd()>p){leave(g,'💸','sad',1);S.msgs=L(`💸 ${kname(g)}「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 ${kname(g)}: "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
    // おばあちゃんは ときどき 2こ買う
-   const n=K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price*n;g.sp.material=bub(ITEMS[sh.item].e+(n>1?'×2':''));setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
+   const n=K.three&&sh.stock>=3?3:K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price*n;g.sp.material=bub(ITEMS[sh.item].e+(n>1?'×2':''));setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
   if(g.state==='react'){g.o.rotation.y=0.35;g.wait-=dt;g.o.position.y=g.jump?Math.max(0,Math.sin((0.9-g.wait)*Math.PI*2.2))*0.14:0;if(g.wait>0)continue;g.o.position.y=0;g.path=g.after.path;g.state=g.after.state;continue}
   if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
-   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊','happy')}else leave(g,'🙂','normal');continue}
+   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊','happy');
+    if(!g.reg&&S.regs.length<10&&rnd()<0.12){const used=new Set(S.regs.map(x=>x.name));const pool=NAMES[lang].filter(n=>!used.has(n));if(pool.length){const reg={name:pool[rnd()*pool.length|0],kind:g.kind,seed:g.seed,visits:1};S.regs.push(reg);g.reg=reg;
+     toast(L(`♡ ${KINDS[g.kind].ja}の「${reg.name}」が 常連さんに なったよ`,`♡ ${reg.name} the ${KINDS[g.kind].en} is now a regular!`))}}}
+   else leave(g,'🙂','normal');if(g.P.sparkle)sparkle(g.o.position);continue}
   if(g.state==='out'){scene.remove(g.o);guests.splice(i,1)}}}
+// まほうつかいの キラキラ
+const sparks=[];function sparkle(pos){for(let i=0;i<14;i++){const m=new THREE.Mesh(G('spk',()=>new THREE.OctahedronGeometry(0.05)),new THREE.MeshBasicMaterial({color:['#ffd166','#ff8fb1','#7cc8f0'][i%3],transparent:true}));m.position.copy(pos).add(new THREE.Vector3(0,0.8,0));m.userData.v=new THREE.Vector3((rnd()-.5)*2,1.5+rnd()*1.5,(rnd()-.5)*2);scene.add(m);sparks.push({m,t:0})}blip(1500,0.06);blip(1900,0.05,0.08)}
 // お金が入ったときの「チャリン」
 const coins=[];function coin(v){const s=new THREE.Sprite(bub('🪙'));s.scale.setScalar(0.45);s.position.set(2.7,1.6,1.0);s.renderOrder=10;scene.add(s);coins.push({s,t:0});blip(1200,0.06);blip(1600,0.05,0.07);navigator.vibrate?.(5)}
 let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+0.2)}catch(e){}}
@@ -363,10 +396,16 @@ function openDeco(){const d=S.deco;$('sheet').style.display='block';
   pay(sh[3],()=>{(d.own=d.own||[]).push('s'+sh[0]);d.shape=sh[0];toast(L(`🎉 お店が「${sh[1]}」に なった！`,`🎉 Your shop now has: ${sh[2]}!`))})});
  $('sheet').querySelector('[data-big]').onclick=()=>{if(d.big)return;pay(BIG_COST,()=>{d.big=1;toast(L('🎉 お店が ひろく なった！<br>たなを 4つ ふやせるよ','🎉 Your shop got bigger!<br>Room for 4 more shelves'))})};
  $('close').onclick=closeSheet}
+function openBook(){S.book=S.book||{};S.regs=S.regs||[];$('sheet').style.display='block';
+ const fav=k=>KINDS[k].likes.map(i=>ITEMS[i].e).join('');
+ $('sheet').innerHTML=`<h3>📖 ${L('お客さん ずかん','Customer book')} <small style="font-weight:normal;opacity:.7">${Object.keys(S.book).length} / ${Object.keys(KINDS).length}</small></h3>
+ <div style="max-height:46vh;overflow:auto"><div class="items">${Object.entries(KINDS).map(([k,K])=>{const n=S.book[k];return n?`<button><span class="e">${{kid:'🎒',granny:'👵',cat:'🐱',adult:'🧑',worker:'💼',bear:'🐻',rich:'🎩',wizard:'🧙'}[k]}</span>${L(K.ja,K.en)}<small>${n}${L('かい','×')} ${fav(k)}</small></button>`:`<button disabled><span class="e">❓</span>？？？<small>${(K.star||0)>S.star?'⭐'+K.star+L('から',''):L('まだ 来てない','not yet')}</small></button>`}).join('')}</div>
+ <div class="row"><b>♡ ${L('常連さん','Regulars')}</b></div>${S.regs.length?S.regs.map(r=>`<div class="row">${r.name}（${L(KINDS[r.kind].ja,KINDS[r.kind].en)}）・${L('来たかず','visits')} ${r.visits}</div>`).join(''):`<div class="row" style="opacity:.6">${L('ちょうどいい ねだんで 買ってもらうと、常連さんが できるよ','Sell at fair prices to make regulars')}</div>`}</div>
+ <div class="row"><button id="close">${L('とじる','Close')}</button></div>`;$('close').onclick=closeSheet}
 function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save()}
 const dock=$('dock');
-function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')],['deco','🔨',L('かいそう','Remodel')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
- b.onclick=()=>{if(id==='deco'){mode='look';paintDock();ui.sel=null;markSel();openDeco();return}mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
+function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')],['deco','🔨',L('かいそう','Remodel')],['book','📖',L('ずかん','Book')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
+ b.onclick=()=>{if(id==='book'){mode='look';paintDock();ui.sel=null;markSel();openBook();return}if(id==='deco'){mode='look';paintDock();ui.sel=null;markSel();openDeco();return}mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
 $('speed').onclick=()=>{ui.speed=(ui.speed+1)%3;hud();save()};
 $('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;buildShop();paintDock();if(ui.sel!=null)openShelf();hud()};
 document.documentElement.lang=lang;
@@ -387,6 +426,7 @@ renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*
   const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(1.8,7-S.star*0.8-S.fans*0.02-styleScore()*0.08)*(0.6+rnd()*0.8)}
   if(S.t>=DAY_SEC&&!guests.length)endDay()}
  guestTick(dt);
+ for(let i=sparks.length-1;i>=0;i--){const k=sparks[i];k.t+=raw;k.m.position.addScaledVector(k.m.userData.v,raw);k.m.userData.v.y-=raw*3;k.m.rotation.y+=raw*6;k.m.material.opacity=1-k.t;if(k.t>1){scene.remove(k.m);sparks.splice(i,1)}}
  for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.t+=raw;c.s.position.y=1.6+c.t*1.2;c.s.material.opacity=1-c.t;if(c.t>1){scene.remove(c.s);coins.splice(i,1)}}
  // 夕方は明かりがつく
  const ph=S.t/DAY_SEC;lamp.intensity=ph>0.7?(ph-0.7)*12:0;sun.intensity=2.1-(ph>0.7?(ph-0.7)*3:0);
