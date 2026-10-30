@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ja"><head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title id="pageTitle">ジオラマのお店（無料・広告なし・ブラウザで遊べる）| tukurimichi.com</title>
+<meta name="description" content="ミニチュアジオラマの小さなお店を切り盛りする無料のブラウザゲーム。仕入れて、値段を決めて、お客さんを待つ。広告なし・登録なし。保存はこの端末の中だけ。">
+<meta property="og:title" content="ジオラマのお店（無料のブラウザゲーム）">
+<meta property="og:description" content="ミニチュアジオラマの小さなお店を切り盛りする無料のブラウザゲーム。広告なし・登録なし。">
+<meta property="og:url" content="https://tukurimichi.com/apps/omise/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://tukurimichi.com/apps/omise/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+<style>
+:root{--fg:#5a4a3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;height:100dvh;overflow:hidden;background:#efe4d4;font:13px "Hiragino Maru Gothic ProN","M PLUS Rounded 1c",system-ui,sans-serif;color:var(--fg);user-select:none}
+canvas{display:block;touch-action:none}
+.glass{background:#fffd;border-radius:16px;box-shadow:0 3px 12px #0002}
+#top{position:fixed;left:10px;right:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+#top>*{pointer-events:auto}
+.pill{padding:5px 12px;border-radius:99px;font-weight:bold;white-space:nowrap}
+button{font:inherit;color:inherit;border:0;background:#fff3e6;border-radius:12px;padding:6px 12px;cursor:pointer}
+button:active{transform:scale(.94)}
+#hint{position:fixed;left:50%;top:56px;transform:translateX(-50%);padding:7px 14px;max-width:92%;text-align:center;pointer-events:none}
+#sheet{position:fixed;left:10px;right:10px;bottom:10px;padding:12px;display:none;max-width:480px;margin:0 auto}
+#sheet h3{margin:0 0 8px;font-size:15px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.items{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.items button{display:flex;flex-direction:column;align-items:center;padding:8px 4px;font-size:11px}
+.items button .e{font-size:22px}
+.items button[disabled]{opacity:.35}
+#dock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:8px;padding:7px}
+#dock button{width:64px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;background:#fff7ee}
+#dock button .e{font-size:20px}
+#dock button.on{background:#ffd9c7;box-shadow:inset 0 0 0 2px #ff9a76}
+#toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.8);padding:14px 20px;font-size:15px;text-align:center;opacity:0;transition:all .25s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.big{background:#ffd9c7}
+#back{position:fixed;left:10px;bottom:16px;font-size:11px;color:#8a7a6a;text-decoration:none;background:#fffd;padding:4px 10px;border-radius:99px}
+@media(max-width:600px){#back{bottom:auto;top:96px}}
+</style></head><body>
+<div id="top">
+ <span class="pill glass">💰 <span id="money"></span></span>
+ <span class="pill glass" id="day"></span>
+ <span class="pill glass">⭐ <span id="star"></span></span>
+ <button class="pill glass" id="speed"></button>
+ <button class="pill glass" id="langBtn"></button>
+</div>
+<a id="back" href="https://tukurimichi.com/">← tukurimichi.com</a>
+<div id="hint" class="glass"></div>
+<div id="dock" class="glass"></div>
+<div id="sheet" class="glass"></div>
+<div id="toast" class="glass"></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {HorizontalTiltShiftShader} from 'three/addons/shaders/HorizontalTiltShiftShader.js';
+import {VerticalTiltShiftShader} from 'three/addons/shaders/VerticalTiltShiftShader.js';
+
+// ================= データ =================
+const SAVE='omise.save.v1';
+let lang='ja';try{lang=localStorage.getItem('lang')||(navigator.language&&navigator.language.indexOf('en')===0?'en':'ja')}catch(e){}
+const L=(ja,en)=>lang==='en'?en:ja;
+const yen=v=>(v<0?'−':'')+'¥'+Math.abs(v).toLocaleString();
+// 品物：仕入れ値・ふつうの値段・最初から売れるか（⭐で増える）
+const ITEMS={
+ bread:{en:'Bread',n:'パン',e:'🍞',cost:60,base:130,col:'#e7b56f',star:0},
+ apple:{en:'Apples',n:'りんご',e:'🍎',cost:40,base:90,col:'#e85d5d',star:0},
+ milk:{en:'Milk',n:'牛乳',e:'🥛',cost:70,base:140,col:'#ffffff',star:1},
+ flower:{en:'Flowers',n:'花',e:'🌷',cost:110,base:240,col:'#ff8fb1',star:2},
+ cake:{en:'Cake',n:'ケーキ',e:'🍰',cost:180,base:380,col:'#ffe0e8',star:3},
+ toy:{en:'Toys',n:'おもちゃ',e:'🧸',cost:300,base:620,col:'#c99a6e',star:4}};
+const nm=it=>L(it.n,it.en);
+const SLOTS=[[-2.2,-1.6],[-0.8,-1.6],[0.6,-1.6],[2.0,-1.6],[-2.2,0.0],[-0.8,0.0],[0.6,0.0]]; // 棚を置ける場所（x,z）
+const SHELF_COST=n=>800+n*600;
+const RENT=400;            // 1日の家賃
+const DAY_SEC=70;          // 1日の長さ（秒・ふつうの速さ）
+function fresh(){return {money:3000,day:1,t:0,star:0,fans:0,shelves:[{slot:0,item:'bread',stock:6,price:130},{slot:1,item:'apple',stock:6,price:90}],
+ today:{sale:0,buy:0,guests:0,sad:0},msgs:''}}
+let S;try{S=JSON.parse(localStorage.getItem(SAVE))}catch(e){}if(!S||!S.shelves)S=fresh();
+let ui={speed:1,sel:null};try{Object.assign(ui,JSON.parse(localStorage.getItem(SAVE+'.ui'))||{})}catch(e){}
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));localStorage.setItem(SAVE+'.ui',JSON.stringify({speed:ui.speed,sel:ui.sel,cam:{p:cam.position.toArray(),t:ctl.target.toArray(),z:cam.zoom}}))}catch(e){}}
+const rnd=Math.random;
+
+// ================= 3D =================
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2,devicePixelRatio));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d4');
+const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,200);cam.position.set(5,15,11);
+const ctl=new OrbitControls(cam,renderer.domElement);ctl.enableDamping=true;ctl.minPolarAngle=0.5;ctl.maxPolarAngle=1.15;ctl.minZoom=0.7;ctl.maxZoom=3;
+ctl.minAzimuthAngle=-0.9;ctl.maxAzimuthAngle=0.9;ctl.target.set(0,0.6,0);ctl.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
+if(ui.cam){cam.position.fromArray(ui.cam.p);ctl.target.fromArray(ui.cam.t);cam.zoom=ui.cam.z;cam.updateProjectionMatrix()}
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,cam));
+const hT=new ShaderPass(HorizontalTiltShiftShader),vT=new ShaderPass(VerticalTiltShiftShader);hT.uniforms.r.value=vT.uniforms.r.value=0.5;
+composer.addPass(hT);composer.addPass(vT);composer.addPass(new OutputPass());
+function resize(){const a=innerWidth/innerHeight,v=a<1?7.5:5.5;cam.left=-v*a;cam.right=v*a;cam.top=v;cam.bottom=-v;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);hT.uniforms.h.value=1.6/innerWidth;vT.uniforms.v.value=1.6/innerHeight}
+addEventListener('resize',resize);resize();
+scene.add(new THREE.HemisphereLight('#fff6e8','#c9b79c',1.1));
+const sun=new THREE.DirectionalLight('#fff1d6',2.1);sun.position.set(6,12,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-8,right:8,top:8,bottom:-8});sun.shadow.bias=-0.0005;scene.add(sun);
+const lamp=new THREE.PointLight('#ffcf8a',0,8);lamp.position.set(0,2.6,-0.5);scene.add(lamp);
+
+const gC=new Map(),mC=new Map();
+const M=(c,o)=>{const k=c+(o?JSON.stringify(o):'');if(!mC.has(k))mC.set(k,new THREE.MeshStandardMaterial({color:c,roughness:0.85,...o}));return mC.get(k)};
+const RB=(w,h,d,r)=>{const k=[w,h,d,r].join();if(!gC.has(k))gC.set(k,new RoundedBoxGeometry(w,h,d,3,r));return gC.get(k)};
+const G=(k,f)=>{if(!gC.has(k))gC.set(k,f());return gC.get(k)};
+const mesh=(g,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;return o};
+const rbox=(w,h,d,r,c,x,y,z)=>mesh(RB(w,h,d,r),M(c),x,y,z);
+
+// 台座・床・壁・外の歩道
+scene.add(rbox(9.6,0.8,7.6,0.12,'#7a5236',0,-0.75,0.4));
+scene.add(rbox(9.2,0.3,7.2,0.1,'#c99b6d',0,-0.25,0.4));
+for(let x=0;x<7;x++)for(let z=0;z<4;z++){const t=rbox(1.12,0.08,1.12,0.03,(x+z)%2?'#f3e3c8':'#e8d3b0',-3.36+x*1.12,-0.06,-1.9+z*1.12);scene.add(t)}
+scene.add(rbox(8.8,0.1,2.2,0.04,'#cfc6bb',0,-0.07,2.95)); // 歩道
+for(let i=0;i<8;i++)scene.add(rbox(0.9,0.02,0.06,0.01,'#b9b0a4',-3.5+i*1,0,2.2));
+scene.add(rbox(8,3,0.25,0.06,'#fff1dc',0,1.45,-2.55));           // 奥の壁
+scene.add(rbox(0.25,3,4.6,0.06,'#ffe6cf',-4.05,1.45,-0.35));     // 左の壁
+scene.add(rbox(8.2,0.12,0.4,0.04,'#e57373',0,2.95,-2.4));
+// 看板と日よけ
+const awn=new THREE.Group();awn.position.set(0,2.9,2.0);for(let i=0;i<10;i++){const s=rbox(0.82,0.06,0.35,0.03,i%2?'#fff':'#ff8f80',-3.7+i*0.82,0,0);s.rotation.x=0.35;awn.add(s)}scene.add(awn);
+const sign=rbox(2.6,0.6,0.12,0.12,'#ff8f80',0,3.35,-2.35);scene.add(sign);
+{const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle='#ff8f80';x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L('ちいさなお店','Tiny Shop'),256,64);
+ const p=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.55),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));p.position.set(0,3.35,-2.28);scene.add(p)}
+// 柱・レジ・窓
+scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',-3.95,1.45,1.7));scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',3.95,1.45,1.7));
+const counter=new THREE.Group();counter.position.set(2.7,0,1.0);
+counter.add(rbox(1.6,0.9,0.7,0.08,'#c99a6e',0,0.45,0));counter.add(rbox(1.7,0.08,0.8,0.03,'#fff8ec',0,0.94,0));
+counter.add(rbox(0.5,0.32,0.4,0.06,'#7cc8f0',-0.3,1.14,0));counter.add(rbox(0.3,0.1,0.3,0.03,'#ffd166',0.4,1.02,0));scene.add(counter);
+const clerk=person('#7cc8f0','#ffd166');clerk.position.set(2.7,0,0.25);clerk.rotation.y=0;scene.add(clerk);
+for(const x of [-2.4,0,2.4]){scene.add(rbox(1.4,1,0.06,0.04,'#bfe8ff',x,1.8,-2.4))}
+// 鉢植え
+function plant(x,z){const g=new THREE.Group();g.add(mesh(G('pot',()=>new THREE.CylinderGeometry(0.18,0.14,0.3,14)),M('#d78b7a'),0,0.15,0));g.add(mesh(G('leaf',()=>new THREE.IcosahedronGeometry(0.3,1)),M('#86cc6f',{flatShading:true}),0,0.48,0));g.position.set(x,0,z);scene.add(g)}
+plant(-3.6,1.3);plant(3.7,-2.0);
+
+function person(body,hair){const g=new THREE.Group();
+ g.add(mesh(G('pb',()=>new THREE.CapsuleGeometry(0.17,0.32,4,10)),M(body),0,0.38,0));
+ g.add(mesh(G('ph',()=>new THREE.SphereGeometry(0.17,14,12)),M('#ffe0c2'),0,0.8,0));
+ const h=mesh(G('hair',()=>new THREE.SphereGeometry(0.18,14,12,0,Math.PI*2,0,Math.PI/2)),M(hair),0,0.83,0);g.add(h);
+ return g}
+
+// 棚
+const shelfObjs=new Map();
+function shelfMesh(sh){const it=ITEMS[sh.item],g=new THREE.Group();const [x,z]=SLOTS[sh.slot];g.position.set(x,0,z);
+ g.add(rbox(1.1,0.12,0.6,0.04,'#c99a6e',0,0.06,0));g.add(rbox(1.1,0.06,0.6,0.03,'#e7c9a0',0,0.55,0));g.add(rbox(1.1,0.06,0.6,0.03,'#e7c9a0',0,1.0,0));
+ for(const sx of [-0.52,0.52])g.add(rbox(0.06,1.1,0.6,0.02,'#b88a62',sx,0.55,0));
+ g.add(rbox(1.1,1.1,0.05,0.02,'#d9b78f',0,0.55,-0.28));
+ const goods=new THREE.Group();g.add(goods);g.userData={goods,sh};drawGoods(g);
+ const tag=rbox(0.36,0.16,0.03,0.04,'#fff',0,0.18,0.31);g.add(tag);
+ g.traverse(o=>o.userData.shelf=sh.slot);return g}
+function goodMesh(item){switch(item){
+ case 'bread':return mesh(G('gb',()=>new THREE.CapsuleGeometry(0.06,0.1,4,8)),M('#e7b56f'));
+ case 'apple':return mesh(G('ga',()=>new THREE.SphereGeometry(0.07,10,8)),M('#e85d5d'));
+ case 'milk':return mesh(RB(0.08,0.16,0.08,0.02),M('#ffffff'));
+ case 'flower':return mesh(G('gf',()=>new THREE.SphereGeometry(0.07,8,6)),M('#ff8fb1'));
+ case 'cake':return mesh(G('gc',()=>new THREE.CylinderGeometry(0.08,0.08,0.09,12)),M('#ffe0e8'));
+ case 'toy':return mesh(G('gt',()=>new THREE.SphereGeometry(0.08,10,8)),M('#c99a6e'))}}
+function drawGoods(g){const {goods,sh}=g.userData;goods.clear();const n=Math.min(sh.stock,16);
+ for(let i=0;i<n;i++){const o=goodMesh(sh.item);const row=i<8?0:1;const j=i%8;o.position.set(-0.4+(j%4)*0.27,(row?1.08:0.63)+(sh.item==='bread'?0.02:0.05),-0.08+(j<4?0:0.16));if(sh.item==='bread')o.rotation.z=Math.PI/2;goods.add(o)}}
+function rebuildShelves(){for(const o of shelfObjs.values())scene.remove(o);shelfObjs.clear();for(const sh of S.shelves){const o=shelfMesh(sh);scene.add(o);shelfObjs.set(sh.slot,o)}markSel()}
+// 空いている場所の印
+const slotMarks=SLOTS.map(([x,z],i)=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.35,0.45,32),new THREE.MeshBasicMaterial({color:'#ff9a76',transparent:true,opacity:0.7}));m.rotation.x=-Math.PI/2;m.position.set(x,0.02,z);m.userData.slot=i;m.userData.empty=1;scene.add(m);return m});
+const selRing=new THREE.Mesh(new THREE.RingGeometry(0.75,0.85,40),new THREE.MeshBasicMaterial({color:'#ff9a76'}));selRing.rotation.x=-Math.PI/2;selRing.visible=false;scene.add(selRing);
+function markSel(){const used=new Set(S.shelves.map(s=>s.slot));slotMarks.forEach((m,i)=>m.visible=!used.has(i)&&mode==='place');
+ if(ui.sel!=null&&used.has(ui.sel)){const [x,z]=SLOTS[ui.sel];selRing.position.set(x,0.03,z);selRing.visible=true}else selRing.visible=false}
+
+// ================= お客さん =================
+const guests=[];const DOOR=new THREE.Vector3(0,0,2.4),STREET_L=new THREE.Vector3(-5,0,3.1),STREET_R=new THREE.Vector3(5,0,3.1),PAY=new THREE.Vector3(2.7,0,1.75);
+const BODY=['#ff8f80','#ffb46a','#7cc8f0','#c79be0','#8fd19e','#ffd166'],HAIR=['#5a4a3c','#8a6a4a','#2f2a26','#c9a37a'];
+function bubbleTex(text){const cv=document.createElement('canvas');cv.width=cv.height=96;const x=cv.getContext('2d');x.fillStyle='#fff';x.beginPath();x.roundRect(8,6,80,64,20);x.fill();x.beginPath();x.moveTo(36,68);x.lineTo(48,88);x.lineTo(56,68);x.fill();
+ x.font='42px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,48,40);return new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false})}
+const bubCache={};const bub=t=>bubCache[t]||(bubCache[t]=bubbleTex(t));
+function spawn(){const want=pickWant();const p=person(BODY[rnd()*6|0],HAIR[rnd()*4|0]);const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
+ const sp=new THREE.Sprite(bub(ITEMS[want].e));sp.scale.setScalar(0.55);sp.position.y=1.35;sp.renderOrder=9;p.add(sp);
+ const g={o:p,sp,want,path:[DOOR.clone()],state:'in',speed:1.1+rnd()*0.4,wait:0,from};
+ const sh=S.shelves.find(s=>s.item===want);if(sh){const [x,z]=SLOTS[sh.slot];g.path.push(new THREE.Vector3(x,0,z+0.75));g.shelf=sh}else g.state='none';
+ guests.push(g);S.today.guests++}
+function pickWant(){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
+ // たいていは置いてある物、ときどき置いていない物がほしい人も来る
+ return rnd()<0.8&&own.length?own[rnd()*own.length|0]:all[rnd()*all.length|0]}
+function walk(g,dt){if(!g.path.length)return true;const tgt=g.path[0],d=tgt.clone().sub(g.o.position);d.y=0;const L=d.length();
+ if(L<0.05){g.path.shift();return !g.path.length}
+ const step=Math.min(L,g.speed*dt);g.o.position.addScaledVector(d.normalize(),step);g.o.rotation.y=Math.atan2(d.x,d.z);g.o.position.y=Math.abs(Math.sin(performance.now()/120))*0.04;return false}
+function leave(g,face){g.sp.material=bub(face);g.path=[DOOR.clone(),g.from.clone().setX(-g.from.x)];g.state='out'}
+function guestTick(dt){
+ for(let i=guests.length-1;i>=0;i--){const g=guests[i];const done=walk(g,dt);
+  if(!done)continue;
+  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 「${nm(ITEMS[g.want])}は置いてないの？」とお客さんが帰った`,`😢 "No ${nm(ITEMS[g.want])}?" A customer left.`);continue}
+  if(g.state==='in'){g.state='look';g.wait=0.8;continue}
+  if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
+   if(!S.shelves.includes(sh)||sh.stock<=0){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が売り切れで、お客さんががっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
+   // 値段がふつうより高いほど買わない
+   const r=sh.price/ITEMS[sh.item].base,p=Math.max(0,Math.min(1,1.35-r*0.75+S.fans*0.004));
+   if(rnd()>p){leave(g,'💸');S.msgs=L(`💸 「${nm(ITEMS[sh.item])}、ちょっと高いな…」`,`💸 "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
+   sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price;g.sp.material=bub(ITEMS[sh.item].e);g.path=[PAY.clone()];g.state='pay';continue}
+  if(g.state==='pay'){g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
+   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊')}else leave(g,'🙂');continue}
+  if(g.state==='out'){scene.remove(g.o);guests.splice(i,1)}}}
+// お金が入ったときの「チャリン」
+const coins=[];function coin(v){const s=new THREE.Sprite(bub('🪙'));s.scale.setScalar(0.45);s.position.set(2.7,1.6,1.0);s.renderOrder=10;scene.add(s);coins.push({s,t:0});blip(1200,0.06);blip(1600,0.05,0.07);navigator.vibrate?.(5)}
+let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+0.2)}catch(e){}}
+
+// ================= 1日 =================
+function endDay(){const t=S.today,bal=t.sale-t.buy-RENT;S.money-=RENT;
+ const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
+ toast(L(`🌙 ${S.day}日目おわり<br>売上 ${yen(t.sale)}　仕入れ ${yen(t.buy)}　家賃 ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>お客さん${t.guests}人・がっかり${t.sad}人</small>`,
+  `🌙 End of day ${S.day}<br>Sales ${yen(t.sale)}　Stock ${yen(t.buy)}　Rent ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>`)+(S.star>before?L(`<br>⭐ 評判が上がった！新しい品物が仕入れられる`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
+ S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金がマイナス。仕入れすぎ・高すぎに気をつけて','⚠️ You are in the red. Watch your stock and prices.');hud();save()}
+
+// ================= 操作 =================
+let mode='look';
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let down=null;
+renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,t:performance.now()}});
+addEventListener('pointerup',e=>{if(!down||e.target!==renderer.domElement&&!renderer.domElement.contains(e.target))return;const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;if(moved>8)return;
+ ndc.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(ndc,cam);
+ const hits=ray.intersectObjects(scene.children,true);
+ for(const h of hits){if(h.object.userData.empty&&h.object.visible){openPlace(h.object.userData.slot);return}
+  if(h.object.userData.shelf!==undefined){ui.sel=h.object.userData.shelf;mode='look';openShelf();return}}
+ closeSheet()});
+const $=id=>document.getElementById(id);
+function openShelf(){const sh=S.shelves.find(s=>s.slot===ui.sel);if(!sh)return closeSheet();const it=ITEMS[sh.item],r=sh.price/it.base;
+ $('sheet').style.display='block';
+ $('sheet').innerHTML=`<h3>${it.e} ${L(it.n+'の棚',it.en+' shelf')}</h3>
+ <div class="row">${L('のこり','In stock')} <b style="font-size:18px">${sh.stock}</b>　<span style="opacity:.6">（${L('仕入れ値','Cost')} ${yen(it.cost)}・${L('ふつうの値段','Usual price')} ${yen(it.base)}）</span></div>
+ <div class="row">${L('値段','Price')} <button id="pm">−10</button><b style="font-size:18px">${yen(sh.price)}</b><button id="pp">＋10</button>
+  <span>${r>1.3?L('😟 高すぎ','😟 Too high'):r>1.1?L('🙂 ちょっと高め','🙂 A bit high'):r<0.85?L('😊 お買い得（もうけは少ない）','😊 A bargain (small profit)'):L('😊 ちょうどいい','😊 Just right')}</span>・${L('1個のもうけ','Profit each')} ${yen(sh.price-it.cost)}</div>
+ <div class="row"><button class="big" id="b5">${L('5個 仕入れる','Buy 5')} ${yen(it.cost*5)}</button><button class="big" id="b10">${L('10個','Buy 10')} ${yen(it.cost*10)}</button><button id="close">${L('とじる','Close')}</button></div>`;
+ $('pm').onclick=()=>{sh.price=Math.max(10,sh.price-10);save();openShelf()};$('pp').onclick=()=>{sh.price+=10;save();openShelf()};
+ const buy=n=>{const c=it.cost*n;if(S.money<c){toast(L('💸 お金が足りない','💸 Not enough money'));return}S.money-=c;S.today.buy+=c;sh.stock+=n;drawGoods(shelfObjs.get(sh.slot));blip(700);hud();save();openShelf()};
+ $('b5').onclick=()=>buy(5);$('b10').onclick=()=>buy(10);$('close').onclick=closeSheet;markSel();save()}
+function openPlace(slot){const cost=SHELF_COST(S.shelves.length);$('sheet').style.display='block';
+ $('sheet').innerHTML=`<h3>${L('新しい棚を置く','Add a new shelf')}（${yen(cost)}）</h3><div class="items">${Object.entries(ITEMS).map(([k,it])=>`<button data-k="${k}" ${it.star>S.star?'disabled':''}><span class="e">${it.e}</span>${nm(it)}<small>${it.star>S.star?L('⭐'+it.star+'で','at ⭐'+it.star):yen(it.base)}</small></button>`).join('')}</div><div class="row"><button id="close">${L('やめる','Cancel')}</button></div>`;
+ $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{if(S.money<cost){toast(L('💸 お金が足りない','💸 Not enough money'));return}const k=b.dataset.k;S.money-=cost;
+  const sh={slot,item:k,stock:0,price:ITEMS[k].base};S.shelves.push(sh);ui.sel=slot;mode='look';rebuildShelves();paintDock();blip(880);hud();save();openShelf()});
+ $('close').onclick=closeSheet}
+function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save()}
+const dock=$('dock');
+function paintDock(){dock.innerHTML='';[['look','👀',L('見る','Look')],['place','🪵',L('棚を置く','Add shelf')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
+ b.onclick=()=>{mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
+$('speed').onclick=()=>{ui.speed=(ui.speed+1)%3;hud();save()};
+$('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;paintDock();if(ui.sel!=null)openShelf();hud()};
+document.documentElement.lang=lang;
+function toast(s,ms=2400){const t=$('toast');t.innerHTML=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
+function hint(){if(mode==='place')return L(`🪵 オレンジの丸に棚を置ける（${yen(SHELF_COST(S.shelves.length))}）`,`🪵 Tap an orange circle to place a shelf (${yen(SHELF_COST(S.shelves.length))})`);
+ const empty=S.shelves.find(s=>s.stock===0);if(empty)return L(`📦 ${nm(ITEMS[empty.item])}の棚が空っぽ。棚を押して仕入れよう`,`📦 The ${nm(ITEMS[empty.item])} shelf is empty. Tap it to restock.`);
+ if(S.day===1)return L('🏪 あなたは小さなお店の店長。棚を押すと仕入れ・値段を決められる。夜に家賃¥400がかかる','🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ¥400 is due each night.');
+ return S.msgs||L('お客さんの吹き出し＝ほしい物。置いていない物が多いなら、新しい棚を考えよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
+function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン${S.fans}）`,` (${S.fans} fans)`);
+ const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint()}
+
+// ================= ループ =================
+rebuildShelves();paintDock();hud();if(ui.sel!=null)openShelf();
+const clock=new THREE.Clock();let spawnT=0,hudT=0;
+renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*[0,1,2.5][ui.speed];
+ if(dt){S.t+=dt;spawnT-=dt;
+  // お客さんの来やすさ：評判とファンで増える。夜（最後の1割）は来ない
+  const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(2.2,7-S.star*0.8-S.fans*0.02)*(0.6+rnd()*0.8)}
+  if(S.t>=DAY_SEC&&!guests.length)endDay()}
+ guestTick(dt);
+ for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.t+=raw;c.s.position.y=1.6+c.t*1.2;c.s.material.opacity=1-c.t;if(c.t>1){scene.remove(c.s);coins.splice(i,1)}}
+ // 夕方は明かりがつく
+ const ph=S.t/DAY_SEC;lamp.intensity=ph>0.7?(ph-0.7)*12:0;sun.intensity=2.1-(ph>0.7?(ph-0.7)*3:0);
+ hudT-=raw;if(hudT<=0){hudT=0.5;hud()}
+ ctl.update();composer.render()});
+setInterval(save,3000);addEventListener('pagehide',save);
+</script></body></html>
