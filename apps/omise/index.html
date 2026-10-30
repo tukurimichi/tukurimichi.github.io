@@ -162,6 +162,12 @@ function buildShop(){shopG.clear();const d=S.deco,A=(o)=>{shopG.add(o);return o}
  if(d.shape==='two'){A(rbox(w,1.8,0.9,0.08,wall,cx,3.95,-2.25));for(let x=Rx-1.4;x>Lx+0.6;x-=1.8)A(rbox(0.8,0.8,0.06,0.04,'#bfe8ff',x,4.0,-1.78));
   A(rbox(w+0.2,0.1,0.45,0.04,'#c99a6e',cx,3.15,-1.6));for(let x=Lx+0.3;x<Rx;x+=0.6)A(rbox(0.05,0.35,0.05,0.02,'#c99a6e',x,3.35,-1.42));gable(4.85,-2.25,1.2,0.7)}
  if(d.shape==='tri')gable(3.0,-2.35,1.0,0.8);
+ // 行事の かざり
+ const ev=seasonEvent();
+ if(ev==='halloween')for(const [px,pz,sc] of [[Lx+0.6,2.3,1],[Lx+1.1,2.5,0.7],[Rx-0.6,2.4,0.9]]){const pk=mesh(G('pump',()=>new THREE.SphereGeometry(0.22,14,10)),M('#ff8a2a'),px,0.18*sc,pz);pk.scale.set(sc*1.15,sc*0.85,sc*1.15);A(pk);A(mesh(G('pstem',()=>new THREE.CylinderGeometry(0.03,0.04,0.1,6)),M('#5a7a3a'),px,0.36*sc,pz))}
+ if(ev==='xmas'){const t=new THREE.Group();t.position.set(Lx+0.7,0,-1.9);for(let i=0;i<3;i++)t.add(mesh(G('xt'+i,()=>new THREE.ConeGeometry(0.45-i*0.12,0.6,10)),M('#4e9a5a'),0,0.45+i*0.38,0));t.add(mesh(G('xs',()=>new THREE.OctahedronGeometry(0.1)),M('#ffd166',{emissive:'#ffb300',emissiveIntensity:0.8}),0,1.5,0));
+  for(let i=0;i<10;i++){const a=i*2.4,h=0.4+i*0.09,r=0.42-i*0.03;t.add(mesh(G('xb',()=>new THREE.SphereGeometry(0.04,8,6)),M(['#e85d5d','#ffd166','#7cc8f0'][i%3],{emissive:['#e85d5d','#ffd166','#7cc8f0'][i%3],emissiveIntensity:0.4}),Math.cos(a)*r,h,Math.sin(a)*r))}A(t)}
+ if(ev==='newyear')for(const px of [Lx+0.5,Rx-0.5]){for(let i=0;i<3;i++)A(mesh(G('bamb',()=>new THREE.CylinderGeometry(0.05,0.05,0.8,8)),M('#7cb86a'),px+(i-1)*0.1,0.4+(i===1?0.12:0),2.4));A(mesh(G('kpot',()=>new THREE.CylinderGeometry(0.2,0.22,0.25,12)),M('#c9a37a'),px,0.12,2.4))}
  // かざり
  const ex=d.ex;const plants=[[Lx+0.45,1.3],[Rx-0.35,-2.0],[Lx+0.45,-2.0],[Rx-0.35,0.2],[Lx+1.3,2.6],[Rx-1.2,2.6]];for(let i=0;i<2+(ex.plant||0);i++)plant(...plants[i],shopG);
  if(ex.bench){A(rbox(1.4,0.1,0.45,0.04,'#c99a6e',Lx+1.6,0.45,2.95));for(const bx of [-0.55,0.55])A(rbox(0.1,0.45,0.4,0.03,'#8a6a4a',Lx+1.6+bx,0.22,2.95))}
@@ -243,7 +249,8 @@ const KINDS={
  rich:{ja:'おかねもち',en:'Rich person',share:0.05,tol:2.2,look:0.8,speed:0.9,likes:['flower','cake'],three:true,star:2},
  wizard:{ja:'まほうつかい',en:'Wizard',share:0.04,tol:3,look:1.4,speed:1.0,likes:['toy'],priciest:true,star:3}};
 for(const k of ['kid','granny','cat'])KINDS[k].star=0;KINDS.adult.star=0;KINDS.worker.star=0;
-const pickKind=()=>{const ok=Object.entries(KINDS).filter(([k,v])=>(v.star||0)<=S.star);const tot=ok.reduce((a,[k,v])=>a+v.share,0);let r=rnd()*tot;for(const [k,v] of ok){if((r-=v.share)<0)return k}return 'adult'};
+const shareNow=(k,v)=>v.share*(S.weather==='rain'&&k==='cat'?3:1)*(seasonEvent()==='halloween'&&k==='wizard'?4:1)*(seasonEvent()==='newyear'&&k==='rich'?3:1);
+const pickKind=()=>{const ok=Object.entries(KINDS).filter(([k,v])=>(v.star||0)<=S.star).map(([k,v])=>[k,{...v,share:shareNow(k,v)}]);const tot=ok.reduce((a,[k,v])=>a+v.share,0);let r=rnd()*tot;for(const [k,v] of ok){if((r-=v.share)<0)return k}return 'adult'};
 const cap=(r,l,c)=>mesh(G('cap'+r+l,()=>new THREE.CapsuleGeometry(r,l,4,10)),M(c));
 const ball=(r,c)=>mesh(G('ball'+r,()=>new THREE.SphereGeometry(r,16,12)),M(c));
 function limb(r,l,c,x,y){const pv=new THREE.Group();pv.position.set(x,y,0);const m=cap(r,l,c);m.position.y=-(l/2+r*0.6);pv.add(m);return pv}
@@ -308,6 +315,8 @@ function spawn(forceReq){if(guests.length>=8)return;S.book=S.book||{};S.regs=S.r
  let reg=null;const rq=forceReq||null;if(rq){reg=S.regs.find(r=>r.name===rq.name)||null;rq.came=1}
  const regsOK=S.regs.filter(r=>!guests.some(g=>g.reg===r)&&(KINDS[r.kind].star||0)<=S.star);if(!reg&&regsOK.length&&rnd()<0.3)reg=regsOK[rnd()*regsOK.length|0];
  const kind=reg?reg.kind:pickKind(),K=KINDS[kind],want=rq?rq.item:K.priciest?priciest()||pickWant(kind):pickWant(kind);const p=makeCustomer(kind,reg?reg.seed:rnd()*1e9|0);
+ if((S.weather==='rain'||S.weather==='snow')&&kind!=='cat'&&kind!=='bear'){const um=new THREE.Group();const top=mesh(G('umb',()=>new THREE.ConeGeometry(0.42,0.22,10,1,true)),new THREE.MeshStandardMaterial({color:BODY[rnd()*6|0],side:THREE.DoubleSide,roughness:0.8}),0,0,0);um.add(top);
+  um.add(mesh(G('umbs',()=>new THREE.CylinderGeometry(0.012,0.012,0.6,6)),M('#5a4a3c'),0,-0.3,0));um.position.set(0.12,p.userData.P.h+0.05,0);p.add(um);p.userData.P.umb=um}
  if(!S.book[kind]){S.book[kind]=0;toast(L(`📖 はじめての お客さん！<br><b>${K.ja}</b>が 来たよ`,`📖 A new kind of customer!<br><b>${K.en}</b>`));blip(990);blip(1320,0.08,0.12)}S.book[kind]++;
  if(reg){reg.visits++;const tag=new THREE.Sprite(nameMat(reg.name+' ♡'));tag.scale.set(0.9,0.22,1);tag.position.y=p.userData.P.h+0.55;tag.renderOrder=9;p.add(tag)}const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
  const sp=new THREE.Sprite(bub(ITEMS[want].e+(rq?'×'+rq.n:'')));sp.scale.setScalar(0.55);sp.position.y=p.userData.P.h+0.15;sp.renderOrder=9;p.add(sp);
@@ -316,7 +325,7 @@ function spawn(forceReq){if(guests.length>=8)return;S.book=S.book||{};S.regs=S.r
  guests.push(g);S.today.guests++}
 function priciest(){const st=S.shelves.filter(s=>s.stock>0);if(!st.length)return null;return st.sort((a,b)=>b.price-a.price)[0].item}
 const nameCache={};function nameMat(t){if(nameCache[t])return nameCache[t];const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.fillStyle='#ffffffee';x.beginPath();x.roundRect(4,8,248,48,24);x.fill();x.fillStyle='#e8606a';x.font='bold 30px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,128,34);return nameCache[t]=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false})}
-function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];if(S.pop&&rnd()<0.35)return S.pop;const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
+function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];const ww=weatherWants();if(ww.length&&rnd()<0.25)return ww[rnd()*ww.length|0];if(S.pop&&rnd()<0.35)return S.pop;const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
  // 大すきな物がお店にあれば、それをほしがりやすい
  const fav=KINDS[kind].likes.filter(k=>own.includes(k));if(fav.length&&rnd()<0.6)return fav[rnd()*fav.length|0];
  return rnd()<0.8&&own.length?own[rnd()*own.length|0]:all[rnd()*all.length|0]}
@@ -333,18 +342,23 @@ function guestTick(dt){
   if(g.state==='in'){g.state='look';g.wait=KINDS[g.kind].look*(0.8+rnd()*0.5);g.o.rotation.y=Math.PI;
    const sh=g.shelf,r=sh?sh.price/ITEMS[sh.item].base:1;setFace(g,r>1.1+KINDS[g.kind].tol*0.2?'sweat':KINDS[g.kind].likes.includes(g.want)?'wow':'normal');continue}
   if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
-   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、${kname(g)}が がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A ${kname(g)} was let down.`);continue}
+   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}if(g.items&&g.items.length){g.path=[PAY.clone()];g.state='pay';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、${kname(g)}が がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A ${kname(g)} was let down.`);continue}
    // 値段が高いほど買わない。強さはお客さんの種類で ちがう（小学生は おこづかいが少ない）。大すきな物なら少し高くても買う
    const K=KINDS[g.kind],r=sh.price/ITEMS[sh.item].base;let p=1.6-r*0.7/K.tol+S.fans*0.004;if(K.likes.includes(sh.item))p+=0.25;p=Math.max(0,Math.min(1,p));
-   if(rnd()>p){leave(g,'💸','sad',1);S.msgs=L(`💸 ${kname(g)}「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 ${kname(g)}: "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
+   if(rnd()>p){if(g.items&&g.items.length){g.path=[PAY.clone()];g.state='pay';continue}leave(g,'💸','sad',1);S.msgs=L(`💸 ${kname(g)}「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 ${kname(g)}: "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
    // おばあちゃんは ときどき 2こ買う
    if(g.rq){const q=g.rq;const have=S.shelves.filter(s2=>s2.item===q.item).reduce((a,s2)=>a+s2.stock,0);
     if(have<q.n){q.done='miss';S.today.sad++;leave(g,'😢','sad',1);S.msgs=L(`😢 ${q.name}「${nm(ITEMS[q.item])}が ${q.n}こ そろって なかった…」`,`😢 ${q.name}: "Not enough ${nm(ITEMS[q.item])}..."`);continue}
     let left=q.n;for(const s2 of S.shelves.filter(s2=>s2.item===q.item)){const t=Math.min(left,s2.stock);s2.stock-=t;left-=t;const o2=shelfObjs.get(s2.slot);if(o2)drawGoods(o2)}
-    q.done='ok';g.paid=sh.price*q.n;g.sp.material=bub(ITEMS[q.item].e+'×'+q.n);setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
-   const n=K.three&&sh.stock>=3?3:K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price*n;g.sp.material=bub(ITEMS[sh.item].e+(n>1?'×2':''));setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
+    q.done='ok';g.items=[{item:q.item,n:q.n,price:sh.price}];g.paid=sh.price*q.n;g.sp.material=bub(ITEMS[q.item].e+'×'+q.n);setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
+   const n=K.three&&sh.stock>=3?3:K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);
+   g.items=g.items||[];g.items.push({item:sh.item,n,price:sh.price});g.paid=g.items.reduce((a,x)=>a+x.price*x.n,0);
+   g.sp.material=bub(g.items.map(x=>ITEMS[x.item].e+(x.n>1?'×'+x.n:'')).join(''));setFace(g,'happy');
+   const basket=['adult','worker','rich'].includes(g.kind)&&g.items.length<2&&rnd()<0.6?S.shelves.filter(s2=>s2.stock>0&&s2.item!==sh.item):[];
+   if(basket.length){const s2=basket[rnd()*basket.length|0],[bx,bz]=SLOTS[s2.slot];g.shelf=s2;g.want=s2.item;g.after={path:[new THREE.Vector3(bx,0,bz+0.75)],state:'in'};g.state='react';g.wait=0.6;g.jump=false;continue}
+   g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
   if(g.state==='react'){g.o.rotation.y=0.35;g.wait-=dt;g.o.position.y=g.jump?Math.max(0,Math.sin((0.9-g.wait)*Math.PI*2.2))*0.14:0;if(g.wait>0)continue;g.o.position.y=0;g.path=g.after.path;g.state=g.after.state;continue}
-  if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);onSold(g.shelf.item,Math.round(g.paid/g.shelf.price)||1);
+  if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);for(const x of (g.items||[{item:g.shelf.item,n:1}])){onSold(x.item,x.n);S.today.items=S.today.items||{};S.today.items[x.item]=(S.today.items[x.item]||0)+x.n}
    if(g.rq&&g.rq.done==='ok'){dropLetter(g);S.fans+=2;leave(g,'💌','happy',1);continue}
    const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;onSold(null,0);leave(g,'😊','happy');
     if(g.reg&&(S.reqs||[]).filter(q=>!q.done).length<2&&!(S.reqs||[]).some(q=>q.name===g.reg.name&&!q.done)&&rnd()<0.5){const own=[...new Set(S.shelves.map(s=>s.item))];const it=own[rnd()*own.length|0];
@@ -362,6 +376,11 @@ function dropLetter(g){const env=new THREE.Group();env.add(rbox(0.32,0.03,0.22,0
 function openLetter(obj){let env=obj;while(env.parent&&!letters.includes(env))env=env.parent;if(!letters.includes(env))return;const L0=env.userData.letter;scene.remove(env);letters.splice(letters.indexOf(env),1);
  S.stickers=(S.stickers||0)+1;const st=STICKERS[(S.stickers-1)%STICKERS.length];(S.letters=S.letters||[]).push({from:L0.from,day:S.day,st});
  toast(L(`💌 ${L0.from}からの おてがみ<br>「${nm(ITEMS[L0.item])}、ちゃんと あったね！ ありがとう」<br>シール ${st} を もらった！`,`💌 Letter from ${L0.from}<br>"You had the ${nm(ITEMS[L0.item])}! Thank you!"<br>You got a sticker ${st}!`),3600);blip(990);blip(1320,0.08,0.12);hud();save()}
+const drops=(()=>{const n=420,g=new THREE.BufferGeometry(),pos=new Float32Array(n*3);for(let i=0;i<n;i++){pos[i*3]=(rnd()-.5)*12;pos[i*3+1]=rnd()*7;pos[i*3+2]=(rnd()-.5)*9}
+ g.setAttribute('position',new THREE.BufferAttribute(pos,3));const m=new THREE.PointsMaterial({color:'#9fc9e8',size:0.06,transparent:true,opacity:0.8});const pts=new THREE.Points(g,m);pts.visible=false;scene.add(pts);return pts})();
+function applyWeather(){const w=S.weather||'sunny';drops.visible=w==='rain'||w==='snow';drops.material.color.set(w==='snow'?'#ffffff':'#6f9cc4');drops.material.size=w==='snow'?0.14:0.09;
+ scene.background=new THREE.Color({sunny:'#efe4d4',cloudy:'#e3ddd6',rain:'#d6dbe0',snow:'#eef0f3'}[w]);if(typeof sun!=='undefined')sun.intensity={sunny:2.1,cloudy:1.5,rain:1.2,snow:1.6}[w]}
+function weatherTick(dt){if(!drops.visible)return;const a=drops.geometry.attributes.position,snow=S.weather==='snow';for(let i=0;i<a.count;i++){let y=a.getY(i)-dt*(snow?0.8:6);if(y<0)y+=7;a.setY(i,y);if(snow)a.setX(i,a.getX(i)+Math.sin(y*2+i)*dt*0.2)}a.needsUpdate=true}
 // まほうつかいの キラキラ
 const sparks=[];function sparkle(pos){for(let i=0;i<14;i++){const m=new THREE.Mesh(G('spk',()=>new THREE.OctahedronGeometry(0.05)),new THREE.MeshBasicMaterial({color:['#ffd166','#ff8fb1','#7cc8f0'][i%3],transparent:true}));m.position.copy(pos).add(new THREE.Vector3(0,0.8,0));m.userData.v=new THREE.Vector3((rnd()-.5)*2,1.5+rnd()*1.5,(rnd()-.5)*2);scene.add(m);sparks.push({m,t:0})}blip(1500,0.06);blip(1900,0.05,0.08)}
 // お金が入ったときの「チャリン」
@@ -399,12 +418,22 @@ function startMini(){if(!canHelp())return;if(S.helpDay!==S.day){S.helpDay=S.day;
 document.getElementById('helpBtn').onclick=startMini;
 // ================= 1日 =================
 // 毎朝：その日の にんきの しなもの と もくひょう を きめる
-function newDay(){const own=[...new Set(S.shelves.map(s=>s.item))];const avail=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star);
+// きせつの 行事は ほんとうの 日づけで きまる
+function seasonEvent(){const d=new Date(),m=d.getMonth()+1,day=d.getDate();
+ if(m===10&&day>=15)return 'halloween';if(m===12&&day<=25)return 'xmas';if(m===1&&day<=7)return 'newyear';return null}
+const WEATHER={sunny:{ja:'はれ',en:'Sunny',e:'☀️'},cloudy:{ja:'くもり',en:'Cloudy',e:'⛅'},rain:{ja:'あめ',en:'Rainy',e:'☔'},snow:{ja:'ゆき',en:'Snowy',e:'⛄'}};
+// 天気・行事で ほしがる物が かわる
+function weatherWants(){const w=S.weather,e=seasonEvent(),own=new Set(S.shelves.map(s=>s.item));let l=[];
+ if(w==='rain')l.push('bread','milk');if(w==='snow')l.push('cake','bread');if(w==='sunny')l.push('flower','apple');
+ if(e==='halloween')l.push('cake','toy');if(e==='xmas')l.push('cake','toy');if(e==='newyear')l.push('flower','cake');return l.filter(k=>own.has(k))}
+function pickWeather(){const m=new Date().getMonth()+1,winter=m===12||m<=2,r=rnd();
+ return winter?(r<0.3?'snow':r<0.45?'rain':r<0.7?'cloudy':'sunny'):(r<0.22?'rain':r<0.45?'cloudy':'sunny')}
+function newDay(){S.weather=pickWeather();applyWeather();const own=[...new Set(S.shelves.map(s=>s.item))];const avail=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star);
  const list=own.length&&rnd()<0.7?own:avail;S.pop=list[rnd()*list.length|0]||'bread';if(!ITEMS[S.pop])S.pop=own[0]||'bread';
  const kinds=Math.min(3,own.length||1);
  const G=[{t:'sell',n:6+Math.min(S.day,10)},{t:'pop',n:4},{t:'fans',n:3},{t:'kinds',n:kinds},{t:'nosad',n:0},{t:'profit',n:200+Math.min(S.day,10)*50}];
  const g=G[rnd()*G.length|0];S.goal={...g,prog:0,done:false,kinds:[]};S.today.fans0=S.fans;
- setTimeout(()=>toast(L(`☀️ ${S.day}日目の あさ<br>きょうの にんき：<b style="font-size:20px">${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`,`☀️ Morning of day ${S.day}<br>Popular today: <b>${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`),3600),4300)}
+ setTimeout(()=>toast(L(`${WEATHER[S.weather].e} ${S.day}日目の あさ・${WEATHER[S.weather].ja}${seasonEvent()?'・'+{halloween:'🎃ハロウィン',xmas:'🎄クリスマス',newyear:'🎍おしょうがつ'}[seasonEvent()]:''}<br>きょうの にんき：<b style="font-size:20px">${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`,`${WEATHER[S.weather].e} Morning of day ${S.day}・${WEATHER[S.weather].en}<br>Popular today: <b>${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`),3600),4300)}
 function goalText(){const g=S.goal;if(!g)return '';const pe=ITEMS[S.pop]?ITEMS[S.pop].e:'';
  return {sell:L(`${g.n}こ うろう`,`Sell ${g.n} items`),pop:L(`${pe}を ${g.n}こ うろう`,`Sell ${g.n} ${pe}`),fans:L(`ファンを ${g.n}人 ふやそう`,`Gain ${g.n} fans`),
   kinds:L(`${g.n}しゅるいの しなものを うろう`,`Sell ${g.n} different goods`),nosad:L('がっかりする 人を 0人に しよう','Let nobody down today'),profit:L(`1日で ${yen(g.n)} もうけよう`,`Make ${yen(g.n)} profit today`)}[g.t]}
@@ -423,8 +452,10 @@ function endGoal(){const g=S.goal;if(!g)return '';const t=S.today;
 function endDay(){const t=S.today,bal=t.sale-t.buy-rentNow();S.money-=rentNow();
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
  const goalTxt=endGoal();
- toast(L(`🌙 ${S.day}日目 おしまい<br><span style="font-size:13px">うれた お金 ${yen(t.sale)} − しいれ ${yen(t.buy)} − やちん ${yen(rentNow())}</span><br>＝ <b style="font-size:20px;color:${bal>=0?'#2e9e5b':'#e8606a'}">${bal>=0?'+':''}${yen(bal)}</b> ${bal>=0?'😊':'😢'}<br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>${goalTxt}`,
-  `🌙 End of day ${S.day}<br><span style="font-size:13px">Sales ${yen(t.sale)} − Stock ${yen(t.buy)} − Rent ${yen(rentNow())}</span><br>= <b style="font-size:20px">${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>${goalTxt}`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
+ const sold=Object.entries(t.items||{}).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...sold.map(x=>x[1]));
+ const chart=sold.length?'<div style="text-align:left;margin-top:6px;font-size:12px">'+L('📊 うれた かず','📊 Sold today')+sold.map(([k,v],i)=>`<div style="display:flex;align-items:center;gap:4px;margin:2px 0">${i===0?'👑':''}${ITEMS[k].e}<span style="display:inline-block;height:12px;width:${Math.round(v/mx*130)}px;background:${['#ff8f80','#ffb46a','#ffd166','#8fd19e','#7cc8f0','#c79be0'][i%6]};border-radius:6px"></span>${v}</div>`).join('')+'</div>':'';
+ toast(L(`🌙 ${S.day}日目 おしまい<br><span style="font-size:13px">うれた お金 ${yen(t.sale)} − しいれ ${yen(t.buy)} − やちん ${yen(rentNow())}</span><br>＝ <b style="font-size:20px;color:${bal>=0?'#2e9e5b':'#e8606a'}">${bal>=0?'+':''}${yen(bal)}</b> ${bal>=0?'😊':'😢'}<br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>${chart}${goalTxt}`,
+  `🌙 End of day ${S.day}<br><span style="font-size:13px">Sales ${yen(t.sale)} − Stock ${yen(t.buy)} − Rent ${yen(rentNow())}</span><br>= <b style="font-size:20px">${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>${chart}${goalTxt}`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
  S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};newDay();if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。下の「おてつだい」で お金を もらえるよ','⚠️ You are in the red. Tap "Help out" below to earn money.');hud();save()}
 
 // ================= 操作 =================
@@ -542,24 +573,26 @@ function hint(){if(letters.length)return L('💌 おてがみが おちてるよ
  if(S.day===1)return L(`🏪 あなたは 小さな お店の てんちょう。たなを タッチすると、しなものを かったり、ねだんを きめたり できるよ。夜に お店の やちん ${yen(rentNow())}を はらうよ`,`🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ${yen(rentNow())} is due each night.`);
  return S.msgs||L('お客さんの ふきだしは ほしい もの。ない ものが 多かったら、あたらしい たなを おいてみよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
 function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
- const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';const rqs=(S.reqs||[]).filter(q=>!q.done&&q.day>=S.day);$('goalPill').textContent=(rqs.length?rqs.map(q=>`📝${q.name} ${q.day===S.day?L('きょう','today'):L('あした','tmrw')} ${ITEMS[q.item].e}×${q.n}`).join(' ')+'　':'')+(S.goal?`${ITEMS[S.pop]?ITEMS[S.pop].e:''}${L('にんき','hot')}・🎯 ${goalText()} ${goalProg()}`:'');$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
+ const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';const rqs=(S.reqs||[]).filter(q=>!q.done&&q.day>=S.day);$('goalPill').textContent=(S.weather?WEATHER[S.weather].e+' ':'')+(rqs.length?rqs.map(q=>`📝${q.name} ${q.day===S.day?L('きょう','today'):L('あした','tmrw')} ${ITEMS[q.item].e}×${q.n}`).join(' ')+'　':'')+(S.goal?`${ITEMS[S.pop]?ITEMS[S.pop].e:''}${L('にんき','hot')}・🎯 ${goalText()} ${goalProg()}`:'');$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
 
 // ================= ループ =================
 if(!S.goal){S.today.fans0=S.fans;newDay()}
+if(!S.weather)S.weather=pickWeather();applyWeather();
 buildShop();rebuildShelves();paintDock();hud();if(!S.named)setTimeout(()=>openName(true),600);if(ui.sel!=null)openShelf();
 const clock=new THREE.Clock();let spawnT=0,hudT=0;
 renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*[0,1,2.5][ui.speed];
  if(dt){S.t+=dt;spawnT-=dt;
   // お客さんの来やすさ：評判とファンで増える。夜（最後の1割）は来ない
-  const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(1.8,7-S.star*0.8-S.fans*0.02-styleScore()*0.08)*(0.6+rnd()*0.8)}
+  const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(1.8,7-S.star*0.8-S.fans*0.02-styleScore()*0.08)*(0.6+rnd()*0.8)*({rain:1.25,snow:1.4}[S.weather]||1)}
   const rq=dueReq();if(rq&&S.t>DAY_SEC*0.3&&S.t<DAY_SEC*0.8&&guests.length<8)spawn(rq);
   if(S.t>=DAY_SEC&&!guests.length)endDay()}
  guestTick(dt);
+ weatherTick(dt);
  for(const e of letters){e.position.y=0.05+Math.abs(Math.sin(performance.now()/250))*0.12;e.rotation.y+=raw*1.5}
  for(let i=sparks.length-1;i>=0;i--){const k=sparks[i];k.t+=raw;k.m.position.addScaledVector(k.m.userData.v,raw);k.m.userData.v.y-=raw*3;k.m.rotation.y+=raw*6;k.m.material.opacity=1-k.t;if(k.t>1){scene.remove(k.m);sparks.splice(i,1)}}
  for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.t+=raw;c.s.position.y=1.6+c.t*1.2;c.s.material.opacity=1-c.t;if(c.t>1){scene.remove(c.s);coins.splice(i,1)}}
  // 夕方は明かりがつく
- const ph=S.t/DAY_SEC;lamp.intensity=ph>0.7?(ph-0.7)*12:0;sun.intensity=2.1-(ph>0.7?(ph-0.7)*3:0);
+ const ph=S.t/DAY_SEC;lamp.intensity=ph>0.7?(ph-0.7)*12:0;sun.intensity=({sunny:2.1,cloudy:1.5,rain:1.2,snow:1.6}[S.weather]||2.1)-(ph>0.7?(ph-0.7)*3:0);
  hudT-=raw;if(hudT<=0){hudT=0.5;hud()}
  ctl.update();composer.render()});
 setInterval(save,3000);addEventListener('pagehide',save);
