@@ -52,7 +52,9 @@ button:active{transform:scale(.94)}
  <span class="pill glass" id="day"></span>
  <span class="pill glass">⭐ <span id="star"></span></span>
  <button class="pill glass" id="speed"></button>
+ <button class="pill glass" id="photoBtn">📷</button>
  <button class="pill glass" id="langBtn"></button>
+ <span class="pill glass" id="goalPill" style="font-weight:normal"></span>
 </div>
 <a id="back" href="https://tukurimichi.com/">← tukurimichi.com</a>
 <div id="hint" class="glass"></div>
@@ -309,7 +311,7 @@ function spawn(){if(guests.length>=8)return;S.book=S.book||{};S.regs=S.regs||[];
  guests.push(g);S.today.guests++}
 function priciest(){const st=S.shelves.filter(s=>s.stock>0);if(!st.length)return null;return st.sort((a,b)=>b.price-a.price)[0].item}
 const nameCache={};function nameMat(t){if(nameCache[t])return nameCache[t];const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.fillStyle='#ffffffee';x.beginPath();x.roundRect(4,8,248,48,24);x.fill();x.fillStyle='#e8606a';x.font='bold 30px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,128,34);return nameCache[t]=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false})}
-function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
+function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];if(S.pop&&rnd()<0.35)return S.pop;const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
  // 大すきな物がお店にあれば、それをほしがりやすい
  const fav=KINDS[kind].likes.filter(k=>own.includes(k));if(fav.length&&rnd()<0.6)return fav[rnd()*fav.length|0];
  return rnd()<0.8&&own.length?own[rnd()*own.length|0]:all[rnd()*all.length|0]}
@@ -333,8 +335,8 @@ function guestTick(dt){
    // おばあちゃんは ときどき 2こ買う
    const n=K.three&&sh.stock>=3?3:K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price*n;g.sp.material=bub(ITEMS[sh.item].e+(n>1?'×2':''));setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
   if(g.state==='react'){g.o.rotation.y=0.35;g.wait-=dt;g.o.position.y=g.jump?Math.max(0,Math.sin((0.9-g.wait)*Math.PI*2.2))*0.14:0;if(g.wait>0)continue;g.o.position.y=0;g.path=g.after.path;g.state=g.after.state;continue}
-  if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
-   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊','happy');
+  if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);onSold(g.shelf.item,Math.round(g.paid/g.shelf.price)||1);
+   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;onSold(null,0);leave(g,'😊','happy');
     if(!g.reg&&S.regs.length<10&&rnd()<0.12){const used=new Set(S.regs.map(x=>x.name));const pool=NAMES[lang].filter(n=>!used.has(n));if(pool.length){const reg={name:pool[rnd()*pool.length|0],kind:g.kind,seed:g.seed,visits:1};S.regs.push(reg);g.reg=reg;
      toast(L(`♡ ${KINDS[g.kind].ja}の「${reg.name}」が 常連さんに なったよ`,`♡ ${reg.name} the ${KINDS[g.kind].en} is now a regular!`))}}}
    else leave(g,'🙂','normal');if(g.P.sparkle)sparkle(g.o.position);continue}
@@ -375,11 +377,34 @@ function startMini(){if(!canHelp())return;if(S.helpDay!==S.day){S.helpDay=S.day;
  requestAnimationFrame(frame)}
 document.getElementById('helpBtn').onclick=startMini;
 // ================= 1日 =================
+// 毎朝：その日の にんきの しなもの と もくひょう を きめる
+function newDay(){const own=[...new Set(S.shelves.map(s=>s.item))];const avail=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star);
+ const list=own.length&&rnd()<0.7?own:avail;S.pop=list[rnd()*list.length|0]||'bread';if(!ITEMS[S.pop])S.pop=own[0]||'bread';
+ const kinds=Math.min(3,own.length||1);
+ const G=[{t:'sell',n:6+Math.min(S.day,10)},{t:'pop',n:4},{t:'fans',n:3},{t:'kinds',n:kinds},{t:'nosad',n:0},{t:'profit',n:200+Math.min(S.day,10)*50}];
+ const g=G[rnd()*G.length|0];S.goal={...g,prog:0,done:false,kinds:[]};S.today.fans0=S.fans;
+ setTimeout(()=>toast(L(`☀️ ${S.day}日目の あさ<br>きょうの にんき：<b style="font-size:20px">${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`,`☀️ Morning of day ${S.day}<br>Popular today: <b>${ITEMS[S.pop].e} ${nm(ITEMS[S.pop])}</b><br>🎯 ${goalText()}`),3600),4300)}
+function goalText(){const g=S.goal;if(!g)return '';const pe=ITEMS[S.pop]?ITEMS[S.pop].e:'';
+ return {sell:L(`${g.n}こ うろう`,`Sell ${g.n} items`),pop:L(`${pe}を ${g.n}こ うろう`,`Sell ${g.n} ${pe}`),fans:L(`ファンを ${g.n}人 ふやそう`,`Gain ${g.n} fans`),
+  kinds:L(`${g.n}しゅるいの しなものを うろう`,`Sell ${g.n} different goods`),nosad:L('がっかりする 人を 0人に しよう','Let nobody down today'),profit:L(`1日で ${yen(g.n)} もうけよう`,`Make ${yen(g.n)} profit today`)}[g.t]}
+function goalProg(){const g=S.goal;if(!g)return '';if(g.done)return '✅';return {sell:`${g.prog}/${g.n}`,pop:`${g.prog}/${g.n}`,fans:`${Math.max(0,S.fans-(S.today.fans0??S.fans))}/${g.n}`,kinds:`${g.kinds.length}/${g.n}`,nosad:S.today.sad?'😢':'…',profit:'…'}[g.t]}
+const GOAL_PRIZE=300;
+function goalDone(){const g=S.goal;if(!g||g.done)return;g.done=true;S.money+=GOAL_PRIZE;S.stickers=(S.stickers||0)+1;
+ toast(L(`🎯 もくひょう たっせい！<br>${goalText()}<br>ごほうび ${yen(GOAL_PRIZE)} と シール🌟`,`🎯 Goal complete!<br>${goalText()}<br>Reward ${yen(GOAL_PRIZE)} and a sticker🌟`));blip(880);blip(1100,0.08,0.1);blip(1320,0.08,0.2);hud();save()}
+// うれたときに もくひょうを すすめる
+function onSold(item,n){const g=S.goal;if(!g||g.done)return;
+ if(g.t==='sell')g.prog+=n;if(g.t==='pop'&&item===S.pop)g.prog+=n;if(item&&g.t==='kinds'&&!g.kinds.includes(item))g.kinds.push(item);
+ if((g.t==='sell'||g.t==='pop')&&g.prog>=g.n)goalDone();if(g.t==='kinds'&&g.kinds.length>=g.n)goalDone();if(g.t==='fans'&&S.fans-(S.today.fans0??S.fans)>=g.n)goalDone()}
+// 夜にきまる もくひょう
+function endGoal(){const g=S.goal;if(!g)return '';const t=S.today;
+ if(!g.done&&g.t==='nosad'&&t.sad===0&&t.guests>0)goalDone();if(!g.done&&g.t==='profit'&&t.sale-t.buy-RENT>=g.n)goalDone();
+ return '<br>'+(g.done?L('🎯 もくひょう たっせい ✅','🎯 Goal complete ✅'):L('🎯 もくひょうは また あした','🎯 Goal missed — try tomorrow'))}
 function endDay(){const t=S.today,bal=t.sale-t.buy-RENT;S.money-=RENT;
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
- toast(L(`🌙 ${S.day}日目 おしまい<br>うれた お金 ${yen(t.sale)}　しいれ ${yen(t.buy)}　お店の やちん ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>`,
-  `🌙 End of day ${S.day}<br>Sales ${yen(t.sale)}　Stock ${yen(t.buy)}　Rent ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
- S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。下の「おてつだい」で お金を もらえるよ','⚠️ You are in the red. Tap "Help out" below to earn money.');hud();save()}
+ const goalTxt=endGoal();
+ toast(L(`🌙 ${S.day}日目 おしまい<br><span style="font-size:13px">うれた お金 ${yen(t.sale)} − しいれ ${yen(t.buy)} − やちん ${yen(RENT)}</span><br>＝ <b style="font-size:20px;color:${bal>=0?'#2e9e5b':'#e8606a'}">${bal>=0?'+':''}${yen(bal)}</b> ${bal>=0?'😊':'😢'}<br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>${goalTxt}`,
+  `🌙 End of day ${S.day}<br><span style="font-size:13px">Sales ${yen(t.sale)} − Stock ${yen(t.buy)} − Rent ${yen(RENT)}</span><br>= <b style="font-size:20px">${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>${goalTxt}`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
+ S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};newDay();if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。下の「おてつだい」で お金を もらえるよ','⚠️ You are in the red. Tap "Help out" below to earn money.');hud();save()}
 
 // ================= 操作 =================
 let mode='look';
@@ -398,10 +423,11 @@ function openShelf(){const sh=S.shelves.find(s=>s.slot===ui.sel);if(!sh)return c
  <div class="row">${L('のこり','In stock')} <b style="font-size:18px">${sh.stock}</b>　<span style="opacity:.6">（${L('しいれる ねだん','Cost')} ${yen(it.cost)}・${L('ふつうの ねだん','Usual price')} ${yen(it.base)}）</span></div>
  <div class="row">${L('ねだん','Price')} <button id="pm">−10</button><b style="font-size:18px">${yen(sh.price)}</b><button id="pp">＋10</button>
   <span>${r>1.3?L('😟 高すぎる','😟 Too high'):r>1.1?L('🙂 ちょっと 高め','🙂 A bit high'):r<0.85?L('😊 やすい（もうけは 少ない）','😊 A bargain (small profit)'):L('😊 ちょうど いい','😊 Just right')}</span>・${L('1こ うれると もうけ','Profit each')} ${yen(sh.price-it.cost)}</div>
- <div class="row"><button class="big" id="b5">${L('5こ しいれる','Buy 5')} ${yen(it.cost*5)}</button><button class="big" id="b10">${L('10こ','Buy 10')} ${yen(it.cost*10)}</button><button id="close">${L('とじる','Close')}</button></div>`;
+ <div class="row">${[1,5,10].map(n=>{const c=it.cost*n,ok=S.money>=c;return `<button class="big" id="b${n}" ${ok?'':'disabled style="opacity:.4"'}>${L(n+'こ しいれる','Buy '+n)} ${yen(c)}<br><small>${ok?L('のこり ','left ')+yen(S.money-c):L('お金が たりない','not enough')}</small></button>`}).join('')}<button id="close">${L('とじる','Close')}</button></div>
+ <div class="row" style="opacity:.75;font-size:12px">${L(`いまの お金 ${yen(S.money)}・夜に やちん ${yen(RENT)}を はらうよ。うれる分だけ しいれよう`,`You have ${yen(S.money)}. Rent ${yen(RENT)} is due tonight. Buy only what will sell.`)}</div>`;
  $('pm').onclick=()=>{sh.price=Math.max(10,sh.price-10);save();openShelf()};$('pp').onclick=()=>{sh.price+=10;save();openShelf()};
  const buy=n=>{const c=it.cost*n;if(S.money<c){toast(L('💸 お金が たりないよ','💸 Not enough money'));return}S.money-=c;S.today.buy+=c;sh.stock+=n;drawGoods(shelfObjs.get(sh.slot));blip(700);hud();save();openShelf()};
- $('b5').onclick=()=>buy(5);$('b10').onclick=()=>buy(10);$('close').onclick=closeSheet;markSel();save()}
+ for(const n of [1,5,10])$('b'+n).onclick=()=>buy(n);$('close').onclick=closeSheet;markSel();save()}
 function openPlace(slot){const cost=SHELF_COST(S.shelves.length);$('sheet').style.display='block';
  $('sheet').innerHTML=`<h3>${L('あたらしい たなを おく','Add a new shelf')}（${yen(cost)}）</h3><div class="items">${Object.entries(ITEMS).map(([k,it])=>`<button data-k="${k}" ${it.star>S.star?'disabled':''}><span class="e">${it.e}</span>${nm(it)}<small>${it.star>S.star?L('⭐'+it.star+'から','at ⭐'+it.star):yen(it.base)}</small></button>`).join('')}</div><div class="row"><button id="close">${L('やめる','Cancel')}</button></div>`;
  $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{if(S.money<cost){toast(L('💸 お金が足りない','💸 Not enough money'));return}const k=b.dataset.k;S.money-=cost;
@@ -440,18 +466,31 @@ function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save
 const dock=$('dock');
 function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')],['deco','🔨',L('かいそう','Remodel')],['book','📖',L('ずかん','Book')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
  b.onclick=()=>{if(id==='book'){mode='look';paintDock();ui.sel=null;markSel();openBook();return}if(id==='deco'){mode='look';paintDock();ui.sel=null;markSel();openDeco();return}mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
+$('photoBtn').onclick=takePhoto;
 $('speed').onclick=()=>{ui.speed=(ui.speed+1)%3;hud();save()};
 $('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;buildShop();paintDock();if(ui.sel!=null)openShelf();hud()};
 document.documentElement.lang=lang;
+function takePhoto(){hint0=$('hint').style.display;composer.render();const src=renderer.domElement;
+ const W=1080,H=Math.round(W*src.height/src.width)+180,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+ x.fillStyle='#fff8ec';x.fillRect(0,0,W,H);x.drawImage(src,40,40,W-80,(W-80)*src.height/src.width);
+ x.fillStyle='#5a4a3c';x.font='bold 48px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='left';
+ x.fillText(L('ちいさな おみせ','Tiny Shop'),56,H-90);x.font='30px "Hiragino Maru Gothic ProN",sans-serif';
+ const d=new Date();x.fillText(L(`${S.day}日目・⭐${S.star}・ファン${S.fans}人・${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,`Day ${S.day}・⭐${S.star}・${S.fans} fans・${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`),56,H-40);
+ x.textAlign='right';x.fillStyle='#a39486';x.font='26px sans-serif';x.fillText('tukurimichi.com',W-56,H-40);
+ cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`omise_day${S.day}.png`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)});
+ const fl=document.createElement('div');fl.style.cssText='position:fixed;inset:0;background:#fff;opacity:.9;z-index:30;transition:opacity .5s;pointer-events:none';document.body.appendChild(fl);setTimeout(()=>fl.style.opacity=0,30);setTimeout(()=>fl.remove(),600);
+ blip(1800,0.05);toast(L('📷 おみせの しゃしんを ほぞんしたよ','📷 Photo saved'))}
+let hint0;
 function toast(s,ms=2400){const t=$('toast');t.innerHTML=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
 function hint(){if(mode==='place')return L(`🪵 オレンジの 丸に たなを おけるよ（${yen(SHELF_COST(S.shelves.length))}）`,`🪵 Tap an orange circle to place a shelf (${yen(SHELF_COST(S.shelves.length))})`);
  const empty=S.shelves.find(s=>s.stock===0);if(empty)return L(`📦 ${nm(ITEMS[empty.item])}の たなが からっぽ！ たなを タッチして しいれよう`,`📦 The ${nm(ITEMS[empty.item])} shelf is empty. Tap it to restock.`);
  if(S.day===1)return L('🏪 あなたは 小さな お店の てんちょう。たなを タッチすると、しなものを かったり、ねだんを きめたり できるよ。夜に お店の やちん ¥400を はらうよ','🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ¥400 is due each night.');
  return S.msgs||L('お客さんの ふきだしは ほしい もの。ない ものが 多かったら、あたらしい たなを おいてみよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
 function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
- const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
+ const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('goalPill').textContent=S.goal?`${ITEMS[S.pop]?ITEMS[S.pop].e:''}${L('にんき','hot')}・🎯 ${goalText()} ${goalProg()}`:'';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
 
 // ================= ループ =================
+if(!S.goal){S.today.fans0=S.fans;newDay()}
 buildShop();rebuildShelves();paintDock();hud();if(ui.sel!=null)openShelf();
 const clock=new THREE.Clock();let spawnT=0,hudT=0;
 renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*[0,1,2.5][ui.speed];
