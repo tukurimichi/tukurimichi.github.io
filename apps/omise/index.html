@@ -206,7 +206,7 @@ function drawGoods(g){const {goods,sh}=g.userData;goods.clear();const n=Math.min
  for(let i=0;i<n;i++){const o=goodMesh(sh.item);const row=i<8?0:1;const j=i%8;o.position.set(-0.4+(j%4)*0.27,(row?1.08:0.63)+(sh.item==='bread'?0.02:0.05),-0.08+(j<4?0:0.16));if(sh.item==='bread')o.rotation.z=Math.PI/2;goods.add(o)}}
 function rebuildShelves(){for(const o of shelfObjs.values())scene.remove(o);shelfObjs.clear();for(const sh of S.shelves){const o=shelfMesh(sh);scene.add(o);shelfObjs.set(sh.slot,o)}markSel()}
 // 空いている場所の印
-const slotMarks=SLOTS.map(([x,z],i)=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.35,0.45,32),new THREE.MeshBasicMaterial({color:'#ff9a76',transparent:true,opacity:0.7}));m.rotation.x=-Math.PI/2;m.position.set(x,0.02,z);m.userData.slot=i;m.userData.empty=1;scene.add(m);return m});
+const slotMarks=SLOTS.map(([x,z],i)=>{const m=new THREE.Mesh(new THREE.CircleGeometry(0.55,32),new THREE.MeshBasicMaterial({color:'#ff9a76',transparent:true,opacity:0.25,depthWrite:false}));m.add(new THREE.Mesh(new THREE.RingGeometry(0.4,0.52,32),new THREE.MeshBasicMaterial({color:'#ff9a76',transparent:true,opacity:0.8})));m.rotation.x=-Math.PI/2;m.position.set(x,0.02,z);m.userData.slot=i;m.userData.empty=1;scene.add(m);return m});
 const selRing=new THREE.Mesh(new THREE.RingGeometry(0.75,0.85,40),new THREE.MeshBasicMaterial({color:'#ff9a76'}));selRing.rotation.x=-Math.PI/2;selRing.visible=false;scene.add(selRing);
 function markSel(){const used=new Set(S.shelves.map(s=>s.slot));slotMarks.forEach((m,i)=>m.visible=!used.has(i)&&mode==='place'&&slotOK(i));
  if(ui.sel!=null&&used.has(ui.sel)){const [x,z]=SLOTS[ui.sel];selRing.position.set(x,0.03,z);selRing.visible=true}else selRing.visible=false}
