@@ -140,7 +140,10 @@ const rbox=(w,h,d,r,c,x,y,z)=>mesh(RB(w,h,d,r),M(c),x,y,z);
 const shopG=new THREE.Group();scene.add(shopG);
 function plant(x,z,par){const g=new THREE.Group();g.add(mesh(G('pot',()=>new THREE.CylinderGeometry(0.18,0.14,0.3,14)),M('#d78b7a'),0,0.15,0));g.add(mesh(G('leaf',()=>new THREE.IcosahedronGeometry(0.3,1)),M('#86cc6f',{flatShading:true}),0,0.48,0));g.position.set(x,0,z);par.add(g)}
 const shopName=()=>S.shopName||L('ちいさな おみせ','Tiny Shop');
-function signTex(col){const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle=col;x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.font=`bold ${shopName().length>8?44:64}px "Hiragino Maru Gothic ProN",sans-serif`;x.fillText(shopName(),256,64);return new THREE.CanvasTexture(cv)}
+function signTex(col){const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle=col;x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';const art=S.sign&&S.sign.some(v=>v>0);
+ if(art){const c=11;for(let i=0;i<128;i++){const v=S.sign[i];if(!v)continue;x.fillStyle=SIGN_COLS[v];x.fillRect(12+(i%16)*c,16+(i/16|0)*c,c,c)}x.fillStyle='#fff'}
+ const cx=art?(200+512)/2:256,len=shopName().length;x.font=`bold ${art?(len>6?34:44):(len>8?44:64)}px "Hiragino Maru Gothic ProN",sans-serif`;x.fillText(shopName(),cx,64);return new THREE.CanvasTexture(cv)}
+const SIGN_COLS=[null,'#ffffff','#5a4a3c','#ffd166','#e85d5d','#7cc8f0','#8fd19e'];
 function buildShop(){shopG.clear();const d=S.deco,A=(o)=>{shopG.add(o);return o};
  const Lx=d.big?-5.65:-4.05,Rx=4.05,w=Rx-Lx,cx=(Lx+Rx)/2;
  const wall=WALLS[d.wall][0],[f1,f2]=FLOORS[d.floor][0],aw=AWNS[d.awn][0];
@@ -300,7 +303,7 @@ const setFace=(g,k)=>{g.P.face.material=faceMat(k,g.P.cat)};
 function animate(g,dt,moving){const P=g.P;g.ph=(g.ph||0)+(moving?dt*g.speed*9:0);const sw=moving?Math.sin(g.ph):0,k=1-Math.exp(-dt*10);
  const to=(o,ax,v)=>{if(o)o.rotation[ax]+=(v-o.rotation[ax])*k};
  if(P.cat){P.legs.forEach((l,i)=>to(l,'x',sw*0.7*(i%2?1:-1)*(i<2?1:-1)));if(P.tail)P.tail.rotation.z=Math.sin(performance.now()/260+g.as)*0.4}
- else{to(P.legL,'x',sw*0.6);to(P.legR,'x',-sw*0.6);to(P.armL,'x',-sw*0.5);to(P.armR,'x',sw*0.5)}
+ else{to(P.legL,'x',sw*0.6);to(P.legR,'x',-sw*0.6);to(P.armL,'x',-sw*0.5);to(P.armR,'x',P.holding?-0.6:sw*0.5)}
  P.bod.position.y=moving?Math.abs(Math.cos(g.ph))*0.035:0;
  // 棚の前でのぞきこむ・首をかしげる
  const peek=g.state==='look';to(P.bod,'x',peek?0.22:moving?0.06:0);to(P.head,'z',peek?Math.sin(performance.now()/400+g.as)*0.25:0);
@@ -338,17 +341,17 @@ const kname=g=>L(KINDS[g.kind].ja,KINDS[g.kind].en);
 function guestTick(dt){
  for(let i=guests.length-1;i>=0;i--){const g=guests[i];const done=walk(g,dt);
   if(!done)continue;
-  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${kname(g)}が「${nm(ITEMS[g.want])}は ないの？」と 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A ${kname(g)} left.`);continue}
+  if(g.state==='none'){missed(g.want,1);S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${kname(g)}が「${nm(ITEMS[g.want])}は ないの？」と 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A ${kname(g)} left.`);continue}
   if(g.state==='in'){g.state='look';g.wait=KINDS[g.kind].look*(0.8+rnd()*0.5);g.o.rotation.y=Math.PI;
    const sh=g.shelf,r=sh?sh.price/ITEMS[sh.item].base:1;setFace(g,r>1.1+KINDS[g.kind].tol*0.2?'sweat':KINDS[g.kind].likes.includes(g.want)?'wow':'normal');continue}
   if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
-   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}if(g.items&&g.items.length){g.path=[PAY.clone()];g.state='pay';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、${kname(g)}が がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A ${kname(g)} was let down.`);continue}
+   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}if(g.items&&g.items.length){g.path=[PAY.clone()];g.state='pay';continue}missed(g.want,1);S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、${kname(g)}が がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A ${kname(g)} was let down.`);continue}
    // 値段が高いほど買わない。強さはお客さんの種類で ちがう（小学生は おこづかいが少ない）。大すきな物なら少し高くても買う
    const K=KINDS[g.kind],r=sh.price/ITEMS[sh.item].base;let p=1.6-r*0.7/K.tol+S.fans*0.004;if(K.likes.includes(sh.item))p+=0.25;p=Math.max(0,Math.min(1,p));
    if(rnd()>p){if(g.items&&g.items.length){g.path=[PAY.clone()];g.state='pay';continue}leave(g,'💸','sad',1);S.msgs=L(`💸 ${kname(g)}「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 ${kname(g)}: "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
    // おばあちゃんは ときどき 2こ買う
    if(g.rq){const q=g.rq;const have=S.shelves.filter(s2=>s2.item===q.item).reduce((a,s2)=>a+s2.stock,0);
-    if(have<q.n){q.done='miss';S.today.sad++;leave(g,'😢','sad',1);S.msgs=L(`😢 ${q.name}「${nm(ITEMS[q.item])}が ${q.n}こ そろって なかった…」`,`😢 ${q.name}: "Not enough ${nm(ITEMS[q.item])}..."`);continue}
+    if(have<q.n){missed(q.item,q.n-have);q.done='miss';S.today.sad++;leave(g,'😢','sad',1);S.msgs=L(`😢 ${q.name}「${nm(ITEMS[q.item])}が ${q.n}こ そろって なかった…」`,`😢 ${q.name}: "Not enough ${nm(ITEMS[q.item])}..."`);continue}
     let left=q.n;for(const s2 of S.shelves.filter(s2=>s2.item===q.item)){const t=Math.min(left,s2.stock);s2.stock-=t;left-=t;const o2=shelfObjs.get(s2.slot);if(o2)drawGoods(o2)}
     q.done='ok';g.items=[{item:q.item,n:q.n,price:sh.price}];g.paid=sh.price*q.n;g.sp.material=bub(ITEMS[q.item].e+'×'+q.n);setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
    const n=K.three&&sh.stock>=3?3:K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);
@@ -359,6 +362,7 @@ function guestTick(dt){
    g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
   if(g.state==='react'){g.o.rotation.y=0.35;g.wait-=dt;g.o.position.y=g.jump?Math.max(0,Math.sin((0.9-g.wait)*Math.PI*2.2))*0.14:0;if(g.wait>0)continue;g.o.position.y=0;g.path=g.after.path;g.state=g.after.state;continue}
   if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);for(const x of (g.items||[{item:g.shelf.item,n:1}])){onSold(x.item,x.n);S.today.items=S.today.items||{};S.today.items[x.item]=(S.today.items[x.item]||0)+x.n}
+   carryHome(g);
    if(g.rq&&g.rq.done==='ok'){dropLetter(g);S.fans+=2;leave(g,'💌','happy',1);continue}
    const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;onSold(null,0);leave(g,'😊','happy');
     if(g.reg&&(S.reqs||[]).filter(q=>!q.done).length<2&&!(S.reqs||[]).some(q=>q.name===g.reg.name&&!q.done)&&rnd()<0.5){const own=[...new Set(S.shelves.map(s=>s.item))];const it=own[rnd()*own.length|0];
@@ -388,6 +392,26 @@ const coins=[];function coin(v){const s=new THREE.Sprite(bub('🪙'));s.scale.se
 let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+0.2)}catch(e){}}
 
 const clerk=makeCustomer('adult');clerk.position.set(2.7,0,0.25);scene.add(clerk);setTimeout(()=>{clerk.userData.P.face.material=faceMat('happy')},0);
+// 買った品物を 手に持つ（ねこは 頭の上・おかねもちは かみぶくろ）
+function carryHome(g){const P=g.P,its=g.items||[];if(!its.length)return;
+ if(its.length>1||g.kind==='rich'){const bag=new THREE.Group();bag.add(rbox(0.2,0.24,0.12,0.03,'#e8c9a0',0,0,0));bag.add(mesh(G('bagh',()=>new THREE.TorusGeometry(0.06,0.012,6,12,Math.PI)),M('#8a6a4a'),0,0.12,0));
+  const top=goodMesh(its[0].item);top.position.set(0,0.15,0);bag.add(top);bag.position.set(0,-0.36,0.06);(P.armR||P.head).add(bag);return}
+ const m=goodMesh(its[0].item);m.scale.setScalar(1.8);
+ if(P.cat||!P.armR){m.position.set(0,0.24,0);P.head.add(m)}else{m.position.set(0,-0.32,0.07);P.armR.add(m);P.armR.rotation.x=-0.5;P.holding=1}}
+function openDraw(){closeSheet();const pix=(S.sign||new Array(128).fill(0)).slice();let col=3;
+ $('mini').style.display='flex';miniOn=true;paintHelp();$('miniTitle').textContent=L('🎨 かんばんに えを かこう（ゆびで なぞる）','🎨 Draw on your sign');
+ const cv=$('miniCv');cv.width=480;cv.height=240;const x=cv.getContext('2d'),C=30;
+ const draw=()=>{x.fillStyle=AWNS[S.deco.awn][0];x.fillRect(0,0,480,240);for(let i=0;i<128;i++){const v=pix[i];if(v){x.fillStyle=SIGN_COLS[v];x.fillRect((i%16)*C,(i/16|0)*C,C,C)}}
+  x.strokeStyle='#0002';x.lineWidth=1;for(let i=0;i<=16;i++){x.beginPath();x.moveTo(i*C,0);x.lineTo(i*C,240);x.stroke()}for(let j=0;j<=8;j++){x.beginPath();x.moveTo(0,j*C);x.lineTo(480,j*C);x.stroke()}};draw();
+ let down=false;const paint=e=>{const r=cv.getBoundingClientRect(),i=Math.floor((e.clientX-r.left)/r.width*16),j=Math.floor((e.clientY-r.top)/r.height*8);if(i<0||j<0||i>15||j>7)return;pix[j*16+i]=col;draw()};
+ cv.onpointerdown=e=>{down=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}paint(e)};cv.onpointermove=e=>{if(down)paint(e)};cv.onpointerup=()=>down=false;
+ const palette=()=>`<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${SIGN_COLS.map((c,i)=>`<button data-c="${i}" style="width:36px;height:36px;padding:0;border-radius:10px;background:${c||'#fff'};${i===col?'box-shadow:inset 0 0 0 3px #ff9a76':''}">${c?'':'🧽'}</button>`).join('')}</div>`;
+ const ui2=()=>{$('miniInfo').innerHTML=palette()+`<div class="row" style="justify-content:center"><button id="dwClear">${L('ぜんぶ けす','Clear')}</button><button class="big" id="dwOk">${L('かんばんに つける','Put on sign')}</button><button id="dwCancel">${L('やめる','Cancel')}</button></div>`;
+  $('miniInfo').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{col=+b.dataset.c;ui2()});
+  $('dwClear').onclick=()=>{pix.fill(0);draw()};
+  const close=()=>{$('mini').style.display='none';miniOn=false;cv.onpointerdown=cv.onpointermove=cv.onpointerup=null;cv.width=400;cv.height=460;paintHelp()};
+  $('dwCancel').onclick=close;$('dwOk').onclick=()=>{S.sign=pix;buildShop();save();blip(880);blip(1320,0.08,0.1);toast(L('🎨 かんばんが できたよ！','🎨 Your sign is ready!'));close()}};ui2()}
+function missed(item,n){S.today.miss=S.today.miss||{};S.today.miss[item]=(S.today.miss[item]||0)+n}
 // ================= おてつだい（ミニゲーム）=================
 // お金が少ないときだけ遊べる。おちてくる くだものを タッチして集めると、お手つだいの お礼がもらえる（1日3回まで）
 const HELP_PER_DAY=3,HELP_TIME=15,HELP_COIN=40;
@@ -452,10 +476,15 @@ function endGoal(){const g=S.goal;if(!g)return '';const t=S.today;
 function endDay(){const t=S.today,bal=t.sale-t.buy-rentNow();S.money-=rentNow();
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
  const goalTxt=endGoal();
+ const own=new Set(S.shelves.map(x=>x.item));
+ const miss=Object.entries(t.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>own.has(k)
+   ?L(`${ITEMS[k].e}${nm(ITEMS[k])}が あと ${v}こ あれば うれた`,`${v} more ${nm(ITEMS[k])} would have sold`)
+   :L(`${ITEMS[k].e}${nm(ITEMS[k])}を おいていたら ${v}人 かったかも`,`${v} people wanted ${nm(ITEMS[k])}`));
+ const missTxt=miss.length?`<div style="text-align:left;margin-top:6px;font-size:12px;color:#c0605a">🤔 ${miss.join('<br>🤔 ')}</div>`:'';
  const sold=Object.entries(t.items||{}).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...sold.map(x=>x[1]));
  const chart=sold.length?'<div style="text-align:left;margin-top:6px;font-size:12px">'+L('📊 うれた かず','📊 Sold today')+sold.map(([k,v],i)=>`<div style="display:flex;align-items:center;gap:4px;margin:2px 0">${i===0?'👑':''}${ITEMS[k].e}<span style="display:inline-block;height:12px;width:${Math.round(v/mx*130)}px;background:${['#ff8f80','#ffb46a','#ffd166','#8fd19e','#7cc8f0','#c79be0'][i%6]};border-radius:6px"></span>${v}</div>`).join('')+'</div>':'';
- toast(L(`🌙 ${S.day}日目 おしまい<br><span style="font-size:13px">うれた お金 ${yen(t.sale)} − しいれ ${yen(t.buy)} − やちん ${yen(rentNow())}</span><br>＝ <b style="font-size:20px;color:${bal>=0?'#2e9e5b':'#e8606a'}">${bal>=0?'+':''}${yen(bal)}</b> ${bal>=0?'😊':'😢'}<br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>${chart}${goalTxt}`,
-  `🌙 End of day ${S.day}<br><span style="font-size:13px">Sales ${yen(t.sale)} − Stock ${yen(t.buy)} − Rent ${yen(rentNow())}</span><br>= <b style="font-size:20px">${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>${chart}${goalTxt}`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
+ toast(L(`🌙 ${S.day}日目 おしまい<br><span style="font-size:13px">うれた お金 ${yen(t.sale)} − しいれ ${yen(t.buy)} − やちん ${yen(rentNow())}</span><br>＝ <b style="font-size:20px;color:${bal>=0?'#2e9e5b':'#e8606a'}">${bal>=0?'+':''}${yen(bal)}</b> ${bal>=0?'😊':'😢'}<br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>${chart}${missTxt}${goalTxt}`,
+  `🌙 End of day ${S.day}<br><span style="font-size:13px">Sales ${yen(t.sale)} − Stock ${yen(t.buy)} − Rent ${yen(rentNow())}</span><br>= <b style="font-size:20px">${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>${chart}${missTxt}${goalTxt}`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
  S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};newDay();if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。下の「おてつだい」で お金を もらえるよ','⚠️ You are in the red. Tap "Help out" below to earn money.');hud();save()}
 
 // ================= 操作 =================
@@ -493,6 +522,7 @@ function openDeco(){const d=S.deco;$('sheet').style.display='block';
  const style=styleScore();
  $('sheet').innerHTML=`<h3>🔨 ${L('お店を かいそう','Remodel your shop')} <small style="font-weight:normal;opacity:.7">${L('おしゃれ ど','Style')} ${style}・${L('おしゃれだと お客さんが ふえるよ','stylish shops get more customers')}</small></h3>
  <div style="max-height:46vh;overflow:auto">
+ <div class="row"><button id="drawBtn">🎨 ${L('かんばんに えを かく','Draw on the sign')}</button></div>
  <div class="row"><button id="renameBtn">🪧 ${L('かんばんの なまえを かえる','Rename shop')}（${shopName()}）</button></div>
  <div class="row"><b>${L('かべの いろ','Wall color')}</b></div><div class="items">${colorBtns(WALLS,'wall','w')}</div>
  <div class="row"><b>${L('ゆかの もよう','Floor')}</b></div><div class="items">${colorBtns(FLOORS,'floor','f')}</div>
@@ -507,7 +537,7 @@ function openDeco(){const d=S.deco;$('sheet').style.display='block';
  $('sheet').querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{const e=EXTRAS.find(x=>x[0]===b.dataset.ex);pay(e[4],()=>{d.ex[e[0]]=(d.ex[e[0]]||0)+1})});
  $('sheet').querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{const sh=SHAPES.find(x=>x[0]===b.dataset.shape);if(sh[3]===0||own('s'+sh[0])){d.shape=sh[0];buildShop();save();openDeco();return}
   pay(sh[3],()=>{(d.own=d.own||[]).push('s'+sh[0]);d.shape=sh[0];toast(L(`🎉 お店が「${sh[1]}」に なった！`,`🎉 Your shop now has: ${sh[2]}!`))})});
- $('renameBtn').onclick=()=>openName(false);
+ $('renameBtn').onclick=()=>openName(false);$('drawBtn').onclick=openDraw;
  $('sheet').querySelector('[data-big]').onclick=()=>{if(d.big)return;pay(BIG_COST,()=>{d.big=1;toast(L('🎉 お店が ひろく なった！<br>たなを 4つ ふやせるよ','🎉 Your shop got bigger!<br>Room for 4 more shelves'))})};
  $('close').onclick=closeSheet}
 function openBook(){S.book=S.book||{};S.regs=S.regs||[];$('sheet').style.display='block';
