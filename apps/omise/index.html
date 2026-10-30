@@ -141,8 +141,7 @@ function buildShop(){shopG.clear();const d=S.deco,A=(o)=>{shopG.add(o);return o}
  A(rbox(w+0.2,0.12,0.4,0.04,aw,cx,2.95,-2.4));
  // 窓
  for(let x=Rx-1.6;x>Lx+0.8;x-=2.4)A(rbox(1.4,1,0.06,0.04,'#bfe8ff',x,1.8,-2.4));
- // 日よけ
- const awn=new THREE.Group();awn.position.set(cx,2.9,2.0);const na=Math.round(w/0.82);for(let i=0;i<na;i++){const st=rbox(0.82,0.06,0.35,0.03,i%2?'#fff':aw,-w/2+0.41+i*0.82,0,0);st.rotation.x=0.35;awn.add(st)}A(awn);
+ // 前の日よけは、中が見えにくいので つけない（2026-10-30 洋平さん「この部分邪魔かも」）
  // 看板
  A(rbox(2.6,0.6,0.12,0.12,aw,cx,3.35,-2.35));const sp=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.55),new THREE.MeshBasicMaterial({map:signTex(aw)}));sp.position.set(cx,3.35,-2.28);A(sp);
  // 柱
@@ -163,7 +162,7 @@ function buildShop(){shopG.clear();const d=S.deco,A=(o)=>{shopG.add(o);return o}
 const counter=new THREE.Group();counter.position.set(2.7,0,1.0);
 counter.add(rbox(1.6,0.9,0.7,0.08,'#c99a6e',0,0.45,0));counter.add(rbox(1.7,0.08,0.8,0.03,'#fff8ec',0,0.94,0));
 counter.add(rbox(0.5,0.32,0.4,0.06,'#7cc8f0',-0.3,1.14,0));counter.add(rbox(0.3,0.1,0.3,0.03,'#ffd166',0.4,1.02,0));scene.add(counter);
-const clerk=person('#7cc8f0','#ffd166');clerk.position.set(2.7,0,0.25);clerk.rotation.y=0;scene.add(clerk);
+
 
 function person(body,hair){const g=new THREE.Group();
  g.add(mesh(G('pb',()=>new THREE.CapsuleGeometry(0.17,0.32,4,10)),M(body),0,0.38,0));
@@ -202,36 +201,112 @@ const BODY=['#ff8f80','#ffb46a','#7cc8f0','#c79be0','#8fd19e','#ffd166'],HAIR=['
 function bubbleTex(text){const cv=document.createElement('canvas');cv.width=cv.height=96;const x=cv.getContext('2d');x.fillStyle='#fff';x.beginPath();x.roundRect(8,6,80,64,20);x.fill();x.beginPath();x.moveTo(36,68);x.lineTo(48,88);x.lineTo(56,68);x.fill();
  x.font='42px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,48,40);return new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false})}
 const bubCache={};const bub=t=>bubCache[t]||(bubCache[t]=bubbleTex(t));
-function spawn(){const want=pickWant();const p=person(BODY[rnd()*6|0],HAIR[rnd()*4|0]);const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
- const sp=new THREE.Sprite(bub(ITEMS[want].e));sp.scale.setScalar(0.55);sp.position.y=1.35;sp.renderOrder=9;p.add(sp);
- const g={o:p,sp,want,path:[DOOR.clone()],state:'in',speed:1.1+rnd()*0.4,wait:0,from};
+
+// ---- 顔：目・口・ほっぺを絵に描いて、気もちで取りかえる ----
+const faceCache={};
+function faceMat(kind,cat){const key=kind+(cat?'c':'');if(faceCache[key])return faceCache[key];
+ const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d');x.lineCap='round';x.lineJoin='round';
+ const ink='#3a2e26';x.fillStyle=ink;x.strokeStyle=ink;x.lineWidth=7;
+ // ほっぺ
+ x.fillStyle='rgba(255,140,140,.55)';x.beginPath();x.ellipse(30,78,13,8,0,0,7);x.ellipse(98,78,13,8,0,0,7);x.fill();x.fillStyle=ink;
+ const eye=(cx)=>{if(kind==='happy'){x.beginPath();x.arc(cx,62,10,Math.PI*1.1,Math.PI*1.9);x.stroke()}
+  else if(kind==='sad'){x.beginPath();x.arc(cx,58,9,Math.PI*0.15,Math.PI*0.85);x.stroke()}
+  else{x.beginPath();x.ellipse(cx,58,7,10,0,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(cx+2,54,3,0,7);x.fill();x.fillStyle=ink}};
+ eye(42);eye(86);
+ if(kind==='happy'){x.beginPath();x.moveTo(50,80);x.quadraticCurveTo(64,100,78,80);x.closePath();x.fillStyle='#e8606a';x.fill()}
+ else if(kind==='sad'){x.beginPath();x.moveTo(52,92);x.quadraticCurveTo(64,80,76,92);x.stroke();x.fillStyle='#7cc8f0';x.beginPath();x.ellipse(96,74,5,8,0,0,7);x.fill()}
+ else if(kind==='sweat'){x.beginPath();x.moveTo(54,88);x.lineTo(74,86);x.stroke();x.fillStyle='#7cc8f0';x.beginPath();x.moveTo(108,30);x.quadraticCurveTo(118,50,108,54);x.quadraticCurveTo(98,50,108,30);x.fill()}
+ else if(kind==='wow'){x.beginPath();x.ellipse(64,88,7,9,0,0,7);x.fill()}
+ else{x.beginPath();x.arc(64,80,9,0.15*Math.PI,0.85*Math.PI);x.stroke()}
+ if(cat){x.lineWidth=3;for(const sgn of [-1,1])for(const dy of [-6,4]){x.beginPath();x.moveTo(64+sgn*22,80+dy*0.3);x.lineTo(64+sgn*52,76+dy);x.stroke()}}
+ return faceCache[key]=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false})}
+
+// ---- お客さんの種類：見た目と、買い方のちがい ----
+// tol＝高い値段への強さ（大きいほど高くても買う）／look＝まよう長さ／speed＝歩く速さ／likes＝大すきな物
+const KINDS={
+ kid:{ja:'小学生',en:'Schoolkid',share:0.25,tol:0.6,look:1.8,speed:1.45,likes:['apple','toy','cake']},
+ granny:{ja:'おばあちゃん',en:'Grandma',share:0.2,tol:1.4,look:1.2,speed:0.7,likes:['bread','flower'],two:true},
+ cat:{ja:'ねこ',en:'Cat',share:0.15,tol:1.0,look:0.6,speed:1.7,likes:['milk']},
+ adult:{ja:'おとな',en:'Grown-up',share:0.4,tol:1.0,look:0.8,speed:1.15,likes:[]}};
+const pickKind=()=>{let r=rnd();for(const [k,v] of Object.entries(KINDS)){if((r-=v.share)<0)return k}return 'adult'};
+const cap=(r,l,c)=>mesh(G('cap'+r+l,()=>new THREE.CapsuleGeometry(r,l,4,10)),M(c));
+const ball=(r,c)=>mesh(G('ball'+r,()=>new THREE.SphereGeometry(r,16,12)),M(c));
+function limb(r,l,c,x,y){const pv=new THREE.Group();pv.position.set(x,y,0);const m=cap(r,l,c);m.position.y=-(l/2+r*0.6);pv.add(m);return pv}
+function makeCustomer(kind){const o=new THREE.Group(),bod=new THREE.Group();o.add(bod);const P={bod,kind};
+ const col=BODY[rnd()*6|0],hair=HAIR[rnd()*4|0];
+ if(kind==='cat'){const fur=['#f2a65a','#9a8f86','#3e3a38','#f5efe6'][rnd()*4|0];
+  const body=cap(0.13,0.26,fur);body.rotation.x=Math.PI/2;body.position.set(0,0.22,-0.05);bod.add(body);
+  P.legs=[];for(const [lx,lz] of [[-0.08,0.08],[0.08,0.08],[-0.08,-0.18],[0.08,-0.18]]){const lg=limb(0.04,0.08,fur,lx,0.16);lg.position.z=lz;bod.add(lg);P.legs.push(lg)}
+  const head=new THREE.Group();head.position.set(0,0.42,0.16);bod.add(head);P.head=head;head.add(ball(0.17,fur));
+  for(const sx of [-1,1]){const e=mesh(G('ear',()=>new THREE.ConeGeometry(0.06,0.12,4)),M(fur),sx*0.1,0.16,0);e.rotation.z=-sx*0.3;head.add(e)}
+  const tail=new THREE.Group();tail.position.set(0,0.28,-0.28);const tm=cap(0.03,0.24,fur);tm.position.y=0.13;tail.add(tm);tail.rotation.x=-0.5;bod.add(tail);P.tail=tail;
+  const face=new THREE.Mesh(G('facep',()=>new THREE.PlaneGeometry(0.3,0.3)),faceMat('normal',1));face.position.set(0,0,0.172);head.add(face);P.face=face;P.cat=1;P.h=0.85}
+ else{const kid=kind==='kid',gr=kind==='granny',s=kid?0.78:1;
+  const legC=gr?'#7a6a5a':kid?'#4a5a8a':'#5a5a6a';
+  P.legL=limb(0.055,0.16,legC,-0.07,0.3);P.legR=limb(0.055,0.16,legC,0.07,0.3);bod.add(P.legL,P.legR);
+  const shirt=gr?'#b59bd6':col;const torso=rbox(0.3,0.32,0.2,0.09,shirt,0,0.44,0);bod.add(torso);
+  P.armL=limb(0.045,0.17,shirt,-0.19,0.56);P.armR=limb(0.045,0.17,shirt,0.19,0.56);bod.add(P.armL,P.armR);
+  for(const a of [P.armL,P.armR]){const hand=ball(0.045,'#ffe0c2');hand.position.y=-0.27;a.add(hand)}
+  const head=new THREE.Group();head.position.set(0,0.82,0);bod.add(head);P.head=head;const hs=kid?1.12:1;
+  head.add(ball(0.2*hs,'#ffe0c2'));
+  const hcol=gr?'#d9d4cf':hair;const cap1=mesh(G('hair'+hs,()=>new THREE.SphereGeometry(0.21*hs,16,12,0,Math.PI*2,0,Math.PI/2)),M(hcol),0,0.03,-0.01);cap1.rotation.x=-0.25;head.add(cap1);
+  if(gr){const bun=ball(0.08,hcol);bun.position.set(0,0.2,-0.12);head.add(bun);const bag=rbox(0.14,0.12,0.06,0.03,'#d78b7a',0,-0.2,0.05);P.armR.add(bag)}
+  if(kid){const hat=mesh(G('khat',()=>new THREE.SphereGeometry(0.235,16,10,0,Math.PI*2,0,Math.PI/2.3)),M('#ffd166'),0,0.04,0);head.add(hat);
+   const brim=mesh(G('kbrim',()=>new THREE.CylinderGeometry(0.27,0.27,0.02,20)),M('#ffd166'),0,0.06,0.02);head.add(brim);
+   const rand=rbox(0.26,0.28,0.12,0.05,['#e85d5d','#2f2a26','#c79be0'][rnd()*3|0],0,0.48,-0.16);bod.add(rand)}
+  if(kind==='adult'&&rnd()<0.5){const bag=rbox(0.18,0.14,0.06,0.03,['#c99a6e','#5a4a3c','#7cc8f0'][rnd()*3|0],0,-0.22,0.05);P.armL.add(bag)}
+  const face=new THREE.Mesh(G('facep'+hs,()=>new THREE.PlaneGeometry(0.34*hs,0.34*hs)),faceMat('normal'));face.position.set(0,-0.01,0.2*hs+0.004);head.add(face);P.face=face;
+  bod.scale.setScalar(s);P.h=kid?1.15:1.35}
+ o.userData.P=P;return o}
+const setFace=(g,k)=>{g.P.face.material=faceMat(k,g.P.cat)};
+// 手と足をふって歩く／立ちどまると止まる
+function animate(g,dt,moving){const P=g.P;g.ph=(g.ph||0)+(moving?dt*g.speed*9:0);const sw=moving?Math.sin(g.ph):0,k=1-Math.exp(-dt*10);
+ const to=(o,ax,v)=>{if(o)o.rotation[ax]+=(v-o.rotation[ax])*k};
+ if(P.cat){P.legs.forEach((l,i)=>to(l,'x',sw*0.7*(i%2?1:-1)*(i<2?1:-1)));if(P.tail)P.tail.rotation.z=Math.sin(performance.now()/260+g.seed)*0.4}
+ else{to(P.legL,'x',sw*0.6);to(P.legR,'x',-sw*0.6);to(P.armL,'x',-sw*0.5);to(P.armR,'x',sw*0.5)}
+ P.bod.position.y=moving?Math.abs(Math.cos(g.ph))*0.035:0;
+ // 棚の前でのぞきこむ・首をかしげる
+ const peek=g.state==='look';to(P.bod,'x',peek?0.22:moving?0.06:0);to(P.head,'z',peek?Math.sin(performance.now()/400+g.seed)*0.25:0);
+ // 小学生は まよっている間 ときどき ぴょんと とぶ
+ if(g.kind==='kid'&&peek)g.o.position.y=Math.max(0,Math.sin(performance.now()/180+g.seed))*0.12;else if(!moving)g.o.position.y=0}
+
+function spawn(){if(guests.length>=8)return;const kind=pickKind(),K=KINDS[kind],want=pickWant(kind);const p=makeCustomer(kind);const from=rnd()<0.5?STREET_L:STREET_R;p.position.copy(from);scene.add(p);
+ const sp=new THREE.Sprite(bub(ITEMS[want].e));sp.scale.setScalar(0.55);sp.position.y=p.userData.P.h+0.15;sp.renderOrder=9;p.add(sp);
+ const g={o:p,P:p.userData.P,kind,sp,want,path:[DOOR.clone()],state:'in',speed:K.speed*(0.9+rnd()*0.2),wait:0,from,seed:rnd()*10};
  const same=S.shelves.filter(s=>s.item===want),stocked=same.filter(s=>s.stock>0),sh=(stocked.length?stocked:same)[Math.random()*(stocked.length||same.length)|0];if(sh){const [x,z]=SLOTS[sh.slot];g.path.push(new THREE.Vector3(x,0,z+0.75));g.shelf=sh}else g.state='none';
  guests.push(g);S.today.guests++}
-function pickWant(){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
- // たいていは置いてある物、ときどき置いていない物がほしい人も来る
+function pickWant(kind){const own=[...new Set(S.shelves.map(s=>s.item))];const all=Object.keys(ITEMS).filter(k=>ITEMS[k].star<=S.star+1);
+ // 大すきな物がお店にあれば、それをほしがりやすい
+ const fav=KINDS[kind].likes.filter(k=>own.includes(k));if(fav.length&&rnd()<0.6)return fav[rnd()*fav.length|0];
  return rnd()<0.8&&own.length?own[rnd()*own.length|0]:all[rnd()*all.length|0]}
-function walk(g,dt){if(!g.path.length)return true;const tgt=g.path[0],d=tgt.clone().sub(g.o.position);d.y=0;const L=d.length();
- if(L<0.05){g.path.shift();return !g.path.length}
- const step=Math.min(L,g.speed*dt);g.o.position.addScaledVector(d.normalize(),step);g.o.rotation.y=Math.atan2(d.x,d.z);g.o.position.y=Math.abs(Math.sin(performance.now()/120))*0.04;return false}
-function leave(g,face){g.sp.material=bub(face);g.path=[DOOR.clone(),g.from.clone().setX(-g.from.x)];g.state='out'}
+function walk(g,dt){if(!g.path.length){animate(g,dt,false);return true}const tgt=g.path[0],d=tgt.clone().sub(g.o.position);d.y=0;const Ld=d.length();
+ if(Ld<0.05){g.path.shift();animate(g,dt,false);return !g.path.length}
+ const step=Math.min(Ld,g.speed*dt);g.o.position.addScaledVector(d.normalize(),step);
+ const ry=Math.atan2(d.x,d.z);let dr=ry-g.o.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));g.o.rotation.y+=dr*Math.min(1,dt*12);animate(g,dt,true);return false}
+function leave(g,face,emo,show){g.sp.material=bub(face);setFace(g,emo||'normal');g.after={path:[DOOR.clone(),g.from.clone().setX(-g.from.x)],state:'out'};if(show){g.state='react';g.wait=0.9;g.jump=emo==='happy'}else{g.path=g.after.path;g.state='out'}}
+const kname=g=>L(KINDS[g.kind].ja,KINDS[g.kind].en);
 function guestTick(dt){
  for(let i=guests.length-1;i>=0;i--){const g=guests[i];const done=walk(g,dt);
   if(!done)continue;
-  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 「${nm(ITEMS[g.want])}は ないの？」と お客さんが 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A customer left.`);continue}
-  if(g.state==='in'){g.state='look';g.wait=0.8;continue}
+  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${kname(g)}が「${nm(ITEMS[g.want])}は ないの？」と 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A ${kname(g)} left.`);continue}
+  if(g.state==='in'){g.state='look';g.wait=KINDS[g.kind].look*(0.8+rnd()*0.5);g.o.rotation.y=Math.PI;
+   const sh=g.shelf,r=sh?sh.price/ITEMS[sh.item].base:1;setFace(g,r>1.1+KINDS[g.kind].tol*0.2?'sweat':KINDS[g.kind].likes.includes(g.want)?'wow':'normal');continue}
   if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
-   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、お客さんが がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
-   // 値段がふつうより高いほど買わない
-   const r=sh.price/ITEMS[sh.item].base,p=Math.max(0,Math.min(1,1.6-r*0.7+S.fans*0.004));
-   if(rnd()>p){leave(g,'💸');S.msgs=L(`💸 「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
-   sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price;g.sp.material=bub(ITEMS[sh.item].e);g.path=[PAY.clone()];g.state='pay';continue}
-  if(g.state==='pay'){g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
-   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊')}else leave(g,'🙂');continue}
+   if(!S.shelves.includes(sh)||sh.stock<=0){const alt=S.shelves.find(s=>s.item===g.want&&s.stock>0);if(alt){const [x,z]=SLOTS[alt.slot];g.shelf=alt;g.path=[new THREE.Vector3(x,0,z+0.75)];g.state='in';continue}S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢','sad',1);S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、${kname(g)}が がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A ${kname(g)} was let down.`);continue}
+   // 値段が高いほど買わない。強さはお客さんの種類で ちがう（小学生は おこづかいが少ない）。大すきな物なら少し高くても買う
+   const K=KINDS[g.kind],r=sh.price/ITEMS[sh.item].base;let p=1.6-r*0.7/K.tol+S.fans*0.004;if(K.likes.includes(sh.item))p+=0.25;p=Math.max(0,Math.min(1,p));
+   if(rnd()>p){leave(g,'💸','sad',1);S.msgs=L(`💸 ${kname(g)}「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 ${kname(g)}: "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
+   // おばあちゃんは ときどき 2こ買う
+   const n=K.two&&sh.stock>=2&&rnd()<0.5?2:1;sh.stock-=n;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price*n;g.sp.material=bub(ITEMS[sh.item].e+(n>1?'×2':''));setFace(g,'happy');g.after={path:[PAY.clone()],state:'pay'};g.state='react';g.wait=0.9;g.jump=true;continue}
+  if(g.state==='react'){g.o.rotation.y=0.35;g.wait-=dt;g.o.position.y=g.jump?Math.max(0,Math.sin((0.9-g.wait)*Math.PI*2.2))*0.14:0;if(g.wait>0)continue;g.o.position.y=0;g.path=g.after.path;g.state=g.after.state;continue}
+  if(g.state==='pay'){g.o.rotation.y=Math.PI;g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
+   const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊','happy')}else leave(g,'🙂','normal');continue}
   if(g.state==='out'){scene.remove(g.o);guests.splice(i,1)}}}
 // お金が入ったときの「チャリン」
 const coins=[];function coin(v){const s=new THREE.Sprite(bub('🪙'));s.scale.setScalar(0.45);s.position.set(2.7,1.6,1.0);s.renderOrder=10;scene.add(s);coins.push({s,t:0});blip(1200,0.06);blip(1600,0.05,0.07);navigator.vibrate?.(5)}
 let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+0.2)}catch(e){}}
 
+const clerk=makeCustomer('adult');clerk.position.set(2.7,0,0.25);scene.add(clerk);setTimeout(()=>{clerk.userData.P.face.material=faceMat('happy')},0);
 // ================= 1日 =================
 function endDay(){const t=S.today,bal=t.sale-t.buy-RENT;S.money-=RENT;
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
