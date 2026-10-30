@@ -76,8 +76,8 @@ const yen=v=>(v<0?'−':'')+'¥'+Math.abs(v).toLocaleString();
 const ITEMS={
  bread:{en:'Bread',n:'パン',e:'🍞',cost:60,base:130,col:'#e7b56f',star:0},
  apple:{en:'Apples',n:'りんご',e:'🍎',cost:40,base:90,col:'#e85d5d',star:0},
- milk:{en:'Milk',n:'牛乳',e:'🥛',cost:70,base:140,col:'#ffffff',star:1},
- flower:{en:'Flowers',n:'花',e:'🌷',cost:110,base:240,col:'#ff8fb1',star:2},
+ milk:{en:'Milk',n:'ぎゅうにゅう',e:'🥛',cost:70,base:140,col:'#ffffff',star:1},
+ flower:{en:'Flowers',n:'お花',e:'🌷',cost:110,base:240,col:'#ff8fb1',star:2},
  cake:{en:'Cake',n:'ケーキ',e:'🍰',cost:180,base:380,col:'#ffe0e8',star:3},
  toy:{en:'Toys',n:'おもちゃ',e:'🧸',cost:300,base:620,col:'#c99a6e',star:4}};
 const nm=it=>L(it.n,it.en);
@@ -130,7 +130,7 @@ scene.add(rbox(8.2,0.12,0.4,0.04,'#e57373',0,2.95,-2.4));
 // 看板と日よけ
 const awn=new THREE.Group();awn.position.set(0,2.9,2.0);for(let i=0;i<10;i++){const s=rbox(0.82,0.06,0.35,0.03,i%2?'#fff':'#ff8f80',-3.7+i*0.82,0,0);s.rotation.x=0.35;awn.add(s)}scene.add(awn);
 const sign=rbox(2.6,0.6,0.12,0.12,'#ff8f80',0,3.35,-2.35);scene.add(sign);
-{const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle='#ff8f80';x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L('ちいさなお店','Tiny Shop'),256,64);
+{const cv=document.createElement('canvas');cv.width=512;cv.height=120;const x=cv.getContext('2d');x.fillStyle='#ff8f80';x.fillRect(0,0,512,120);x.fillStyle='#fff';x.font='bold 64px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L('ちいさな おみせ','Tiny Shop'),256,64);
  const p=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.55),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));p.position.set(0,3.35,-2.28);scene.add(p)}
 // 柱・レジ・窓
 scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',-3.95,1.45,1.7));scene.add(rbox(0.2,3,0.2,0.06,'#c99a6e',3.95,1.45,1.7));
@@ -195,13 +195,13 @@ function leave(g,face){g.sp.material=bub(face);g.path=[DOOR.clone(),g.from.clone
 function guestTick(dt){
  for(let i=guests.length-1;i>=0;i--){const g=guests[i];const done=walk(g,dt);
   if(!done)continue;
-  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 「${nm(ITEMS[g.want])}は置いてないの？」とお客さんが帰った`,`😢 "No ${nm(ITEMS[g.want])}?" A customer left.`);continue}
+  if(g.state==='none'){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 「${nm(ITEMS[g.want])}は ないの？」と お客さんが 帰っちゃった`,`😢 "No ${nm(ITEMS[g.want])}?" A customer left.`);continue}
   if(g.state==='in'){g.state='look';g.wait=0.8;continue}
   if(g.state==='look'){g.wait-=dt;if(g.wait>0)continue;const sh=g.shelf;
-   if(!S.shelves.includes(sh)||sh.stock<=0){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が売り切れで、お客さんががっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
+   if(!S.shelves.includes(sh)||sh.stock<=0){S.today.sad++;S.fans=Math.max(0,S.fans-1);leave(g,'😢');S.msgs=L(`😢 ${nm(ITEMS[g.want])}が うりきれで、お客さんが がっかり`,`😢 ${nm(ITEMS[g.want])} sold out. A customer was let down.`);continue}
    // 値段がふつうより高いほど買わない
    const r=sh.price/ITEMS[sh.item].base,p=Math.max(0,Math.min(1,1.35-r*0.75+S.fans*0.004));
-   if(rnd()>p){leave(g,'💸');S.msgs=L(`💸 「${nm(ITEMS[sh.item])}、ちょっと高いな…」`,`💸 "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
+   if(rnd()>p){leave(g,'💸');S.msgs=L(`💸 「${nm(ITEMS[sh.item])}、ちょっと 高いなあ…」`,`💸 "${nm(ITEMS[sh.item])} is a bit pricey..."`);continue}
    sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);g.paid=sh.price;g.sp.material=bub(ITEMS[sh.item].e);g.path=[PAY.clone()];g.state='pay';continue}
   if(g.state==='pay'){g.wait=g.wait||0.6;g.wait-=dt;if(g.wait>0)continue;g.wait=0;S.money+=g.paid;S.today.sale+=g.paid;coin(g.paid);
    const r=g.shelf.price/ITEMS[g.shelf.item].base;if(r<=1.15){S.fans++;leave(g,'😊')}else leave(g,'🙂');continue}
@@ -213,9 +213,9 @@ let ac;function blip(f,v=0.1,delay=0){try{ac=ac||new AudioContext();const o=ac.c
 // ================= 1日 =================
 function endDay(){const t=S.today,bal=t.sale-t.buy-RENT;S.money-=RENT;
  const before=S.star;S.star=Math.min(5,Math.floor(S.fans/25));
- toast(L(`🌙 ${S.day}日目おわり<br>売上 ${yen(t.sale)}　仕入れ ${yen(t.buy)}　家賃 ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>お客さん${t.guests}人・がっかり${t.sad}人</small>`,
-  `🌙 End of day ${S.day}<br>Sales ${yen(t.sale)}　Stock ${yen(t.buy)}　Rent ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>`)+(S.star>before?L(`<br>⭐ 評判が上がった！新しい品物が仕入れられる`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
- S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金がマイナス。仕入れすぎ・高すぎに気をつけて','⚠️ You are in the red. Watch your stock and prices.');hud();save()}
+ toast(L(`🌙 ${S.day}日目 おしまい<br>うれた お金 ${yen(t.sale)}　しいれ ${yen(t.buy)}　お店の やちん ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>きた 人 ${t.guests}人・がっかり ${t.sad}人</small>`,
+  `🌙 End of day ${S.day}<br>Sales ${yen(t.sale)}　Stock ${yen(t.buy)}　Rent ${yen(RENT)}<br><b>${bal>=0?'+':''}${yen(bal)}</b><br><small>${t.guests} customers・${t.sad} let down</small>`)+(S.star>before?L(`<br>⭐ お店が にんきに なった！ あたらしい しなものが うれるように なったよ`,`<br>⭐ Your shop got more popular! New goods unlocked`):''),4200);
+ S.day++;S.t=0;S.today={sale:0,buy:0,guests:0,sad:0};if(S.money<0)S.msgs=L('⚠️ お金が マイナスに なっちゃった。しいれすぎ・高すぎに 気をつけてね','⚠️ You are in the red. Watch your stock and prices.');hud();save()}
 
 // ================= 操作 =================
 let mode='look';
@@ -230,32 +230,32 @@ addEventListener('pointerup',e=>{if(!down||e.target!==renderer.domElement&&!rend
 const $=id=>document.getElementById(id);
 function openShelf(){const sh=S.shelves.find(s=>s.slot===ui.sel);if(!sh)return closeSheet();const it=ITEMS[sh.item],r=sh.price/it.base;
  $('sheet').style.display='block';
- $('sheet').innerHTML=`<h3>${it.e} ${L(it.n+'の棚',it.en+' shelf')}</h3>
- <div class="row">${L('のこり','In stock')} <b style="font-size:18px">${sh.stock}</b>　<span style="opacity:.6">（${L('仕入れ値','Cost')} ${yen(it.cost)}・${L('ふつうの値段','Usual price')} ${yen(it.base)}）</span></div>
- <div class="row">${L('値段','Price')} <button id="pm">−10</button><b style="font-size:18px">${yen(sh.price)}</b><button id="pp">＋10</button>
-  <span>${r>1.3?L('😟 高すぎ','😟 Too high'):r>1.1?L('🙂 ちょっと高め','🙂 A bit high'):r<0.85?L('😊 お買い得（もうけは少ない）','😊 A bargain (small profit)'):L('😊 ちょうどいい','😊 Just right')}</span>・${L('1個のもうけ','Profit each')} ${yen(sh.price-it.cost)}</div>
- <div class="row"><button class="big" id="b5">${L('5個 仕入れる','Buy 5')} ${yen(it.cost*5)}</button><button class="big" id="b10">${L('10個','Buy 10')} ${yen(it.cost*10)}</button><button id="close">${L('とじる','Close')}</button></div>`;
+ $('sheet').innerHTML=`<h3>${it.e} ${L(it.n+'の たな',it.en+' shelf')}</h3>
+ <div class="row">${L('のこり','In stock')} <b style="font-size:18px">${sh.stock}</b>　<span style="opacity:.6">（${L('しいれる ねだん','Cost')} ${yen(it.cost)}・${L('ふつうの ねだん','Usual price')} ${yen(it.base)}）</span></div>
+ <div class="row">${L('ねだん','Price')} <button id="pm">−10</button><b style="font-size:18px">${yen(sh.price)}</b><button id="pp">＋10</button>
+  <span>${r>1.3?L('😟 高すぎる','😟 Too high'):r>1.1?L('🙂 ちょっと 高め','🙂 A bit high'):r<0.85?L('😊 やすい（もうけは 少ない）','😊 A bargain (small profit)'):L('😊 ちょうど いい','😊 Just right')}</span>・${L('1こ うれると もうけ','Profit each')} ${yen(sh.price-it.cost)}</div>
+ <div class="row"><button class="big" id="b5">${L('5こ しいれる','Buy 5')} ${yen(it.cost*5)}</button><button class="big" id="b10">${L('10こ','Buy 10')} ${yen(it.cost*10)}</button><button id="close">${L('とじる','Close')}</button></div>`;
  $('pm').onclick=()=>{sh.price=Math.max(10,sh.price-10);save();openShelf()};$('pp').onclick=()=>{sh.price+=10;save();openShelf()};
- const buy=n=>{const c=it.cost*n;if(S.money<c){toast(L('💸 お金が足りない','💸 Not enough money'));return}S.money-=c;S.today.buy+=c;sh.stock+=n;drawGoods(shelfObjs.get(sh.slot));blip(700);hud();save();openShelf()};
+ const buy=n=>{const c=it.cost*n;if(S.money<c){toast(L('💸 お金が たりないよ','💸 Not enough money'));return}S.money-=c;S.today.buy+=c;sh.stock+=n;drawGoods(shelfObjs.get(sh.slot));blip(700);hud();save();openShelf()};
  $('b5').onclick=()=>buy(5);$('b10').onclick=()=>buy(10);$('close').onclick=closeSheet;markSel();save()}
 function openPlace(slot){const cost=SHELF_COST(S.shelves.length);$('sheet').style.display='block';
- $('sheet').innerHTML=`<h3>${L('新しい棚を置く','Add a new shelf')}（${yen(cost)}）</h3><div class="items">${Object.entries(ITEMS).map(([k,it])=>`<button data-k="${k}" ${it.star>S.star?'disabled':''}><span class="e">${it.e}</span>${nm(it)}<small>${it.star>S.star?L('⭐'+it.star+'で','at ⭐'+it.star):yen(it.base)}</small></button>`).join('')}</div><div class="row"><button id="close">${L('やめる','Cancel')}</button></div>`;
+ $('sheet').innerHTML=`<h3>${L('あたらしい たなを おく','Add a new shelf')}（${yen(cost)}）</h3><div class="items">${Object.entries(ITEMS).map(([k,it])=>`<button data-k="${k}" ${it.star>S.star?'disabled':''}><span class="e">${it.e}</span>${nm(it)}<small>${it.star>S.star?L('⭐'+it.star+'から','at ⭐'+it.star):yen(it.base)}</small></button>`).join('')}</div><div class="row"><button id="close">${L('やめる','Cancel')}</button></div>`;
  $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{if(S.money<cost){toast(L('💸 お金が足りない','💸 Not enough money'));return}const k=b.dataset.k;S.money-=cost;
   const sh={slot,item:k,stock:0,price:ITEMS[k].base};S.shelves.push(sh);ui.sel=slot;mode='look';rebuildShelves();paintDock();blip(880);hud();save();openShelf()});
  $('close').onclick=closeSheet}
 function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save()}
 const dock=$('dock');
-function paintDock(){dock.innerHTML='';[['look','👀',L('見る','Look')],['place','🪵',L('棚を置く','Add shelf')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
+function paintDock(){dock.innerHTML='';[['look','👀',L('みる','Look')],['place','🪵',L('たなを おく','Add shelf')]].forEach(([id,e,n])=>{const b=document.createElement('button');b.innerHTML=`<span class="e">${e}</span>${n}`;b.classList.toggle('on',mode===id);
  b.onclick=()=>{mode=id;closeSheet();paintDock();markSel();hud()};dock.appendChild(b)})}
 $('speed').onclick=()=>{ui.speed=(ui.speed+1)%3;hud();save()};
 $('langBtn').onclick=()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem('lang',lang)}catch(e){}document.documentElement.lang=lang;paintDock();if(ui.sel!=null)openShelf();hud()};
 document.documentElement.lang=lang;
 function toast(s,ms=2400){const t=$('toast');t.innerHTML=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
-function hint(){if(mode==='place')return L(`🪵 オレンジの丸に棚を置ける（${yen(SHELF_COST(S.shelves.length))}）`,`🪵 Tap an orange circle to place a shelf (${yen(SHELF_COST(S.shelves.length))})`);
- const empty=S.shelves.find(s=>s.stock===0);if(empty)return L(`📦 ${nm(ITEMS[empty.item])}の棚が空っぽ。棚を押して仕入れよう`,`📦 The ${nm(ITEMS[empty.item])} shelf is empty. Tap it to restock.`);
- if(S.day===1)return L('🏪 あなたは小さなお店の店長。棚を押すと仕入れ・値段を決められる。夜に家賃¥400がかかる','🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ¥400 is due each night.');
- return S.msgs||L('お客さんの吹き出し＝ほしい物。置いていない物が多いなら、新しい棚を考えよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
-function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン${S.fans}）`,` (${S.fans} fans)`);
+function hint(){if(mode==='place')return L(`🪵 オレンジの 丸に たなを おけるよ（${yen(SHELF_COST(S.shelves.length))}）`,`🪵 Tap an orange circle to place a shelf (${yen(SHELF_COST(S.shelves.length))})`);
+ const empty=S.shelves.find(s=>s.stock===0);if(empty)return L(`📦 ${nm(ITEMS[empty.item])}の たなが からっぽ！ たなを タッチして しいれよう`,`📦 The ${nm(ITEMS[empty.item])} shelf is empty. Tap it to restock.`);
+ if(S.day===1)return L('🏪 あなたは 小さな お店の てんちょう。たなを タッチすると、しなものを かったり、ねだんを きめたり できるよ。夜に お店の やちん ¥400を はらうよ','🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ¥400 is due each night.');
+ return S.msgs||L('お客さんの ふきだしは ほしい もの。ない ものが 多かったら、あたらしい たなを おいてみよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
+function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
  const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint()}
 
 // ================= ループ =================
