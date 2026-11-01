@@ -668,7 +668,7 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
   else msg=L('<br>💦 むしに まけちゃった… つよくして また こよう','<br>💦 The bugs won... train up and come back');
   if(win){fBag()[A.mat][1]++;fMerge(A.mat);if(boss){puff(boss.o.position.clone().add(new THREE.Vector3(0,1,0)),'#ffd166',24);boss.o.visible=false}}
   const list=Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join('　')||L('なし','nothing');
-  if(KID()){save();info(`<div class="krow"><span class="kbig">${win?'🎉':'💦'}</span><b class="knum">${list}</b>${win?'＋'+FMAT[A.mat].e+'★':''}${win&&ai===(S.fclear||0)-1?'　'+({bear:'🐻',cat:'🐱',wizard:'🧙'}[A.friend.kind])+'➡️🏪':''}</div><div class="krow"><button class="big" id="fAgain">🔁🌲</button><button class="big" id="fBack">🏪</button></div>`);$('fBack').onclick=close;$('fAgain').onclick=()=>{close();startForest(ai)};return}
+  if(KID()){save();info(`<div class="krow"><span class="kbig">${win?'🎉':'💦'}</span><b class="knum">${list}</b>${win?'＋'+FMAT[A.mat].e+'★':''}${win&&ai===(S.fclear||0)-1?'　'+({bear:'🐻',cat:'🐱',wizard:'🧙'}[A.friend.kind])+'➡️🏪':''}</div><div class="krow"><button class="big" id="fAgain">🔁</button>${ai<Math.min(S.fclear||0,AREAS.length-1)?`<button class="big" id="fNext">➡️${AREAS[ai+1].boss.e}</button>`:''}<button class="big" id="fMenu">💪</button><button class="big" id="fBack">🏪</button></div>`);$('fBack').onclick=close;$('fAgain').onclick=()=>{close();startForest(ai)};if($('fNext'))$('fNext').onclick=()=>{close();startForest(ai+1)};$('fMenu').onclick=()=>{close();openForest()};return}
   save();info(L(`🎒 もちかえり：${list}${win?'　＋'+FMAT[A.mat].e+'★':''}`,`🎒 Brought back: ${list}`)+msg+`<br><small>${L('「つくる」で お店の しなものに できるよ','Use them in "Make"')}</small><div class="row" style="justify-content:center"><button class="big" id="fAgain">🌲 ${L('もういちど','Again')}</button><button id="fBack">${L('お店に もどる','Back to shop')}</button></div>`);
   $('fBack').onclick=close;$('fAgain').onclick=()=>{close();startForest(ai)}};
  const take=p=>{fScene.remove(p.o);if(p.k==='box'){blip(700);blip(1100,0.08,0.1);for(let i=0;i<3;i++)gain(A.mat,p.o);if(ai>0&&rnd()<0.5)gain(AREAS[rnd()*ai|0].mat,p.o);pop('📦✨',p.o,'#e0902a')}else gain(p.k,p.o)};
@@ -740,7 +740,7 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
  FR={tick,tap};info('')}
 // 森の 間は お店の 画面を さわれない（タップは ひかる たまを ひろうだけ）
 for(const ev of ['pointerdown','pointerup','pointermove','wheel'])addEventListener(ev,e=>{if(!FR||e.target!==renderer.domElement)return;e.stopImmediatePropagation();if(ev==='pointerdown')FR.tap(e)},{capture:true});
-document.getElementById('forestBtn').onclick=openForest;
+document.getElementById('forestBtn').onclick=()=>{closeSheet();startForest(Math.min(S.fclear||0,AREAS.length-1))};
 // ================= 1日 =================
 // 毎朝：その日の にんきの しなもの と もくひょう を きめる
 // きせつの 行事は ほんとうの 日づけで きまる
