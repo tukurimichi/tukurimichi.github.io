@@ -46,11 +46,14 @@ button:active{transform:scale(.94)}
 #fHud .ftop{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:6px 12px;border-radius:16px;max-width:94vw;z-index:6}
 #fHud .fbarw{width:120px;height:10px;background:#0002;border-radius:6px;overflow:hidden}#fHud .fbarw i{display:block;height:100%;width:0}
 #fHud #fQuit{padding:2px 10px}
-#fInfo{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);padding:8px 14px;border-radius:16px;text-align:center;width:max-content;max-width:92vw;z-index:6}
+#fTiles{position:fixed;left:8px;right:8px;bottom:8px;display:flex;gap:6px;z-index:6}
+#fTiles button{flex:1;padding:6px 2px;border-radius:14px;background:#fff7ee;box-shadow:0 2px 8px #0003;display:flex;flex-direction:column;align-items:center;line-height:1.15;font-size:12px}
+#fTiles button b{font-size:22px}#fTiles button.ok{box-shadow:0 0 0 3px #8fd19e,0 2px 8px #0003}#fTiles button:disabled{opacity:.45}
+#fInfo{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);padding:8px 14px;border-radius:16px;text-align:center;width:max-content;max-width:92vw;z-index:6}
 #fInfo:empty{display:none}
 #fLvBox{position:fixed;left:10px;top:60px;padding:6px 10px;border-radius:14px;display:flex;gap:6px;align-items:center;z-index:6}
 .fxpw{width:70px;height:8px;background:#0002;border-radius:5px;overflow:hidden}.fxpw i{display:block;height:100%;background:#7cc8f0;width:0}
-#fSp{position:fixed;right:14px;bottom:90px;width:76px;height:76px;border-radius:50%;padding:0;overflow:hidden;background:#fff7ee;box-shadow:0 3px 12px #0003;z-index:6;opacity:.6}
+#fSp{position:fixed;right:14px;bottom:140px;width:76px;height:76px;border-radius:50%;padding:0;overflow:hidden;background:#fff7ee;box-shadow:0 3px 12px #0003;z-index:6;opacity:.6}
 #fSp i{position:absolute;left:0;right:0;bottom:0;background:#ffd166;height:0}#fSp span{position:relative;font-size:24px;line-height:1}#fSp small{font-size:10px;font-weight:bold}
 #fSp.ready{opacity:1;animation:fpulse .6s infinite alternate;box-shadow:0 0 0 4px #ff9a1a,0 3px 16px #ff9a1a}
 @keyframes fpulse{to{transform:scale(1.1)}}
@@ -95,9 +98,10 @@ body.kid #hint{display:none}
 <button id="saleBtn" style="position:fixed;right:10px;bottom:84px;display:none;background:#ff8f80;color:#fff;font-weight:bold;padding:10px 14px;border-radius:99px;box-shadow:0 3px 12px #0003"></button>
 <button id="helpBtn"></button>
 <button id="forestBtn">🌲</button>
-<div id="fHud"><div class="ftop glass"><b id="fTitle"></b><span id="fHearts"></span><div class="fbarw"><i id="fBar"></i></div><small id="fBarTxt"></small><button id="fQuit">✕</button></div><div id="fInfo" class="glass"></div>
+<div id="fHud"><div class="ftop glass"><b id="fTitle"></b><span id="fHearts"></span><b id="fMoney"></b><div class="fbarw"><i id="fBar"></i></div><small id="fBarTxt"></small><button id="fQuit">✕</button></div><div id="fInfo" class="glass"></div>
 <div id="fLvBox" class="glass"><b id="fLv">Lv1</b><div class="fxpw"><i id="fXp"></i></div></div>
 <button id="fSp"><i id="fSpBar"></i><span>💥<br><small>ひっさつ</small></span></button>
+<div id="fTiles"><button data-u="pow"></button><button data-u="spd"></button><button data-u="mon"></button></div>
 <div id="fCards"></div><div id="fBanner"></div></div>
 <div id="mini"><div class="box"><div id="miniTitle" style="font-weight:bold;font-size:16px"></div><canvas id="miniCv" width="400" height="460"></canvas><div id="miniInfo"></div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
@@ -532,7 +536,7 @@ const fHave=k=>{const b=fBag()[k];return b[0]+b[1]+b[2]};
 function fTake(k){const b=fBag()[k];for(let r=2;r>=0;r--)if(b[r]>0){b[r]--;return r}return -1}
 // 3つ そろうと 1つ上へ（森でも 作業台でも おなじ）
 function fMerge(k){const b=fBag()[k];let up=0;for(let r=0;r<2;r++)while(b[r]>=3){b[r]-=3;b[r+1]++;up=r+1}return up}
-const fPet=()=>{S.fpet=S.fpet||{pow:1,spd:1};return S.fpet};
+const fPet=()=>{S.fpet=S.fpet||{pow:1,spd:1};S.fpet.mon=S.fpet.mon||1;return S.fpet};
 const upCost=lv=>150*lv;
 function openForest(){$('sheet').style.display='block';const P=fPet(),b=fBag(),cl=S.fclear||0;
  const pe=S.pet?PETS[S.pet.kind].e:'🐱',pn=S.pet?S.pet.name:L('もりの ねこ','Forest cat');
@@ -682,6 +686,9 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
    const to=tgt?tgt.o.position.clone():new THREE.Vector3((rnd()-.5)*5,0,(rnd()-.5)*8);shots.push({o,tg:tgt||{o:{position:to},dummy:1},t:-i*0.05,from:to.clone().add(new THREE.Vector3((rnd()-.5)*2,9,-2)),sp:1})}
   for(let i=0;i<5;i++)blip(500+i*120,0.08,i*0.06)};
  $('fSp').onclick=special;
+ const TIL={pow:['💪',()=>pow*=1+0.6/(1+(P.pow-2)*0.6)],spd:['⚡',()=>rate*=1+0.2/(1+(P.spd-2)*0.2)],mon:['💰',()=>{}]};
+ const paintTiles=()=>{document.querySelectorAll('#fTiles button').forEach(b=>{const k=b.dataset.u,c=upCost(P[k]);b.innerHTML=`<b>${TIL[k][0]}</b>Lv${P[k]}<small>${yen(c)}</small>`;b.disabled=S.money<c;b.classList.toggle('ok',S.money>=c)})};
+ document.querySelectorAll('#fTiles button').forEach(b=>b.onclick=()=>{const k=b.dataset.u,c=upCost(P[k]);if(S.money<c||done)return;S.money-=c;P[k]++;TIL[k][1]();blip(990);blip(1320,0.06,0.08);puff(pet.position.clone().add(new THREE.Vector3(0,1,0)),'#8fd19e',12);pop(TIL[k][0]+'⬆',pet,'#2e9e5b');save();paintTiles()});paintTiles();let tileT=0;
  let t=0,done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0,scroll=0,shake=0,mvSpd=3.2,camX=0,drag=null,idleT=0,wander=new THREE.Vector3(0,0,2);
  const bugs=[],shots=[],pick=[],pops=[],puffs=[],got={};
  // 見えている 広さ（毎フレーム カメラから きめる）
@@ -783,11 +790,13 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
     if(cr){pop(L('クリティカル！','CRITICAL!'),tgt.o,'#ff9a1a');hs=Math.max(hs,0.07);shake=Math.max(shake,0.15);blip(1800,0.07);blip(2200,0.05,0.05)}else{pop('-'+(Math.round(dmg*10)/10),tgt.o,'#c0605a');blip(1200,0.05)}
     if(tgt.hp<=0){if(tgt===boss){hs=0.6;shake=0.8;banner(L('やったー！','You did it!'),'#ffd166');finish(true);continue}bugs.splice(bugs.indexOf(tgt),1);puff(tgt.o.position,'#ffffff',10);fScene.remove(tgt.o);
      combo++;comboT=1.6;if(combo>=2)pop(`${combo} ${L('コンボ！','combo!')}`,pet,combo>=5?'#ff6a5a':'#ff9a1a');if(combo===5||combo===10){blip(1320,0.08);newPick(A.mat,tgt.o.position.x,tgt.o.position.z)}
+     {const cn=(tgt.gold?10:2)*P.mon;S.money+=cn;S.today.sale+=0;pop('+'+yen(cn),tgt.o,'#d69a10');blip(1700,0.03)}
      gauge=Math.min(1,gauge+(tgt.gold?0.5:0.12));xp+=tgt.gold?3:1;
      if(tgt.gold)for(let k=0;k<4;k++)newPick(A.mat,tgt.o.position.x+(rnd()-.5)*1.2,tgt.o.position.z+(rnd()-.5)*1.2);
      if(xp>=need&&!done){xp-=need;levelUp()}
      if(rnd()<0.4)newPick(A.mat,tgt.o.position.x,tgt.o.position.z)}}}
   // HUD
+  tileT-=dt0;if(tileT<=0){tileT=0.4;paintTiles();$('fMoney').textContent='💰'+yen(S.money)}
   $('fLv').textContent='Lv'+lv;$('fXp').style.width=Math.min(1,xp/need)*100+'%';
   $('fSpBar').style.height=gauge*100+'%';$('fSp').classList.toggle('ready',gauge>=1);
   $('fHearts').textContent='❤️'.repeat(Math.max(0,hearts))+'🤍'.repeat(5-Math.max(0,hearts));
