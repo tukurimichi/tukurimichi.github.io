@@ -41,6 +41,7 @@ button:active{transform:scale(.94)}
 #mini{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:20}
 #mini .box{background:#fff7ee;border-radius:20px;padding:12px;text-align:center;width:min(92vw,420px)}
 #mini canvas{width:100%;height:auto;border-radius:14px;background:#cfeaf7;touch-action:none;display:block;margin:8px 0}
+#forestBtn{position:fixed;left:10px;bottom:134px;background:#8fd19e;color:#fff;font-weight:bold;padding:10px 14px;border-radius:99px;box-shadow:0 3px 12px #0003;z-index:5}
 #helpBtn{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;display:none;background:#ffd166;box-shadow:0 3px 12px #0003;font-weight:bold;padding:10px 18px;border-radius:99px}
 #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .big{background:#ffd9c7}
@@ -63,6 +64,7 @@ button:active{transform:scale(.94)}
 <div id="toast" class="glass"></div>
 <button id="saleBtn" style="position:fixed;right:10px;bottom:84px;display:none;background:#ff8f80;color:#fff;font-weight:bold;padding:10px 14px;border-radius:99px;box-shadow:0 3px 12px #0003"></button>
 <button id="helpBtn"></button>
+<button id="forestBtn">🌲</button>
 <div id="mini"><div class="box"><div id="miniTitle" style="font-weight:bold;font-size:16px"></div><canvas id="miniCv" width="400" height="460"></canvas><div id="miniInfo"></div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -92,9 +94,18 @@ const ITEMS={
  juice:{en:'Apple juice',n:'りんごジュース',e:'🧃',cost:0,base:260,star:99,craft:['apple','milk']},
  pie:{en:'Apple pie',n:'アップルパイ',e:'🥧',cost:0,base:360,star:99,craft:['bread','apple']},
  gift:{en:'Gift set',n:'プレゼント',e:'🎁',cost:0,base:1100,star:99,craft:['flower','toy']},
- parfait:{en:'Parfait',n:'パフェ',e:'🍨',cost:0,base:520,star:99,craft:['cake','milk']}};
+ parfait:{en:'Parfait',n:'パフェ',e:'🍨',cost:0,base:520,star:99,craft:['cake','milk']},
+ bcake:{en:'Berry cake',n:'ベリーケーキ',e:'🎂',cost:0,base:560,star:99,craft:['cake','f_berry']},
+ bjam:{en:'Berry bread',n:'ベリーパン',e:'🥯',cost:0,base:300,star:99,craft:['bread','f_berry']},
+ soup:{en:'Mushroom soup',n:'きのこスープ',e:'🍲',cost:0,base:380,star:99,craft:['milk','f_mush']},
+ hbread:{en:'Honey toast',n:'はちみつトースト',e:'🍯',cost:0,base:420,star:99,craft:['bread','f_honey']},
+ happle:{en:'Honey apple',n:'はちみつりんご',e:'🍏',cost:0,base:340,star:99,craft:['apple','f_honey']}};
+// 森で ひろう 材料（お店の たなには おかない。つくる だけに つかう）
+const FMAT={f_berry:{n:'ベリー',en:'Berries',e:'🫐'},f_mush:{n:'きのこ',en:'Mushrooms',e:'🍄'},f_honey:{n:'はちみつ',en:'Honey',e:'🍯'}};
+const IE=k=>ITEMS[k]||FMAT[k];
+const RANKN=['','★','🌟'];
 // 日もち（何日目の夜まで おけるか）。パン・ケーキ・お花は その日のうち
-const LIFE={bread:1,cake:1,flower:1,apple:2,milk:2,toy:99,juice:1,pie:1,gift:99,parfait:1};
+const LIFE={bread:1,cake:1,flower:1,apple:2,milk:2,toy:99,juice:1,pie:1,gift:99,parfait:1,bcake:1,bjam:1,soup:1,hbread:1,happle:2};
 const nm=it=>L(it.n,it.en);
 const costNow=k=>Math.round(ITEMS[k].cost*((S.ev&&S.ev.cost&&S.ev.cost[k])||1));
 const saleOn=sh=>S.sale&&LIFE[sh.item]<=1;
@@ -331,7 +342,7 @@ function dueReq(){return (S.reqs||[]).find(q=>q.day===S.day&&!q.came)}
 function spawn(forceReq,startPos,forceKind){if(guests.length>=8)return;S.book=S.book||{};S.regs=S.regs||[];
  // 常連さんは ときどき また来る（同じ見た目）
  let reg=null;const rq=forceReq||null;if(rq){reg=S.regs.find(r=>r.name===rq.name)||null;rq.came=1}
- const regsOK=S.regs.filter(r=>!guests.some(g=>g.reg===r)&&(KINDS[r.kind].star||0)<=S.star);if(!reg&&regsOK.length&&rnd()<0.3)reg=regsOK[rnd()*regsOK.length|0];
+ const regsOK=S.regs.filter(r=>!guests.some(g=>g.reg===r)&&(r.forest||(KINDS[r.kind].star||0)<=S.star));if(!reg&&regsOK.length&&rnd()<0.3)reg=regsOK[rnd()*regsOK.length|0];
  const kind=reg?reg.kind:forceKind||pickKind(),K=KINDS[kind],want=rq?rq.item:K.priciest?priciest()||pickWant(kind):pickWant(kind);const p=makeCustomer(kind,reg?reg.seed:rnd()*1e9|0);
  if((S.weather==='rain'||S.weather==='snow')&&kind!=='cat'&&kind!=='bear'){const um=new THREE.Group();const top=mesh(G('umb',()=>new THREE.ConeGeometry(0.42,0.22,10,1,true)),new THREE.MeshStandardMaterial({color:BODY[rnd()*6|0],side:THREE.DoubleSide,roughness:0.8}),0,0,0);um.add(top);
   um.add(mesh(G('umbs',()=>new THREE.CylinderGeometry(0.012,0.012,0.6,6)),M('#5a4a3c'),0,-0.3,0));um.position.set(0.12,p.userData.P.h+0.05,0);p.add(um);p.userData.P.umb=um}
@@ -477,6 +488,109 @@ function startMini(){if(!canHelp())return;if(S.helpDay!==S.day){S.helpDay=S.day;
  requestAnimationFrame(frame)}
 document.getElementById('helpBtn').onclick=startMini;
 document.getElementById('saleBtn').onclick=()=>{if(S.sale)return;S.sale=true;blip(700);blip(900,0.08,0.1);toast(L('🏷️ タイムセール！<br>パン・ケーキ・お花などが はんがく。うりきって すてる 分を へらそう','🏷️ Time sale!<br>Today-only goods are half price'));for(const o of shelfObjs.values())drawGoods(o);hud();save()};
+// ================= 森の たんけん（2026-11-01。三者会議：ペットが じどうで すすむ・3つで 合体・ボスで 森の 常連）=================
+const AREAS=[
+ {ja:'もりの いりぐち',en:'Forest edge',bg:'#cfeec0',gr:'#7cbf6a',mat:'f_berry',bugs:['🐛','🐌'],hp:2,boss:{e:'🐗',ja:'いたずら いのしし',en:'Naughty boar',hp:25},friend:{kind:'bear',ja:'くまの もりお',en:'Morio the bear'}},
+ {ja:'きのこの もり',en:'Mushroom woods',bg:'#e3d6f2',gr:'#9a7fc4',mat:'f_mush',bugs:['🐜','🕷️'],hp:5,boss:{e:'🦇',ja:'おおこうもり',en:'Big bat',hp:80},friend:{kind:'cat',ja:'のらねこの ちゃちゃ',en:'Chacha the stray'}},
+ {ja:'はちみつの やま',en:'Honey hill',bg:'#fff0c2',gr:'#e0b04a',mat:'f_honey',bugs:['🐝','🐞'],hp:10,boss:{e:'🦂',ja:'おおさそり',en:'Giant scorpion',hp:200},friend:{kind:'wizard',ja:'もりの まほうつかい',en:'Forest wizard'}}];
+function fBag(){S.fbag=S.fbag||{};for(const k in FMAT)S.fbag[k]=S.fbag[k]||[0,0,0];return S.fbag}
+const fHave=k=>{const b=fBag()[k];return b[0]+b[1]+b[2]};
+function fTake(k){const b=fBag()[k];for(let r=2;r>=0;r--)if(b[r]>0){b[r]--;return r}return -1}
+// 3つ そろうと 1つ上へ（森でも 作業台でも おなじ）
+function fMerge(k){const b=fBag()[k];let up=0;for(let r=0;r<2;r++)while(b[r]>=3){b[r]-=3;b[r+1]++;up=r+1}return up}
+const fPet=()=>{S.fpet=S.fpet||{pow:1,spd:1};return S.fpet};
+const upCost=lv=>150*lv;
+function openForest(){$('sheet').style.display='block';const P=fPet(),b=fBag(),cl=S.fclear||0;
+ const pe=S.pet?PETS[S.pet.kind].e:'🐱',pn=S.pet?S.pet.name:L('もりの ねこ','Forest cat');
+ $('sheet').innerHTML=`<h3>🌲 ${L('森へ たんけんに いこう','Go exploring')}</h3>
+ <div class="row" style="font-size:12px;opacity:.8">${L(`${pe}${pn}が じどうで すすんで むしを おいはらうよ。ひろった ざいりょうは 「つくる」で つかえる`,`${pe}${pn} walks on and shoos bugs. Use what you find in "Make"`)}</div>
+ <div class="items" style="grid-template-columns:1fr">${AREAS.map((a,i)=>`<button data-a="${i}" ${i>cl?'disabled':''} style="flex-direction:row;gap:10px;justify-content:flex-start;padding:10px"><span class="e">${i>cl?'🔒':a.boss.e}</span><span style="text-align:left">${L(a.ja,a.en)}　${FMAT[a.mat].e}<br><small>${i<cl?L('✅ ボスを たおした','✅ Boss beaten'):i===cl?L('ボス：','Boss: ')+L(a.boss.ja,a.boss.en):L('まえの ボスを たおすと いける','Beat the last boss first')}</small></span></button>`).join('')}</div>
+ <div class="row"><b>🎒 ${L('ざいりょう','Materials')}</b> ${Object.keys(FMAT).map(k=>`${FMAT[k].e} ${b[k][0]}・★${b[k][1]}・🌟${b[k][2]}`).join('　')}</div>
+ <div class="row"><button id="fMerge">🔨 ${L('3つで 合体（★→🌟）','Merge 3 → 1 up')}</button></div>
+ <div class="row"><b>${pe} ${L('つよくする','Train')}</b>
+  <button id="upP" ${S.money<upCost(P.pow)?'disabled style="opacity:.4"':''}>💪 ${L('ちから','Power')} Lv${P.pow} → ${yen(upCost(P.pow))}</button>
+  <button id="upS" ${S.money<upCost(P.spd)?'disabled style="opacity:.4"':''}>👟 ${L('はやさ','Speed')} Lv${P.spd} → ${yen(upCost(P.spd))}</button></div>
+ <div class="row"><button id="close">${L('とじる','Close')}</button></div>`;
+ $('sheet').querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{closeSheet();startForest(+x.dataset.a)});
+ $('fMerge').onclick=()=>{let up=0;for(const k in FMAT)up=Math.max(up,fMerge(k));if(up){blip(880);blip(1320,0.08,0.1);toast(L('✨ 合体した！','✨ Merged!'))}else toast(L('おなじ ものが 3つ いるよ','You need 3 of the same'));save();openForest()};
+ const up=key=>{const c=upCost(P[key]);if(S.money<c)return;S.money-=c;P[key]++;blip(990);blip(1320,0.06,0.08);save();hud();openForest()};
+ $('upP').onclick=()=>up('pow');$('upS').onclick=()=>up('spd');$('close').onclick=closeSheet}
+function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;const prevSpeed=ui.speed;ui.speed=0;paintHelp();$('mini').style.display='flex';
+ const pe=S.pet?PETS[S.pet.kind].e:'🐱';
+ $('miniTitle').textContent=L(`🌲 ${A.ja}`,`🌲 ${A.en}`);
+ const cv=$('miniCv');cv.width=480;cv.height=300;const x=cv.getContext('2d'),W=480,H=300,GY=230,PX=80;
+ const pow=1+(P.pow-1)*0.6,rate=1.4*(1+(P.spd-1)*0.2);
+ let t=0,last=performance.now(),done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0;
+ const bugs=[],shots=[],pick=[],pops=[],trees=[...Array(8)].map((_,i)=>({x:i*70+rnd()*30,s:0.7+rnd()*0.6}));
+ const got={};
+ const pop=(txt,px,py,col='#e8606a')=>pops.push({txt,x:px,y:py,t:0,col});
+ const gain=(k,px,py)=>{const b=fBag()[k];b[0]++;got[k]=(got[k]||0)+1;blip(1000+rnd()*300,0.06);pop(FMAT[k].e+'+1',px,py,'#3a8a4a');const up=fMerge(k);if(up){blip(880);blip(1320,0.08,0.1);navigator.vibrate?.([10,30,10]);pop(`✨ ${FMAT[k].e}${RANKN[up]}に なった！`,PX+60,GY-90,'#e0902a')}};
+ // わかれみち：ざいりょうの みち か むしの みち（むしが 多いけど たからばこ）
+ const fork=()=>{road='wait';forks++;$('miniInfo').innerHTML=`<div style="margin-bottom:4px">${L('わかれみち！ どっちに いく？','A fork! Which way?')}</div><div class="row" style="justify-content:center"><button class="big" id="rdA">${FMAT[A.mat].e} ${L('ざいりょうの みち','Material path')}</button><button class="big" id="rdB">📦 ${L('むしの みち（たからばこ）','Bug path (treasure)')}</button></div>`;
+  $('rdA').onclick=()=>{road='mat';forkAt=t+12};$('rdB').onclick=()=>{road='bug';forkAt=t+12;pick.push({x:W+200,y:GY-20,e:'📦',k:'box'})}};
+ const finish=win=>{done=true;let msg='';
+  if(win&&ai===(S.fclear||0)){S.fclear=ai+1;const f=A.friend;S.regs=S.regs||[];if(!S.regs.some(r=>r.name===f.ja))S.regs.push({name:L(f.ja,f.en),kind:f.kind,seed:rnd()*1e6|0,visits:0,forest:1});
+   msg=L(`<br>🎉 ${A.boss.ja}を おいはらった！<br>${f.ja}が お店に 来るように なったよ${ai<AREAS.length-1?'<br>つぎの 森に いけるように なった':''}`,`<br>🎉 You beat the ${A.boss.en}!<br>${f.en} will visit your shop`)}
+  else if(win)msg=L('<br>🎉 ボスを また おいはらった！','<br>🎉 Boss beaten again!');
+  else if(boss)msg=L('<br>💦 ボスに にげられた… ちからを つよくして また こよう','<br>💦 The boss got away... train up and try again');
+  if(win){fBag()[A.mat][1]++;fMerge(A.mat);got.bonus=1}
+  const list=Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join('　')||L('なし','nothing');
+  save();$('miniInfo').innerHTML=L(`🎒 もちかえり：${list}${win?'　＋'+FMAT[A.mat].e+'★':''}`,`🎒 Brought back: ${list}`)+msg+`<br><small>${L('「つくる」で お店の しなものに できるよ','Use them in "Make"')}</small><div class="row" style="justify-content:center"><button class="big" id="fAgain">🌲 ${L('もういちど','Again')}</button><button id="fBack">${L('お店に もどる','Back to shop')}</button></div>`;
+  const close=()=>{$('mini').style.display='none';miniOn=false;cv.onpointerdown=null;cv.width=400;cv.height=460;ui.speed=prevSpeed||1;paintHelp();hud()};
+  $('fBack').onclick=close;$('fAgain').onclick=()=>{close();startForest(ai)}};
+ // タップで ざいりょうを はやめに ひろえる
+ cv.onpointerdown=e=>{const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width,py=(e.clientY-r.top)*H/r.height;
+  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(Math.hypot(px-p.x,py-p.y)<36){pick.splice(i,1);take(p);return}}};
+ const take=p=>{if(p.k==='box'){blip(700);blip(1100,0.08,0.1);for(let i=0;i<3;i++)gain(A.mat,p.x,p.y-i*20);if(ai>0&&rnd()<0.5)gain(AREAS[rnd()*ai|0].mat,p.x,p.y-70);pop('📦✨',p.x,p.y-40,'#e0902a')}else gain(p.k,p.x,p.y)};
+ function frame(now){if(done)return;const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const moving=road!=='wait'&&!boss&&!bugs.some(b=>b.x<PX+50);
+  if(road!=='wait')t+=dt;
+  if(moving)dist+=dt;
+  const sc=moving?90*dt:0;
+  // むし・ざいりょうを 出す
+  if(!boss&&road!=='wait'){spawnT-=dt;if(spawnT<=0){const bugRate=road==='bug'?0.55:1.0;
+    if(rnd()<(road==='mat'?0.35:0.6))bugs.push({x:W+20,y:GY-14,e:A.bugs[rnd()*A.bugs.length|0],hp:A.hp,max:A.hp,v:30+rnd()*20,fly:rnd()<0.3});
+    else pick.push({x:W+20,y:GY-30-rnd()*70,e:FMAT[A.mat].e,k:A.mat});
+    if(road==='mat'&&rnd()<0.5)pick.push({x:W+60,y:GY-30-rnd()*70,e:FMAT[A.mat].e,k:A.mat});
+    spawnT=bugRate*(0.9+rnd()*0.6)}}
+  if(road!=='wait'&&!boss&&t>=forkAt&&forks<2)fork();
+  if(!boss&&dist>=36&&road!=='wait'){boss={x:W+60,y:GY-40,hp:A.boss.hp,max:A.boss.hp,e:A.boss.e,v:25};bossT=25;bugs.length=0;blip(220,0.15);blip(180,0.15,0.15);$('miniInfo').innerHTML=L(`⚠️ ${A.boss.ja}が でた！`,`⚠️ ${A.boss.en} appeared!`)}
+  // うごかす
+  for(const tr of trees){tr.x-=sc*0.5;if(tr.x<-60)tr.x+=W+120}
+  for(const p of pick)p.x-=sc;
+  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(p.x<PX+20){pick.splice(i,1);take(p)}}
+  for(const b of bugs){b.x-=b.v*dt+sc}
+  for(let i=bugs.length-1;i>=0;i--){const b=bugs[i];if(b.x<PX+16){bugs.splice(i,1);if(hurt<=0){hearts--;hurt=1.2;blip(200,0.12);navigator.vibrate?.(40);pop('💥',PX,GY-60)}}}
+  if(boss){if(boss.x>W-110)boss.x-=boss.v*dt*2;bossT-=dt;if(bossT<=0){finish(false);return}}
+  hurt-=dt;if(hearts<=0){finish(false);return}
+  // ぽこぽこ うつ（いちばん ちかい あいて）
+  shotT-=dt;const tg=boss||bugs.reduce((m,b)=>!m||b.x<m.x?b:m,null);
+  if(tg&&tg.x<W-10&&shotT<=0){shots.push({x:PX+20,y:GY-30,tg});shotT=1/rate;blip(1500,0.03)}
+  for(let i=shots.length-1;i>=0;i--){const s2=shots[i];const tx=s2.tg.x,ty=s2.tg.y-10;const d=Math.hypot(tx-s2.x,ty-s2.y);if(d<16||(!bugs.includes(s2.tg)&&s2.tg!==boss)){shots.splice(i,1);
+    if(s2.tg.hp>0&&(bugs.includes(s2.tg)||s2.tg===boss)){s2.tg.hp-=pow;pop('-'+(Math.round(pow*10)/10),tx,ty-20,'#c0605a');
+     if(s2.tg.hp<=0){if(s2.tg===boss){finish(true);return}bugs.splice(bugs.indexOf(s2.tg),1);blip(1200,0.06);if(rnd()<0.35)pick.push({x:tx,y:GY-40,e:FMAT[A.mat].e,k:A.mat})}}continue}
+   s2.x+=(tx-s2.x)/d*520*dt;s2.y+=(ty-s2.y)/d*520*dt}
+  // かく
+  x.fillStyle=A.bg;x.fillRect(0,0,W,H);
+  x.textAlign='center';x.textBaseline='middle';
+  for(const tr of trees){x.font=`${50*tr.s|0}px sans-serif`;x.fillText(ai===1?'🍄':ai===2?'🌻':'🌳',tr.x,GY-28*tr.s)}
+  x.fillStyle=A.gr;x.fillRect(0,GY,W,H-GY);x.fillStyle='#0001';for(let i=0;i<12;i++){const gx=((i*50-dist*90)%600+600)%600-60;x.fillRect(gx,GY+18,24,6)}
+  x.fillStyle='#000';
+  x.font='30px sans-serif';for(const p of pick){x.fillText(p.e,p.x,p.y+Math.sin(t*4+p.x)*3)}
+  for(const b of bugs){x.font='30px sans-serif';const by=b.fly?b.y-40+Math.sin(t*5+b.x)*8:b.y;b.y2=by;x.save();x.translate(b.x,by);x.scale(-1,1);x.fillText(b.e,0,0);x.restore();if(b.hp<b.max){x.fillStyle='#0003';x.fillRect(b.x-14,by-24,28,4);x.fillStyle='#e85d5d';x.fillRect(b.x-14,by-24,28*b.hp/b.max,4)}}
+  if(boss){x.font='80px sans-serif';x.save();x.translate(boss.x,boss.y+Math.sin(t*3)*4);x.scale(-1,1);x.fillText(boss.e,0,0);x.restore();
+   x.fillStyle='#0003';x.fillRect(W/2-120,16,240,12);x.fillStyle='#e85d5d';x.fillRect(W/2-120,16,240*Math.max(0,boss.hp)/boss.max,12);
+   x.fillStyle='#5a4a3c';x.font='bold 13px sans-serif';x.fillText(`${L(A.boss.ja,A.boss.en)}　⏱ ${Math.ceil(bossT)}`,W/2,40)}
+  x.fillStyle='#000';x.font='22px sans-serif';for(const s2 of shots)x.fillText('🌰',s2.x,s2.y);
+  x.globalAlpha=hurt>0&&((t*10|0)%2)?0.4:1;x.font='44px sans-serif';x.fillText(pe,PX,GY-24+(moving?Math.abs(Math.sin(t*8))*-6:0));x.globalAlpha=1;
+  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;x.globalAlpha=Math.max(0,1-p.t);x.fillStyle=p.col;x.font='bold 18px sans-serif';x.fillText(p.txt,p.x,p.y-p.t*40);x.globalAlpha=1;if(p.t>1.2)pops.splice(i,1)}
+  x.fillStyle='#000';x.font='18px sans-serif';x.textAlign='left';x.fillText('❤️'.repeat(Math.max(0,hearts))+'🤍'.repeat(5-Math.max(0,hearts)),10,20);
+  if(!boss){x.fillStyle='#0002';x.fillRect(10,34,120,6);x.fillStyle='#5a4a3c';x.fillRect(10,34,120*Math.min(1,dist/36),6);x.font='13px sans-serif';x.fillText(L('ボスまで','to boss'),136,38)}
+  x.textAlign='center';
+  if(road!=='wait'&&!boss)$('miniInfo').innerHTML=L(`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'まだ なし'}　<small>（ざいりょうは タッチでも ひろえる）</small>`,`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'nothing yet'}`);
+  requestAnimationFrame(frame)}
+ requestAnimationFrame(frame)}
+document.getElementById('forestBtn').onclick=openForest;
 // ================= 1日 =================
 // 毎朝：その日の にんきの しなもの と もくひょう を きめる
 // きせつの 行事は ほんとうの 日づけで きまる
@@ -647,27 +761,29 @@ function openPet(){$('sheet').style.display='block';
  <div class="row" style="font-size:12px;opacity:.7">${L(`${p.name}を タッチすると なでられるよ`,`Tap ${p.name} to pet`)}</div>`;
  $('feed').onclick=()=>{if(fed||S.money<20)return;S.money-=20;p.fedDay=S.day;p.love=Math.min(100,p.love+10);hearts(petObj.position);blip(990);save();hud();openPet()};$('close').onclick=closeSheet}
 function openMake(a,b){S.recipes=S.recipes||[];$('sheet').style.display='block';
- const have=[...new Set(S.shelves.filter(x=>x.stock>0&&!ITEMS[x.item].craft).map(x=>x.item))];
- const pickBtns=(sel,id)=>have.map(k=>`<button data-${id}="${k}" style="${sel===k?'box-shadow:inset 0 0 0 2px #ff9a76':''}"><span class="e">${ITEMS[k].e}</span>${nm(ITEMS[k])}</button>`).join('');
+ const have=[...new Set(S.shelves.filter(x=>x.stock>0&&!ITEMS[x.item].craft).map(x=>x.item))].concat(Object.keys(FMAT).filter(k=>fHave(k)));
+ const pickBtns=(sel,id)=>have.map(k=>`<button data-${id}="${k}" style="${sel===k?'box-shadow:inset 0 0 0 2px #ff9a76':''}"><span class="e">${IE(k).e}</span>${nm(IE(k))}${FMAT[k]?`<small>🌲${fHave(k)}</small>`:''}</button>`).join('');
  const found=Object.entries(ITEMS).filter(([k,it])=>it.craft);
  $('sheet').innerHTML=`<h3>🧪 ${L('じぶんで つくる','Make something')}</h3>
  <div class="row" style="font-size:12px;opacity:.75">${L('たなの しなものを 2つ えらんで まぜてみよう。1こずつ つかって 2こ できるよ','Pick two goods from your shelves to combine. Uses 1 of each, makes 2')}</div>
  ${have.length<2?`<div class="row">${L('たなに しなものが 2しゅるい いるよ','You need 2 kinds of goods on shelves')}</div>`:`<div class="row"><b>1つめ</b></div><div class="items">${pickBtns(a,'a')}</div><div class="row"><b>2つめ</b></div><div class="items">${pickBtns(b,'b')}</div>
- <div class="row"><button class="big" id="mkGo" ${a&&b&&a!==b?'':'disabled style="opacity:.4"'}>${a?ITEMS[a].e:'？'} ＋ ${b?ITEMS[b].e:'？'} ${L('を まぜる','Combine')}</button></div>`}
- <div class="row"><b>📒 ${L('レシピ','Recipes')}</b> ${found.map(([k,it])=>S.recipes.includes(k)?`${ITEMS[it.craft[0]].e}+${ITEMS[it.craft[1]].e}=${it.e}`:'？+？=？').join('　')}</div>
+ <div class="row"><button class="big" id="mkGo" ${a&&b&&a!==b?'':'disabled style="opacity:.4"'}>${a?IE(a).e:'？'} ＋ ${b?IE(b).e:'？'} ${L('を まぜる','Combine')}</button></div>`}
+ <div class="row"><b>📒 ${L('レシピ','Recipes')}</b> ${found.map(([k,it])=>S.recipes.includes(k)?`${IE(it.craft[0]).e}+${IE(it.craft[1]).e}=${it.e}`:'？+？=？').join('　')}</div>
  <div class="row"><button id="close">${L('とじる','Close')}</button></div>`;
  $('sheet').querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>openMake(x.dataset.a,b));$('sheet').querySelectorAll('[data-b]').forEach(x=>x.onclick=()=>openMake(a,x.dataset.b));
  $('close').onclick=closeSheet;const go=$('mkGo');if(go)go.onclick=()=>doMake(a,b)}
-function takeOne(k){const sh=S.shelves.find(x=>x.item===k&&x.stock>0);if(!sh)return false;sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);return true}
-function doMake(a,b){const hit=Object.entries(ITEMS).find(([k,it])=>it.craft&&((it.craft[0]===a&&it.craft[1]===b)||(it.craft[0]===b&&it.craft[1]===a)));
- if(!takeOne(a)||!takeOne(b)){toast(L('しなものが たりないよ','Not enough goods'));return}
+function takeOne(k){if(FMAT[k]){const r=fTake(k);if(r<0)return false;lastRank=Math.max(lastRank,r);return true}const sh=S.shelves.find(x=>x.item===k&&x.stock>0);if(!sh)return false;sh.stock--;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o);return true}
+let lastRank=0;
+function doMake(a,b){lastRank=0;const hit=Object.entries(ITEMS).find(([k,it])=>it.craft&&((it.craft[0]===a&&it.craft[1]===b)||(it.craft[0]===b&&it.craft[1]===a)));
+ if(!(FMAT[a]?fHave(a):S.shelves.some(x=>x.item===a&&x.stock>0))||!(FMAT[b]?fHave(b):S.shelves.some(x=>x.item===b&&x.stock>0))||!takeOne(a)||!takeOne(b)){toast(L('しなものが たりないよ','Not enough goods'));return}
  if(!hit){blip(300);toast(L('💨 ぼふん… うまく まざらなかった','💨 Poof... that didn\'t work'));openMake();save();return}
  const [k,it]=hit;const isNew=!(S.recipes||[]).includes(k);if(isNew)S.recipes.push(k);
  let sh=S.shelves.find(x=>x.item===k);
- if(sh){if(!sh.stock)sh.born=S.day;sh.stock+=2;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o)}
+ const mk=2+lastRank*2;
+ if(sh){if(!sh.stock)sh.born=S.day;sh.stock+=mk;const o=shelfObjs.get(sh.slot);if(o)drawGoods(o)}
  blip(880);blip(1320,0.08,0.12);navigator.vibrate?.([10,40,10]);
- toast(L(`✨ ${it.e} ${it.n}が できた！${isNew?'<br>あたらしい レシピを みつけた！':''}${sh?'':'<br>「たなを おく」で '+it.n+'の たなを おくと うれるよ（つくった 2こは たなに いれた ことに するね）'}`,`✨ Made ${it.en}!${isNew?'<br>New recipe found!':''}${sh?'':'<br>Place a shelf for it to sell'}`),3600);
- if(!sh)S.pendingMade=(S.pendingMade||{}),S.pendingMade[k]=(S.pendingMade[k]||0)+2;
+ toast(L(`✨ ${it.e} ${it.n}が ${mk}こ できた！${lastRank?'（'+RANKN[lastRank]+'の ざいりょうで たくさん！）':''}${isNew?'<br>あたらしい レシピを みつけた！':''}${sh?'':'<br>「たなを おく」で '+it.n+'の たなを おくと うれるよ（つくった '+mk+'こは たなに いれた ことに するね）'}`,`✨ Made ${it.en}!${isNew?'<br>New recipe found!':''}${sh?'':'<br>Place a shelf for it to sell'}`),3600);
+ if(!sh)S.pendingMade=(S.pendingMade||{}),S.pendingMade[k]=(S.pendingMade[k]||0)+mk;
  hud();save();openMake()}
 function closeSheet(){$('sheet').style.display='none';ui.sel=null;markSel();save()}
 const dock=$('dock');
@@ -715,7 +831,7 @@ function hint(){if(letters.length)return L('💌 おてがみが おちてるよ
  const empty=S.shelves.find(s=>s.stock===0);if(empty)return L(`📦 ${nm(ITEMS[empty.item])}の たなが からっぽ！ たなを タッチして しいれよう`,`📦 The ${nm(ITEMS[empty.item])} shelf is empty. Tap it to restock.`);
  if(S.day===1)return L(`🏪 あなたは 小さな お店の てんちょう。たなを タッチすると、しなものを かったり、ねだんを きめたり できるよ。夜に お店の やちん ${yen(rentNow())}を はらうよ`,`🏪 You run a tiny shop. Tap a shelf to restock and set prices. Rent of ${yen(rentNow())} is due each night.`);
  return S.msgs||L('お客さんの ふきだしは ほしい もの。ない ものが 多かったら、あたらしい たなを おいてみよう','Speech bubbles show what customers want. If you keep missing items, add a shelf.')}
-function hud(){$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
+function hud(){const fb=$('forestBtn');if(fb)fb.textContent='🌲 '+L('森へ','Forest');$('money').textContent=yen(S.money);$('star').textContent=S.star+L(`（ファン ${S.fans}人）`,` (${S.fans} fans)`);
  const hr=8+Math.floor(S.t/DAY_SEC*12);$('day').textContent=L(`${S.day}日目 ${hr}:00`,`Day ${S.day} ${hr}:00`);$('langBtn').textContent=lang==='ja'?'EN':'日本語';const rqs=(S.reqs||[]).filter(q=>!q.done&&q.day>=S.day);$('goalPill').textContent=(S.weather?WEATHER[S.weather].e+' ':'')+(rqs.length?rqs.map(q=>`📝${q.name} ${q.day===S.day?L('きょう','today'):L('あした','tmrw')} ${ITEMS[q.item].e}×${q.n}`).join(' ')+'　':'')+(S.goal?`${ITEMS[S.pop]?ITEMS[S.pop].e:''}${L('にんき','hot')}・🎯 ${goalText()} ${goalProg()}`:'');$('speed').textContent=['⏸','▶','⏩'][ui.speed];$('hint').textContent=hint();paintHelp()}
 
 // ================= ループ =================
