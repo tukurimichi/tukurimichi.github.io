@@ -42,6 +42,14 @@ button:active{transform:scale(.94)}
 #mini .box{background:#fff7ee;border-radius:20px;padding:12px;text-align:center;width:min(92vw,420px)}
 #mini canvas{width:100%;height:auto;border-radius:14px;background:#cfeaf7;touch-action:none;display:block;margin:8px 0}
 #forestBtn{position:fixed;left:10px;bottom:134px;background:#8fd19e;color:#fff;font-weight:bold;padding:10px 14px;border-radius:99px;box-shadow:0 3px 12px #0003;z-index:5}
+#fHud{display:none}
+#fHud .ftop{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:6px 12px;border-radius:16px;max-width:94vw;z-index:6}
+#fHud .fbarw{width:120px;height:10px;background:#0002;border-radius:6px;overflow:hidden}#fHud .fbarw i{display:block;height:100%;width:0}
+#fHud #fQuit{padding:2px 10px}
+#fInfo{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);padding:8px 14px;border-radius:16px;text-align:center;width:max-content;max-width:92vw;z-index:6}
+#fInfo:empty{display:none}
+body.forest #dock,body.forest #sheet,body.forest #forestBtn,body.forest #saleBtn,body.forest #helpBtn,body.forest #hint,body.forest #back,body.forest .top,body.forest #top{display:none!important}
+body.forest #fHud{display:block}
 #helpBtn{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;display:none;background:#ffd166;box-shadow:0 3px 12px #0003;font-weight:bold;padding:10px 18px;border-radius:99px}
 #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .big{background:#ffd9c7}
@@ -65,6 +73,7 @@ button:active{transform:scale(.94)}
 <button id="saleBtn" style="position:fixed;right:10px;bottom:84px;display:none;background:#ff8f80;color:#fff;font-weight:bold;padding:10px 14px;border-radius:99px;box-shadow:0 3px 12px #0003"></button>
 <button id="helpBtn"></button>
 <button id="forestBtn">🌲</button>
+<div id="fHud"><div class="ftop glass"><b id="fTitle"></b><span id="fHearts"></span><div class="fbarw"><i id="fBar"></i></div><small id="fBarTxt"></small><button id="fQuit">✕</button></div><div id="fInfo" class="glass"></div></div>
 <div id="mini"><div class="box"><div id="miniTitle" style="font-weight:bold;font-size:16px"></div><canvas id="miniCv" width="400" height="460"></canvas><div id="miniInfo"></div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -515,81 +524,156 @@ function openForest(){$('sheet').style.display='block';const P=fPet(),b=fBag(),c
  $('fMerge').onclick=()=>{let up=0;for(const k in FMAT)up=Math.max(up,fMerge(k));if(up){blip(880);blip(1320,0.08,0.1);toast(L('✨ 合体した！','✨ Merged!'))}else toast(L('おなじ ものが 3つ いるよ','You need 3 of the same'));save();openForest()};
  const up=key=>{const c=upCost(P[key]);if(S.money<c)return;S.money-=c;P[key]++;blip(990);blip(1320,0.06,0.08);save();hud();openForest()};
  $('upP').onclick=()=>up('pow');$('upS').onclick=()=>up('spd');$('close').onclick=closeSheet}
-function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;const prevSpeed=ui.speed;ui.speed=0;paintHelp();$('mini').style.display='flex';
- const pe=S.pet?PETS[S.pet.kind].e:'🐱';
- $('miniTitle').textContent=L(`🌲 ${A.ja}`,`🌲 ${A.en}`);
- const cv=$('miniCv');cv.width=480;cv.height=300;const x=cv.getContext('2d'),W=480,H=300,GY=230,PX=80;
+// ---- 森は お店と おなじ three.js で えがく（2026-11-01 三者会議：まるい地面が まわる ジオラマ）----
+// 地面＝よこに ねかせた 大きな円柱。まわすと 木や 虫が 奥の 地平線から 手前へ やってくる
+const FR_R=8;let FR=null;
+const fScene=new THREE.Scene();
+const fCam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100);
+fScene.add(new THREE.HemisphereLight('#fff6e8','#9cb48a',1.15));
+const fSun=new THREE.DirectionalLight('#fff1d6',2.0);fSun.position.set(4,FR_R+10,6);fSun.castShadow=true;fSun.shadow.mapSize.set(1024,1024);
+Object.assign(fSun.shadow.camera,{left:-4,right:4,top:4,bottom:-4,near:1,far:30});fSun.target.position.set(0,FR_R,0);fScene.add(fSun,fSun.target);
+// 虫・ボスの かお（目と ほっぺ。ボスは まゆ つき）
+const fFace={};function fFaceMat(angry){const k=angry?'a':'n';if(fFace[k])return fFace[k];const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d');
+ for(const sx of [40,88]){x.fillStyle='#2b2320';x.beginPath();x.ellipse(sx,64,11,15,0,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(sx+4,58,4.5,0,7);x.fill()}
+ x.fillStyle='#ff9aa880';x.beginPath();x.ellipse(24,86,11,7,0,0,7);x.fill();x.beginPath();x.ellipse(104,86,11,7,0,0,7);x.fill();
+ x.strokeStyle='#2b2320';x.lineWidth=5;x.lineCap='round';x.beginPath();if(angry){x.moveTo(26,36);x.lineTo(52,46);x.moveTo(102,36);x.lineTo(76,46);x.stroke();x.beginPath();x.arc(64,96,9,Math.PI*1.1,Math.PI*1.9);x.stroke()}else{x.arc(64,86,8,0.2,Math.PI-0.2);x.stroke()}
+ const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return fFace[k]=new THREE.MeshBasicMaterial({map:t,transparent:true})}
+const fFaceOn=(o,r,angry,y=0)=>{const f=new THREE.Mesh(G('ffp',()=>new THREE.PlaneGeometry(1,1)),fFaceMat(angry));f.scale.setScalar(r*1.5);f.position.set(0,y,r*0.98);o.add(f);return f};
+// 虫（絵文字の かわりに まるい 形で）
+function bugMesh(e){const o=new THREE.Group();
+ if(e==='🐛'){const cs=['#9bd46a','#8cc75a','#7cbf4a'];cs.forEach((c,i)=>{const b=ball(0.16-i*0.02,c);b.position.set(0,0.16,-i*0.2);o.add(b)});fFaceOn(o,0.16,0,0.16);for(const sx of [-1,1]){const a=cap(0.015,0.08,'#5a8a3a');a.position.set(sx*0.07,0.34,0.02);a.rotation.z=-sx*0.3;o.add(a)}}
+ else if(e==='🐌'){const b=cap(0.09,0.3,'#f2d38a');b.rotation.x=Math.PI/2;b.position.set(0,0.1,0);o.add(b);const sh=mesh(G('shell',()=>new THREE.TorusGeometry(0.13,0.08,10,18)),M('#c98a5a'),0,0.28,-0.08);sh.rotation.y=Math.PI/2;o.add(sh);const hd=ball(0.1,'#f2d38a');hd.position.set(0,0.16,0.2);o.add(hd);fFaceOn(hd,0.1,0)}
+ else if(e==='🐜'||e==='🕷️'){const c=e==='🐜'?'#5a4a4a':'#7a5a9a';const b=ball(0.17,c);b.position.set(0,0.2,-0.12);o.add(b);const hd=ball(0.14,c);hd.position.set(0,0.22,0.12);o.add(hd);fFaceOn(hd,0.14,e==='🕷️');
+  for(let i=0;i<(e==='🐜'?3:4);i++)for(const sx of [-1,1]){const l=cap(0.02,0.2,c);l.position.set(sx*0.2,0.12,-0.12+i*0.1);l.rotation.z=sx*1.1;o.add(l)}}
+ else if(e==='🐝'){const b=ball(0.18,'#ffd166');b.scale.set(1,0.95,1.15);b.position.y=0.5;o.add(b);for(const z of [-0.06,0.08]){const r=mesh(G('bstr',()=>new THREE.TorusGeometry(0.16,0.03,6,18)),M('#4a3a2a'),0,0.5,z);r.scale.set(1.05,1,1);o.add(r)}
+  fFaceOn(b,0.18,0);o.userData.wings=[];for(const sx of [-1,1]){const w=mesh(G('wing',()=>new THREE.CircleGeometry(0.14,16)),M('#ffffff',{transparent:true,opacity:0.75}),sx*0.14,0.68,-0.02);w.rotation.set(-0.3,sx*0.6,0);o.add(w);o.userData.wings.push(w)};o.userData.fly=1}
+ else{const b=mesh(G('lady',()=>new THREE.SphereGeometry(0.2,16,10,0,Math.PI*2,0,Math.PI/2)),M('#e85d5d'),0,0.06,0);o.add(b);for(const [x,z] of [[0.08,0.05],[-0.09,-0.02],[0.03,-0.11]]){const d=ball(0.035,'#3a2e26');d.position.set(x,0.21,z);o.add(d)}const hd=ball(0.1,'#3a2e26');hd.position.set(0,0.1,0.18);o.add(hd);fFaceOn(hd,0.1,0)}
+ return o}
+function bossMesh(ai){const o=new THREE.Group();
+ if(ai===0){o.add(rbox(1.0,0.75,1.2,0.3,'#a8754e',0,0.75,0));const sn=cap(0.18,0.1,'#e8a8a0');sn.rotation.x=Math.PI/2;sn.position.set(0,0.65,0.66);o.add(sn);
+  for(const sx of [-1,1]){const t=mesh(G('tusk',()=>new THREE.ConeGeometry(0.05,0.22,8)),M('#fff7ee'),sx*0.22,0.55,0.6);t.rotation.set(-0.6,0,0);o.add(t);const ear=mesh(G('bear2',()=>new THREE.ConeGeometry(0.12,0.22,4)),M('#8a5a3a'),sx*0.32,1.18,0.2);o.add(ear)}
+  for(const [x,z] of [[-0.3,0.35],[0.3,0.35],[-0.3,-0.35],[0.3,-0.35]]){const l=cap(0.1,0.15,'#7a5236');l.position.set(x,0.2,z);o.add(l)}const f=fFaceOn(o,0.45,1,0.88);f.position.z=0.61}
+ else if(ai===1){const b=ball(0.55,'#7a5a9a');b.position.y=1.3;o.add(b);fFaceOn(b,0.55,1);for(const sx of [-1,1]){const ear=mesh(G('bear2',()=>new THREE.ConeGeometry(0.12,0.22,4)),M('#5a3a7a'),sx*0.3,1.85,0);o.add(ear)}
+  o.userData.wings=[];for(const sx of [-1,1]){const w=mesh(G('bwing',()=>{const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(1.1,0.3);sh.lineTo(0.95,-0.15);sh.lineTo(0.7,0.05);sh.lineTo(0.5,-0.25);sh.lineTo(0.3,0);sh.lineTo(0,-0.3);return new THREE.ShapeGeometry(sh)}),M('#5a3a7a',{side:THREE.DoubleSide}),sx*0.45,1.35,0);w.scale.x=sx;o.add(w);o.userData.wings.push(w)};o.userData.fly=1}
+ else{const cs='#ff9a3a';const b=ball(0.5,cs);b.scale.set(1.1,0.7,1.2);b.position.y=0.45;o.add(b);fFaceOn(b,0.42,1,0.08);
+  for(let i=0;i<5;i++){const t=ball(0.2-i*0.02,cs);t.position.set(0,0.6+i*0.28,-0.55-Math.sin(i*0.6)*0.35+i*0.1);o.add(t)}const st=mesh(G('sting',()=>new THREE.ConeGeometry(0.1,0.3,8)),M('#c0605a'),0,1.85,-0.1);st.rotation.x=2.4;o.add(st);
+  for(const sx of [-1,1]){const c=ball(0.2,cs);c.scale.set(1,0.7,1.3);c.position.set(sx*0.55,0.35,0.6);o.add(c);for(let i=0;i<3;i++){const l=cap(0.04,0.3,'#e0802a');l.position.set(sx*0.55,0.15,-0.2+i*0.25);l.rotation.z=sx*1.2;o.add(l)}}}
+ o.traverse(m=>{if(m.isMesh)m.castShadow=true});return o}
+// 材料の 光る たま
+const MATCOL={f_berry:'#7a6ad8',f_mush:'#e8606a',f_honey:'#ffc23a'};
+function pickMesh(k){const o=new THREE.Group();
+ if(k==='box'){o.add(rbox(0.5,0.34,0.36,0.06,'#c98a5a',0,0.2,0));o.add(rbox(0.54,0.12,0.4,0.05,'#e0b04a',0,0.42,0));o.add(rbox(0.1,0.14,0.05,0.02,'#ffe08a',0,0.3,0.19));return o}
+ const c=MATCOL[k];const b=mesh(G('pk',()=>new THREE.SphereGeometry(0.17,16,12)),M(c,{emissive:c,emissiveIntensity:0.55,roughness:0.4}),0,0,0);o.add(b);
+ const ring=mesh(G('pkr',()=>new THREE.TorusGeometry(0.26,0.025,6,24)),M('#fff7c0',{emissive:'#fff2a0',emissiveIntensity:0.8,transparent:true,opacity:0.8}),0,0,0);ring.rotation.x=Math.PI/2;o.add(ring);
+ const hl=ball(0.05,'#ffffff');hl.position.set(-0.06,0.07,0.12);o.add(hl);return o}
+function acornMesh(){const o=new THREE.Group();const b=ball(0.08,'#b5773e');b.scale.set(1,1.2,1);o.add(b);const c=mesh(G('acap',()=>new THREE.SphereGeometry(0.085,12,8,0,Math.PI*2,0,Math.PI/2)),M('#6e4a2a'),0,0.04,0);o.add(c);return o}
+// 数字・ひろった物の ふきだし
+const fTxtC={};function fTxt(t,col){const k=t+col;if(!fTxtC[k]){const cv=document.createElement('canvas');cv.width=256;cv.height=96;const x=cv.getContext('2d');x.font='bold 54px "Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=10;x.strokeStyle='#fff';x.strokeText(t,128,48);x.fillStyle=col;x.fillText(t,128,48);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;fTxtC[k]=new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false})}
+ const sp=new THREE.Sprite(fTxtC[k].clone());sp.scale.set(1.2,0.45,1);sp.renderOrder=20;return sp}
+// 森の 台座（エリアごとに 木の 形と 色を かえる）
+const FLOOK=[{sky:'#cfeef7',gr:'#8fd07a',side:'#a8754e',trunk:'#9a6a44',crown:['#6fbf5a','#86cf6a','#5aa84a'],cy:1,flower:['#ffd166','#ff8fb1','#ffffff']},
+ {sky:'#e8def5',gr:'#b6a3d8',side:'#7a5a6a',trunk:'#f3e6d0',crown:['#e8606a','#c79be0','#ff9a76'],cy:0.45,flower:['#ffffff','#ffe08a','#c79be0']},
+ {sky:'#fff2cf',gr:'#e8c867',side:'#b5874a',trunk:'#8a6a3a',crown:['#ffd166','#ffb43a','#8fd19e'],cy:0.8,flower:['#ff8f80','#ffffff','#ffb43a']}];
+function buildForest(ai){const lk=FLOOK[ai];while(fScene.children.length>3)fScene.remove(fScene.children[3]);fScene.background=new THREE.Color(lk.sky);
+ const world=new THREE.Group();world.position.y=0;fScene.add(world);
+ const cyl=mesh(G('fcyl',()=>new THREE.CylinderGeometry(FR_R,FR_R,12,64,1)),M(lk.gr),0,0,0);cyl.rotation.z=Math.PI/2;cyl.castShadow=false;world.add(cyl);
+ // 道（まんなかの 土）と 台座の ふち
+ const road=mesh(G('froad',()=>new THREE.CylinderGeometry(FR_R+0.01,FR_R+0.01,1.6,64,1,true)),M('#e8d3b0'),0,0,0);road.rotation.z=Math.PI/2;road.castShadow=false;world.add(road);
+ for(const sx of [-1,1]){const rim=mesh(G('frim',()=>new THREE.CylinderGeometry(FR_R+0.15,FR_R+0.15,0.3,64)),M(lk.side),sx*6.1,0,0);rim.rotation.z=Math.PI/2;rim.castShadow=false;world.add(rim)}
+ const dummy=new THREE.Object3D(),col=new THREE.Color();
+ const place=(x,phi,h)=>{dummy.position.set(x,(FR_R+h)*Math.cos(phi),-(FR_R+h)*Math.sin(phi));dummy.rotation.set(-phi,rnd()*6,0);};
+ const NT=70,trunk=new THREE.InstancedMesh(G('ftr',()=>new THREE.CylinderGeometry(0.09,0.13,1,8)),M(lk.trunk),NT),crown=new THREE.InstancedMesh(G('fcr',()=>new THREE.IcosahedronGeometry(0.6,1)),new THREE.MeshStandardMaterial({roughness:0.8,flatShading:true}),NT*2);
+ let ci=0;for(let i=0;i<NT;i++){const side=i%2?1:-1,x=side*(1.6+rnd()*3.8),phi=rnd()*Math.PI*2,s=0.7+rnd()*0.7,th=0.5+rnd()*0.5;
+  place(x,phi,th*s/2);dummy.scale.set(s,th*s,s);dummy.updateMatrix();trunk.setMatrixAt(i,dummy.matrix);
+  for(let k=0;k<2;k++){const cs=s*(k?0.7:1)*(lk.cy<0.6?1.2:1);place(x+(k?(rnd()-.5)*0.3:0),phi,th*s+cs*0.4*lk.cy+k*cs*0.45);dummy.scale.set(cs,cs*lk.cy,cs);dummy.updateMatrix();crown.setMatrixAt(ci,dummy.matrix);crown.setColorAt(ci,col.set(lk.crown[(rnd()*3)|0]));ci++}}
+ trunk.castShadow=crown.castShadow=true;world.add(trunk,crown);
+ const NF=160,fl=new THREE.InstancedMesh(G('ffl',()=>new THREE.IcosahedronGeometry(0.07,0)),new THREE.MeshStandardMaterial({roughness:0.7}),NF);
+ for(let i=0;i<NF;i++){const x=(rnd()-.5)*11;if(Math.abs(x)<0.85){i--;continue}place(x,rnd()*Math.PI*2,0.05);dummy.scale.setScalar(0.7+rnd()*0.8);dummy.updateMatrix();fl.setMatrixAt(i,dummy.matrix);fl.setColorAt(i,col.set(lk.flower[(rnd()*3)|0]))}
+ world.add(fl);
+ const NG=120,gr=new THREE.InstancedMesh(G('fgr',()=>new THREE.ConeGeometry(0.06,0.22,4)),M('#5aa84a'),NG);
+ for(let i=0;i<NG;i++){const x=(rnd()-.5)*11;if(Math.abs(x)<0.85){i--;continue}place(x,rnd()*Math.PI*2,0.1);dummy.scale.setScalar(0.8+rnd()*0.6);dummy.updateMatrix();gr.setMatrixAt(i,dummy.matrix)}world.add(gr);
+ return world}
+// 円柱の 上の 角度 a（0＝てっぺん、＋＝おく）から 場所を だす
+const onCyl=(o,x,a,h=0)=>{o.position.set(x,(FR_R+h)*Math.cos(a),-(FR_R+h)*Math.sin(a));o.rotation.x=-a};
+const PET_A=-0.1;
+function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();closeSheet();
+ const world=buildForest(ai);
+ const pet=S.pet?petMesh(S.pet.kind):makeCustomer('cat',777);if(!S.pet)pet.scale.setScalar(0.85);pet.scale.multiplyScalar(1.6);pet.traverse(m=>{if(m.isMesh)m.castShadow=true});fScene.add(pet);onCyl(pet,0,PET_A);pet.rotation.y=Math.PI*0.78;
+ const pw=pet.userData.P?{P:pet.userData.P,speed:1.2,as:0,o:new THREE.Object3D(),kind:"cat"}:null;
+ document.body.classList.add('forest');ctl.enabled=false;composer.passes[0].scene=fScene;composer.passes[0].camera=fCam;
+ const hudEl=$('fHud');hudEl.style.display='block';
  const pow=1+(P.pow-1)*0.6,rate=1.4*(1+(P.spd-1)*0.2);
- let t=0,last=performance.now(),done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0;
- const bugs=[],shots=[],pick=[],pops=[],trees=[...Array(8)].map((_,i)=>({x:i*70+rnd()*30,s:0.7+rnd()*0.6}));
- const got={};
- const pop=(txt,px,py,col='#e8606a')=>pops.push({txt,x:px,y:py,t:0,col});
- const gain=(k,px,py)=>{const b=fBag()[k];b[0]++;got[k]=(got[k]||0)+1;blip(1000+rnd()*300,0.06);pop(FMAT[k].e+'+1',px,py,'#3a8a4a');const up=fMerge(k);if(up){blip(880);blip(1320,0.08,0.1);navigator.vibrate?.([10,30,10]);pop(`✨ ${FMAT[k].e}${RANKN[up]}に なった！`,PX+60,GY-90,'#e0902a')}};
- // わかれみち：ざいりょうの みち か むしの みち（むしが 多いけど たからばこ）
- const fork=()=>{road='wait';forks++;$('miniInfo').innerHTML=`<div style="margin-bottom:4px">${L('わかれみち！ どっちに いく？','A fork! Which way?')}</div><div class="row" style="justify-content:center"><button class="big" id="rdA">${FMAT[A.mat].e} ${L('ざいりょうの みち','Material path')}</button><button class="big" id="rdB">📦 ${L('むしの みち（たからばこ）','Bug path (treasure)')}</button></div>`;
-  $('rdA').onclick=()=>{road='mat';forkAt=t+12};$('rdB').onclick=()=>{road='bug';forkAt=t+12;pick.push({x:W+200,y:GY-20,e:'📦',k:'box'})}};
+ let t=0,done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0,scroll=0,shake=0;
+ const bugs=[],shots=[],pick=[],pops=[],puffs=[],got={};
+ const add3=(o,x,a,h)=>{fScene.add(o);onCyl(o,x,a,h);return o};
+ const pop=(txt,o,col='#e8606a')=>{const sp=fTxt(txt,col);sp.position.copy(o.position).add(new THREE.Vector3(0,1.1,0.3));fScene.add(sp);pops.push({s:sp,t:0})};
+ const puff=(pos,c='#ffffff',n=8)=>{for(let i=0;i<n;i++){const m=mesh(G('puff',()=>new THREE.SphereGeometry(0.07,8,6)),new THREE.MeshBasicMaterial({color:c,transparent:true}),0,0,0);m.position.copy(pos);m.userData.v=new THREE.Vector3((rnd()-.5)*3,1+rnd()*2,(rnd()-.5)*3);fScene.add(m);puffs.push({m,t:0})}};
+ const info=h=>{$('fInfo').innerHTML=h};
+ const gain=(k,o)=>{const b=fBag()[k];b[0]++;got[k]=(got[k]||0)+1;blip(1000+rnd()*300,0.06);pop(FMAT[k].e+'+1',o,'#3a8a4a');puff(o.position,MATCOL[k]||'#ffe08a',6);const up=fMerge(k);if(up){blip(880);blip(1320,0.08,0.1);navigator.vibrate?.([10,30,10]);pop(`✨${FMAT[k].e}${RANKN[up]}`,pet,'#e0902a');puff(pet.position.clone().add(new THREE.Vector3(0,1,0)),'#ffd166',14)}};
+ const fork=()=>{road='wait';forks++;info(`<div style="margin-bottom:4px">${L('わかれみち！ どっちに いく？','A fork! Which way?')}</div><div class="row" style="justify-content:center"><button class="big" id="rdA">${FMAT[A.mat].e} ${L('ざいりょうの みち','Material path')}</button><button class="big" id="rdB">📦 ${L('むしの みち（たからばこ）','Bug path (treasure)')}</button></div>`);
+  $('rdA').onclick=()=>{road='mat';forkAt=t+12};$('rdB').onclick=()=>{road='bug';forkAt=t+12;pick.push({o:add3(pickMesh('box'),0,1.0,0),a:1.0,x:0,k:'box'})}};
+ const close=()=>{done=true;FR=null;fScene.clear;for(const o of [...fScene.children].slice(3))fScene.remove(o);document.body.classList.remove('forest');ctl.enabled=true;composer.passes[0].scene=scene;composer.passes[0].camera=cam;hudEl.style.display='none';miniOn=false;paintHelp();hud()};
  const finish=win=>{done=true;let msg='';
-  if(win&&ai===(S.fclear||0)){S.fclear=ai+1;const f=A.friend;S.regs=S.regs||[];if(!S.regs.some(r=>r.name===f.ja))S.regs.push({name:L(f.ja,f.en),kind:f.kind,seed:rnd()*1e6|0,visits:0,forest:1});
+  if(win&&ai===(S.fclear||0)){S.fclear=ai+1;const f=A.friend;S.regs=S.regs||[];if(!S.regs.some(r=>r.name===L(f.ja,f.en)))S.regs.push({name:L(f.ja,f.en),kind:f.kind,seed:rnd()*1e6|0,visits:0,forest:1});
    msg=L(`<br>🎉 ${A.boss.ja}を おいはらった！<br>${f.ja}が お店に 来るように なったよ${ai<AREAS.length-1?'<br>つぎの 森に いけるように なった':''}`,`<br>🎉 You beat the ${A.boss.en}!<br>${f.en} will visit your shop`)}
   else if(win)msg=L('<br>🎉 ボスを また おいはらった！','<br>🎉 Boss beaten again!');
   else if(boss)msg=L('<br>💦 ボスに にげられた… ちからを つよくして また こよう','<br>💦 The boss got away... train up and try again');
-  if(win){fBag()[A.mat][1]++;fMerge(A.mat);got.bonus=1}
+  else msg=L('<br>💦 むしに まけちゃった… つよくして また こよう','<br>💦 The bugs won... train up and come back');
+  if(win){fBag()[A.mat][1]++;fMerge(A.mat);if(boss){puff(boss.o.position.clone().add(new THREE.Vector3(0,1,0)),'#ffd166',24);boss.o.visible=false}}
   const list=Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join('　')||L('なし','nothing');
-  save();$('miniInfo').innerHTML=L(`🎒 もちかえり：${list}${win?'　＋'+FMAT[A.mat].e+'★':''}`,`🎒 Brought back: ${list}`)+msg+`<br><small>${L('「つくる」で お店の しなものに できるよ','Use them in "Make"')}</small><div class="row" style="justify-content:center"><button class="big" id="fAgain">🌲 ${L('もういちど','Again')}</button><button id="fBack">${L('お店に もどる','Back to shop')}</button></div>`;
-  const close=()=>{$('mini').style.display='none';miniOn=false;cv.onpointerdown=null;cv.width=400;cv.height=460;ui.speed=prevSpeed||1;paintHelp();hud()};
+  save();info(L(`🎒 もちかえり：${list}${win?'　＋'+FMAT[A.mat].e+'★':''}`,`🎒 Brought back: ${list}`)+msg+`<br><small>${L('「つくる」で お店の しなものに できるよ','Use them in "Make"')}</small><div class="row" style="justify-content:center"><button class="big" id="fAgain">🌲 ${L('もういちど','Again')}</button><button id="fBack">${L('お店に もどる','Back to shop')}</button></div>`);
   $('fBack').onclick=close;$('fAgain').onclick=()=>{close();startForest(ai)}};
- // タップで ざいりょうを はやめに ひろえる
- cv.onpointerdown=e=>{const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width,py=(e.clientY-r.top)*H/r.height;
-  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(Math.hypot(px-p.x,py-p.y)<36){pick.splice(i,1);take(p);return}}};
- const take=p=>{if(p.k==='box'){blip(700);blip(1100,0.08,0.1);for(let i=0;i<3;i++)gain(A.mat,p.x,p.y-i*20);if(ai>0&&rnd()<0.5)gain(AREAS[rnd()*ai|0].mat,p.x,p.y-70);pop('📦✨',p.x,p.y-40,'#e0902a')}else gain(p.k,p.x,p.y)};
- function frame(now){if(done)return;const dt=Math.min(0.05,(now-last)/1000);last=now;
-  const moving=road!=='wait'&&!boss&&!bugs.some(b=>b.x<PX+50);
+ const take=p=>{fScene.remove(p.o);if(p.k==='box'){blip(700);blip(1100,0.08,0.1);for(let i=0;i<3;i++)gain(A.mat,p.o);if(ai>0&&rnd()<0.5)gain(AREAS[rnd()*ai|0].mat,p.o);pop('📦✨',p.o,'#e0902a')}else gain(p.k,p.o)};
+ const ray=new THREE.Raycaster(),v2=new THREE.Vector2();
+ const tap=e=>{v2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(v2,fCam);
+  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(ray.intersectObject(p.o,true).length||ray.ray.distanceToPoint(p.o.position)<0.5){pick.splice(i,1);take(p);return}}};
+ const tick=dt=>{
+  // カメラ（ななめ 上から 見おろす ジオラマ）
+  const asp=innerWidth/innerHeight,v=asp<1?6.2:4.6;fCam.left=-v*asp;fCam.right=v*asp;fCam.top=v;fCam.bottom=-v;fCam.updateProjectionMatrix();
+  shake=Math.max(0,shake-dt);fCam.position.set(Math.sin(t*40)*shake*0.3,FR_R+7,9);fCam.lookAt(0,FR_R-1.2,-1.2);
+  if(!done){
+  const moving=road!=='wait'&&!boss&&!bugs.some(b=>b.a<PET_A+0.12);
   if(road!=='wait')t+=dt;
+  const sc=moving?0.11*dt:0;scroll+=sc;world.rotation.x=scroll;
   if(moving)dist+=dt;
-  const sc=moving?90*dt:0;
-  // むし・ざいりょうを 出す
+  if(pw){pw.ph=pw.ph||0;animate(pw,dt,moving)}else pet.position.y=FR_R*Math.cos(PET_A)+(moving?Math.abs(Math.sin(t*9))*0.08:0);
   if(!boss&&road!=='wait'){spawnT-=dt;if(spawnT<=0){const bugRate=road==='bug'?0.55:1.0;
-    if(rnd()<(road==='mat'?0.35:0.6))bugs.push({x:W+20,y:GY-14,e:A.bugs[rnd()*A.bugs.length|0],hp:A.hp,max:A.hp,v:30+rnd()*20,fly:rnd()<0.3});
-    else pick.push({x:W+20,y:GY-30-rnd()*70,e:FMAT[A.mat].e,k:A.mat});
-    if(road==='mat'&&rnd()<0.5)pick.push({x:W+60,y:GY-30-rnd()*70,e:FMAT[A.mat].e,k:A.mat});
+    if(rnd()<(road==='mat'?0.35:0.6)){const e=A.bugs[rnd()*A.bugs.length|0],o=bugMesh(e);o.scale.setScalar(1.8);o.traverse(m=>{if(m.isMesh)m.castShadow=true});const b={o,e,a:0.75,x:(rnd()-.5)*1.0,hp:A.hp,max:A.hp,v:0.05+rnd()*0.03,hit:0,ph:rnd()*6};onCyl(o,b.x,b.a);fScene.add(o);bugs.push(b)}
+    else{const x=(rnd()-.5)*1.2;pick.push({o:add3(pickMesh(A.mat),x,0.75,0.5),a:0.75,x,k:A.mat})}
+    if(road==='mat'&&rnd()<0.5){const x=(rnd()-.5)*1.2;pick.push({o:add3(pickMesh(A.mat),x,0.8,0.5),a:0.8,x,k:A.mat})}
     spawnT=bugRate*(0.9+rnd()*0.6)}}
   if(road!=='wait'&&!boss&&t>=forkAt&&forks<2)fork();
-  if(!boss&&dist>=36&&road!=='wait'){boss={x:W+60,y:GY-40,hp:A.boss.hp,max:A.boss.hp,e:A.boss.e,v:25};bossT=25;bugs.length=0;blip(220,0.15);blip(180,0.15,0.15);$('miniInfo').innerHTML=L(`⚠️ ${A.boss.ja}が でた！`,`⚠️ ${A.boss.en} appeared!`)}
-  // うごかす
-  for(const tr of trees){tr.x-=sc*0.5;if(tr.x<-60)tr.x+=W+120}
-  for(const p of pick)p.x-=sc;
-  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(p.x<PX+20){pick.splice(i,1);take(p)}}
-  for(const b of bugs){b.x-=b.v*dt+sc}
-  for(let i=bugs.length-1;i>=0;i--){const b=bugs[i];if(b.x<PX+16){bugs.splice(i,1);if(hurt<=0){hearts--;hurt=1.2;blip(200,0.12);navigator.vibrate?.(40);pop('💥',PX,GY-60)}}}
-  if(boss){if(boss.x>W-110)boss.x-=boss.v*dt*2;bossT-=dt;if(bossT<=0){finish(false);return}}
-  hurt-=dt;if(hearts<=0){finish(false);return}
-  // ぽこぽこ うつ（いちばん ちかい あいて）
-  shotT-=dt;const tg=boss||bugs.reduce((m,b)=>!m||b.x<m.x?b:m,null);
-  if(tg&&tg.x<W-10&&shotT<=0){shots.push({x:PX+20,y:GY-30,tg});shotT=1/rate;blip(1500,0.03)}
-  for(let i=shots.length-1;i>=0;i--){const s2=shots[i];const tx=s2.tg.x,ty=s2.tg.y-10;const d=Math.hypot(tx-s2.x,ty-s2.y);if(d<16||(!bugs.includes(s2.tg)&&s2.tg!==boss)){shots.splice(i,1);
-    if(s2.tg.hp>0&&(bugs.includes(s2.tg)||s2.tg===boss)){s2.tg.hp-=pow;pop('-'+(Math.round(pow*10)/10),tx,ty-20,'#c0605a');
-     if(s2.tg.hp<=0){if(s2.tg===boss){finish(true);return}bugs.splice(bugs.indexOf(s2.tg),1);blip(1200,0.06);if(rnd()<0.35)pick.push({x:tx,y:GY-40,e:FMAT[A.mat].e,k:A.mat})}}continue}
-   s2.x+=(tx-s2.x)/d*520*dt;s2.y+=(ty-s2.y)/d*520*dt}
-  // かく
-  x.fillStyle=A.bg;x.fillRect(0,0,W,H);
-  x.textAlign='center';x.textBaseline='middle';
-  for(const tr of trees){x.font=`${50*tr.s|0}px sans-serif`;x.fillText(ai===1?'🍄':ai===2?'🌻':'🌳',tr.x,GY-28*tr.s)}
-  x.fillStyle=A.gr;x.fillRect(0,GY,W,H-GY);x.fillStyle='#0001';for(let i=0;i<12;i++){const gx=((i*50-dist*90)%600+600)%600-60;x.fillRect(gx,GY+18,24,6)}
-  x.fillStyle='#000';
-  x.font='30px sans-serif';for(const p of pick){x.fillText(p.e,p.x,p.y+Math.sin(t*4+p.x)*3)}
-  for(const b of bugs){x.font='30px sans-serif';const by=b.fly?b.y-40+Math.sin(t*5+b.x)*8:b.y;b.y2=by;x.save();x.translate(b.x,by);x.scale(-1,1);x.fillText(b.e,0,0);x.restore();if(b.hp<b.max){x.fillStyle='#0003';x.fillRect(b.x-14,by-24,28,4);x.fillStyle='#e85d5d';x.fillRect(b.x-14,by-24,28*b.hp/b.max,4)}}
-  if(boss){x.font='80px sans-serif';x.save();x.translate(boss.x,boss.y+Math.sin(t*3)*4);x.scale(-1,1);x.fillText(boss.e,0,0);x.restore();
-   x.fillStyle='#0003';x.fillRect(W/2-120,16,240,12);x.fillStyle='#e85d5d';x.fillRect(W/2-120,16,240*Math.max(0,boss.hp)/boss.max,12);
-   x.fillStyle='#5a4a3c';x.font='bold 13px sans-serif';x.fillText(`${L(A.boss.ja,A.boss.en)}　⏱ ${Math.ceil(bossT)}`,W/2,40)}
-  x.fillStyle='#000';x.font='22px sans-serif';for(const s2 of shots)x.fillText('🌰',s2.x,s2.y);
-  x.globalAlpha=hurt>0&&((t*10|0)%2)?0.4:1;x.font='44px sans-serif';x.fillText(pe,PX,GY-24+(moving?Math.abs(Math.sin(t*8))*-6:0));x.globalAlpha=1;
-  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;x.globalAlpha=Math.max(0,1-p.t);x.fillStyle=p.col;x.font='bold 18px sans-serif';x.fillText(p.txt,p.x,p.y-p.t*40);x.globalAlpha=1;if(p.t>1.2)pops.splice(i,1)}
-  x.fillStyle='#000';x.font='18px sans-serif';x.textAlign='left';x.fillText('❤️'.repeat(Math.max(0,hearts))+'🤍'.repeat(5-Math.max(0,hearts)),10,20);
-  if(!boss){x.fillStyle='#0002';x.fillRect(10,34,120,6);x.fillStyle='#5a4a3c';x.fillRect(10,34,120*Math.min(1,dist/36),6);x.font='13px sans-serif';x.fillText(L('ボスまで','to boss'),136,38)}
-  x.textAlign='center';
-  if(road!=='wait'&&!boss)$('miniInfo').innerHTML=L(`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'まだ なし'}　<small>（ざいりょうは タッチでも ひろえる）</small>`,`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'nothing yet'}`);
-  requestAnimationFrame(frame)}
- requestAnimationFrame(frame)}
+  if(!boss&&dist>=36&&road!=='wait'){const o=bossMesh(ai);o.scale.setScalar(1.3);boss={o,a:0.7,x:0,hp:A.boss.hp,max:A.boss.hp,hit:0,ph:0};onCyl(o,0,boss.a);fScene.add(o);bossT=25;for(const b of bugs)fScene.remove(b.o);bugs.length=0;shake=0.6;blip(220,0.15);blip(180,0.15,0.15);navigator.vibrate?.(80);info(L(`⚠️ ${A.boss.ja}が でた！`,`⚠️ ${A.boss.en} appeared!`))}
+  for(const p of pick){p.a-=sc;onCyl(p.o,p.x,p.a,0.45+Math.sin(t*4+p.x*3)*0.08);p.o.rotation.y+=dt*2}
+  for(let i=pick.length-1;i>=0;i--){const p=pick[i];if(p.a<PET_A+0.03){pick.splice(i,1);take(p)}}
+  for(const b of bugs){b.a-=b.v*dt+sc;b.ph+=dt*8;onCyl(b.o,b.x,b.a,b.o.userData.fly?0.25+Math.sin(b.ph)*0.08:Math.abs(Math.sin(b.ph))*0.05);b.o.rotation.y=Math.sin(b.ph*0.5)*0.15;
+   if(b.o.userData.wings)b.o.userData.wings.forEach((w,i)=>w.rotation.z=Math.sin(t*40)*0.5*(i?1:-1));b.hit=Math.max(0,b.hit-dt);b.o.scale.setScalar(1.8*(1+b.hit*2))}
+  for(let i=bugs.length-1;i>=0;i--){const b=bugs[i];if(b.a<PET_A+0.04){bugs.splice(i,1);puff(b.o.position,'#ffffff',6);fScene.remove(b.o);if(hurt<=0){hearts--;hurt=1.2;shake=0.25;blip(200,0.12);navigator.vibrate?.(40);pop('💥',pet)}}}
+  if(boss){boss.ph+=dt;if(boss.a>0.32)boss.a-=dt*0.08;const fl=boss.o.userData.fly;onCyl(boss.o,Math.sin(boss.ph*1.3)*0.5,boss.a,fl?0.4+Math.sin(boss.ph*3)*0.15:Math.abs(Math.sin(boss.ph*4))*0.06);
+   if(boss.o.userData.wings)boss.o.userData.wings.forEach((w,i)=>w.rotation.y=Math.sin(boss.ph*10)*0.6*(i?1:-1));boss.hit=Math.max(0,boss.hit-dt);boss.o.scale.set(1.3*(1+boss.hit*1.2),1.3*(1-boss.hit*0.8),1.3*(1+boss.hit*1.2));
+   bossT-=dt;if(bossT<=0){finish(false)}}
+  hurt-=dt;pet.visible=!(hurt>0&&((t*10|0)%2));if(hearts<=0&&!done)finish(false);
+  // どんぐりを ぽーんと なげる（いちばん ちかい あいて）
+  shotT-=dt;const tg=boss||bugs.reduce((m,b)=>!m||b.a<m.a?b:m,null);
+  if(!done&&tg&&tg.a<0.6&&shotT<=0){const o=acornMesh();o.scale.setScalar(1.5);fScene.add(o);shots.push({o,tg,t:0,from:pet.position.clone().add(new THREE.Vector3(0,0.8,0))});shotT=1/rate;blip(1500,0.03)}
+  for(let i=shots.length-1;i>=0;i--){const s2=shots[i];s2.t+=dt/0.35;const to=s2.tg.o.position.clone().add(new THREE.Vector3(0,s2.tg===boss?1:0.3,0));
+   s2.o.position.lerpVectors(s2.from,to,Math.min(1,s2.t));s2.o.position.y+=Math.sin(Math.min(1,s2.t)*Math.PI)*1.2;s2.o.rotation.z+=dt*15;
+   if(s2.t>=1){shots.splice(i,1);fScene.remove(s2.o);const tgt=s2.tg;if(done||(tgt!==boss&&!bugs.includes(tgt)))continue;
+    tgt.hp-=pow;tgt.hit=0.15;pop('-'+(Math.round(pow*10)/10),tgt.o,'#c0605a');puff(to,'#fff7c0',4);blip(1200,0.05);
+    if(tgt.hp<=0){if(tgt===boss){finish(true);continue}bugs.splice(bugs.indexOf(tgt),1);puff(tgt.o.position,'#ffffff',10);fScene.remove(tgt.o);if(rnd()<0.35){const x=tgt.x;pick.push({o:add3(pickMesh(A.mat),x,tgt.a,0.5),a:tgt.a,x,k:A.mat})}}}}
+  // HUD
+  $('fHearts').textContent='❤️'.repeat(Math.max(0,hearts))+'🤍'.repeat(5-Math.max(0,hearts));
+  $('fBar').style.width=(boss?Math.max(0,boss.hp)/boss.max:Math.min(1,dist/36))*100+'%';$('fBar').style.background=boss?'#e85d5d':'#8fd19e';
+  $('fBarTxt').textContent=boss?`${L(A.boss.ja,A.boss.en)}　⏱ ${Math.max(0,Math.ceil(bossT))}`:L('ボスまで','To the boss');
+  if(road!=='wait'&&!boss&&!done)info(L(`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'まだ なし'}　<small>（ひかる たまは タッチでも ひろえる）</small>`,`🎒 ${Object.entries(got).filter(([k])=>FMAT[k]).map(([k,n])=>FMAT[k].e+'×'+n).join(' ')||'nothing yet'}`));
+  }
+  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;p.s.position.y+=dt*0.9;p.s.material.opacity=Math.max(0,1-p.t);if(p.t>1.1){fScene.remove(p.s);pops.splice(i,1)}}
+  for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.t+=dt*1.6;p.m.position.addScaledVector(p.m.userData.v,dt);p.m.userData.v.y-=dt*5;p.m.material.opacity=1-p.t;if(p.t>1){fScene.remove(p.m);puffs.splice(i,1)}}
+  composer.render()};
+ $('fTitle').textContent='🌲 '+L(A.ja,A.en);$('fQuit').onclick=()=>{if(!done)finish(false);else close()};
+ FR={tick,tap};info('')}
+// 森の 間は お店の 画面を さわれない（タップは ひかる たまを ひろうだけ）
+for(const ev of ['pointerdown','pointerup','pointermove','wheel'])addEventListener(ev,e=>{if(!FR||e.target!==renderer.domElement)return;e.stopImmediatePropagation();if(ev==='pointerdown')FR.tap(e)},{capture:true});
 document.getElementById('forestBtn').onclick=openForest;
 // ================= 1日 =================
 // 毎朝：その日の にんきの しなもの と もくひょう を きめる
@@ -839,7 +923,7 @@ if(!S.goal){S.today.fans0=S.fans;newDay()}
 if(!S.weather)S.weather=pickWeather();applyWeather();
 buildShop();rebuildShelves();paintDock();hud();if(!S.named)setTimeout(()=>openName(true),600);if(ui.sel!=null)openShelf();
 const clock=new THREE.Clock();let spawnT=0,hudT=0,walkT=2,funnyT=60+Math.random()*60;placePet();
-renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta()),dt=raw*[0,1,2.5][ui.speed];
+renderer.setAnimationLoop(()=>{const raw=Math.min(0.05,clock.getDelta());if(FR){FR.tick(raw);return}const dt=raw*[0,1,2.5][ui.speed];
  if(dt){S.t+=dt;spawnT-=dt;
   // お客さんの来やすさ：評判とファンで増える。夜（最後の1割）は来ない
   const night=S.t>DAY_SEC*0.9;if(!night&&spawnT<=0){spawn();spawnT=Math.max(1.8,7-S.star*0.8-S.fans*0.02-styleScore()*0.08)*(0.6+rnd()*0.8)*({rain:1.25,snow:1.4}[S.weather]||1)*(petAwake()?1-S.pet.love/400:1)/((S.ev&&S.ev.busy)||1)}
