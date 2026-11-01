@@ -674,11 +674,9 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
   {id:'mag',e:'🧲',ja:'じしゃく',en:'Magnet',d:L('ひかる たまが すいよせられる','Pull in shiny orbs'),f:()=>magnet++},
   {id:'run',e:'👟',ja:'はしる',en:'Run fast',d:L('うごく はやさ 1.25ばい','Move 1.25× faster'),f:()=>mvSpd*=1.25},
   {id:'sp',e:'💥',ja:'ひっさつ チャージ',en:'Special charge',d:L('ひっさつが すぐ たまる','Special fills now'),f:()=>gauge=1}];
- const levelUp=()=>{pause=true;lv++;need+=3;blip(880);blip(1100,0.08,0.08);blip(1320,0.08,0.16);puff(pet.position.clone().add(new THREE.Vector3(0,1,0)),'#ffd166',20);
-  const pool=[...CARDS].sort(()=>rnd()-0.5).slice(0,3);
-  $('fCards').innerHTML=`<div class="fcTitle">⭐ ${L('レベルアップ！','Level up!')} Lv${lv}</div><div class="fcRow">${pool.map((c,i)=>`<button class="fcard" data-i="${i}"><span class="e">${c.e}</span><b>${L(c.ja,c.en)}</b>${KID()?'':`<small>${c.d}</small>`}</button>`).join('')}</div>`;
-  $('fCards').style.display='flex';
-  $('fCards').querySelectorAll('.fcard').forEach(b=>b.onclick=()=>{pool[+b.dataset.i].f();$('fCards').style.display='none';pause=false;blip(1320,0.08);toast(`${pool[+b.dataset.i].e} ${L(pool[+b.dataset.i].ja,pool[+b.dataset.i].en)}！`,1200)})};
+ // レベルアップ：止めずに カードを 1まい 自動で つける（2026-11-01 洋平さん「止まらないでいい」）
+ const levelUp=()=>{lv++;need+=3;blip(880);blip(1100,0.08,0.08);blip(1320,0.08,0.16);puff(pet.position.clone().add(new THREE.Vector3(0,1,0)),'#ffd166',20);
+  const c=CARDS[rnd()*CARDS.length|0];c.f();banner(`⭐Lv${lv} ${c.e}`,'#ffd166');pop(c.e+'⬆',pet,'#e0902a')};
  const banner=(txt,col)=>{const b=$('fBanner');b.textContent=txt;b.style.color=col||'#fff';b.classList.remove('go');void b.offsetWidth;b.classList.add('go')};
  // ひっさつ：どんぐりの あめ（画面の あいて ぜんぶに ドーン）
  const special=()=>{if(gauge<1||done||pause)return;gauge=0;shake=0.7;hs=0.15;banner(L('どんぐりの あめ！','Acorn rain!'),'#ffd166');navigator.vibrate?.([30,30,60]);
@@ -689,7 +687,7 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
  const TIL={pow:['💪',()=>pow*=1+0.6/(1+(P.pow-2)*0.6)],spd:['⚡',()=>rate*=1+0.2/(1+(P.spd-2)*0.2)],mon:['💰',()=>{}]};
  const paintTiles=()=>{document.querySelectorAll('#fTiles button').forEach(b=>{const k=b.dataset.u,c=upCost(P[k]);b.innerHTML=`<b>${TIL[k][0]}</b>Lv${P[k]}<small>${yen(c)}</small>`;b.disabled=S.money<c;b.classList.toggle('ok',S.money>=c)})};
  document.querySelectorAll('#fTiles button').forEach(b=>b.onclick=()=>{const k=b.dataset.u,c=upCost(P[k]);if(S.money<c||done)return;S.money-=c;P[k]++;TIL[k][1]();blip(990);blip(1320,0.06,0.08);puff(pet.position.clone().add(new THREE.Vector3(0,1,0)),'#8fd19e',12);pop(TIL[k][0]+'⬆',pet,'#2e9e5b');save();paintTiles()});paintTiles();let tileT=0;
- let t=0,done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0,scroll=0,shake=0,mvSpd=3.2,camX=0,drag=null,idleT=0,wander=new THREE.Vector3(0,0,2);
+ let aimT=0,aimA=0;let t=0,done=false,hearts=5,hurt=0,shotT=0,spawnT=1,dist=0,boss=null,bossT=0,road='ok',forkAt=8,forks=0,scroll=0,shake=0,mvSpd=3.2,camX=0,drag=null,idleT=0,wander=new THREE.Vector3(0,0,2);
  const bugs=[],shots=[],pick=[],pops=[],puffs=[],got={};
  // 見えている 広さ（毎フレーム カメラから きめる）
  let XW=3,ZT=-6,ZB=6;
@@ -717,14 +715,20 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
  // ゆびで なぞると その場所へ はしる
  const ray=new THREE.Raycaster(),v2=new THREE.Vector2(),gp=new THREE.Plane(new THREE.Vector3(0,1,0),0),hit=new THREE.Vector3();
  const toGround=e=>{v2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(v2,fCam);return ray.ray.intersectPlane(gp,hit)?hit.clone():null};
- const tap=(e,ev)=>{if(ev==='pointerup'){drag=null;return}if(ev==='pointermove'&&!drag)return;const g=toGround(e);if(g)drag=g;
-  if(ev==='pointerdown'&&g){const ring=mesh(G('tapring',()=>new THREE.RingGeometry(0.3,0.42,24)),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true}),g.x,0.03,g.z);ring.rotation.x=-Math.PI/2;fScene.add(ring);puffs.push({m:ring,t:0,ring:1})}};
+ // ドラッグ＝カメラの 向きを かえる／ちょんと タップ＝そこへ はしる
+ S.fcam=S.fcam||{yaw:0,el:1.05};let pd=null;
+ const tap=(e,ev)=>{if(ev==='pointerdown'){pd={x:e.clientX,y:e.clientY,yaw:S.fcam.yaw,el:S.fcam.el,mv:false};return}
+  if(!pd)return;const dx=e.clientX-pd.x,dy=e.clientY-pd.y;
+  if(ev==='pointermove'){if(Math.hypot(dx,dy)>8)pd.mv=true;if(pd.mv){S.fcam.yaw=pd.yaw-dx*0.008;S.fcam.el=Math.max(0.45,Math.min(1.45,pd.el+dy*0.006))}return}
+  const was=pd;pd=null;if(was.mv){save();return}
+  const g=toGround(e);if(g)drag=g;
+  if(g){const ring=mesh(G('tapring',()=>new THREE.RingGeometry(0.3,0.42,24)),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true}),g.x,0.03,g.z);ring.rotation.x=-Math.PI/2;fScene.add(ring);puffs.push({m:ring,t:0,ring:1})}};
  const tick=dt0=>{let dt=dt0;
   // カメラ：真上ちかくから 見おろす。ペットを すこし おくれて 追う
   const asp=innerWidth/innerHeight,v=asp<1?7.2:5.2;fCam.left=-v*asp;fCam.right=v*asp;fCam.top=v;fCam.bottom=-v;fCam.updateProjectionMatrix();
   XW=v*asp*0.88;const dz=v/Math.sin(1.05);ZT=-dz*0.92;ZB=dz*0.8;
   camX+=(pet.position.x*0.35-camX)*Math.min(1,dt0*2);
-  shake=Math.max(0,shake-dt0);fCam.position.set(camX+Math.sin(t*40)*shake*0.3,30*Math.sin(1.05),30*Math.cos(1.05));fCam.lookAt(camX,0,0);
+  shake=Math.max(0,shake-dt0);const fc=S.fcam,ce=Math.cos(fc.el);fCam.position.set(camX+Math.sin(t*40)*shake*0.3+30*ce*Math.sin(fc.yaw),30*Math.sin(fc.el),30*ce*Math.cos(fc.yaw));fCam.lookAt(camX,0,0);
   fSun.position.set(camX+5,16,8);fSun.target.position.set(camX,0,0);
   if(hs>0){hs-=dt;dt*=0.08}
   if(!done&&!pause){
@@ -734,12 +738,14 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
   if(flow)dist+=dt;
   // ペットの うごき：ゆび＞ちかくの たま＞ちかくの むしへ ちかよる＞ぶらぶら
   let goal=null;
-  if(drag)goal=drag;
+  if(drag){goal=drag;if(Math.hypot(drag.x-pet.position.x,drag.z-pet.position.z)<0.2)drag=null}
   else{const near=(arr,r)=>arr.reduce((m,o)=>{const d=o.o.position.distanceTo(pet.position);return d<r&&(!m||d<m.d)?{o,d}:m},null);
    const np=near(pick,6);const nb=boss?null:near(bugs,5);
    const close2=nb&&nb.d<2.6;if(close2){const away=pet.position.clone().sub(nb.o.o.position).setY(0).normalize().multiplyScalar(2.5);goal=pet.position.clone().add(away)}else if(np)goal=np.o.o.position;else if(nb)goal=nb.o.o.position.clone().add(new THREE.Vector3(0,0,3.5));else{idleT-=dt;if(idleT<=0){idleT=1.5+rnd()*2;wander.set((rnd()-.5)*XW*1.4,0,ZB*0.2+rnd()*ZB*0.5)}goal=wander}}
   const to=new THREE.Vector3(goal.x-pet.position.x,0,goal.z-pet.position.z);const dl=to.length();const moving=dl>0.15;
-  if(moving){to.normalize().multiplyScalar(Math.min(dl,mvSpd*(drag?1.3:1)*dt));pet.position.add(to);const ang=Math.atan2(to.x,to.z);let da=ang-pet.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));pet.rotation.y+=da*Math.min(1,dt*10)}else{let da=-pet.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));pet.rotation.y+=da*Math.min(1,dt*5)}
+  if(moving){to.normalize().multiplyScalar(Math.min(dl,mvSpd*(drag?1.3:1)*dt));pet.position.add(to);}
+  // むきは：なげている 間は あいての ほう＞あるく ほう＞とまったら こちら
+  aimT-=dt;{const want=aimT>0?aimA:moving?Math.atan2(to.x,to.z):0;let da=want-pet.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));pet.rotation.y+=da*Math.min(1,dt*(aimT>0?16:moving?10:5))}
   pet.position.x=Math.max(-XW,Math.min(XW,pet.position.x));pet.position.z=Math.max(ZT*0.2,Math.min(ZB*0.95,pet.position.z));
   // あるく ぴょこぴょこ・とまると しっぽ ふりふり
   const ph=t*12;PP.bod.position.y=moving?Math.abs(Math.sin(ph))*0.12:0;PP.bod.rotation.z=moving?Math.sin(ph)*0.08:0;
@@ -779,7 +785,7 @@ function startForest(ai){const A=AREAS[ai],P=fPet();miniOn=true;paintHelp();clos
   shotT-=dt;const rng=9;const inR=bugs.filter(b=>b.o.position.distanceTo(pet.position)<rng&&b.o.position.z>ZT-0.5).sort((a,b)=>a.o.position.distanceTo(pet.position)-b.o.position.distanceTo(pet.position));
   if(!done&&shotT<=0&&(boss||inR.length)){const near=boss?[boss,...inR]:inR;
    for(let k=0;k<multi;k++){const tk=near[k%near.length];const o=acornMesh();o.scale.setScalar(1.6);fScene.add(o);shots.push({o,tg:tk,t:-k*0.08,from:pet.position.clone().add(new THREE.Vector3((k-(multi-1)/2)*0.25,1.1,0))})}
-   shotT=1/rate;blip(1500,0.03);PP.head.rotation.x=-0.35;pet.scale.y*=0.92}
+   {const tp=near[0].o.position;aimA=Math.atan2(tp.x-pet.position.x,tp.z-pet.position.z);aimT=0.7}shotT=1/rate;blip(1500,0.03);PP.head.rotation.x=-0.35;pet.scale.y*=0.92}
   comboT-=dt;if(comboT<=0)combo=0;
   for(let i=shots.length-1;i>=0;i--){const s2=shots[i];s2.t+=dt/0.4;const to=s2.tg.o.position.clone().add(new THREE.Vector3(0,s2.tg===boss?1.2:0.4,0));
    s2.o.position.lerpVectors(s2.from,to,Math.min(1,Math.max(0,s2.t)));if(!s2.sp)s2.o.position.y+=Math.sin(Math.min(1,Math.max(0,s2.t))*Math.PI)*1.6;s2.o.rotation.z+=dt*15;
