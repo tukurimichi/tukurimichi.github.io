@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4R2JR109T"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-L4R2JR109T");</script>
+<meta name="description" content="写真2〜4枚を横・縦・2×2に並べて「前／後」の文字を入れ、1枚の画像で保存できます。写真は切らず、余白も出ません。写真はこのブラウザの中だけで扱い、どこにも送信しません。無料・登録なし。">
+<meta property="og:title" content="前後くらべ画像メーカー（無料・送信なし）">
+<meta property="og:description" content="写真2〜4枚を横・縦・2×2に並べて「前／後」の文字を入れ、1枚の画像で保存できます。写真は切らず、余白も出ません。写真はこのブラウザの中だけで扱い、どこにも送信しません。無料・登録なし。">
+<meta property="og:url" content="https://tukurimichi.com/apps/hikaku/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tukurimichi.com">
+<meta property="og:image" content="https://tukurimichi.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://tukurimichi.com/apps/hikaku/">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>前後くらべ画像メーカー</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#222;--sub:#666;--line:#ddd;--accent:#2f6fde}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1b1d;--card:#26262a;--ink:#eee;--sub:#aaa;--line:#3a3a40;--accent:#6c9cff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.4rem;margin:0 0 4px}
+.note{color:var(--sub);font-size:.9rem;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.slot{border:2px dashed var(--line);border-radius:10px;padding:10px;text-align:center}
+.slot img{width:100%;height:120px;object-fit:cover;border-radius:6px;display:block;margin-bottom:6px;background:var(--bg)}
+.slot .ph{height:120px;display:flex;align-items:center;justify-content:center;color:var(--sub);background:var(--bg);border-radius:6px;margin-bottom:6px;cursor:pointer}
+.slot input[type=text]{width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-size:1rem}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+label{font-size:.9rem}
+select,input[type=color]{padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button{padding:10px 18px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:1rem;cursor:pointer}
+button.sub{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:6px 10px;font-size:.85rem}
+canvas{max-width:100%;height:auto;display:block;margin:0 auto;border-radius:8px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<main>
+<p style="margin:0 0 12px"><a href="../../tools.html" style="color:var(--accent);text-decoration:none">← つくるみち の道具箱へ</a></p>
+<h1>前後くらべ画像メーカー</h1>
+<p class="note">写真はこの画面の中だけで処理します。どこにも送信されません。</p>
+
+<div class="card">
+  <div class="row" style="margin-bottom:12px">
+    <label>枚数
+      <select id="count"><option>2</option><option>3</option><option>4</option></select>
+    </label>
+    <label>並べ方
+      <select id="layout"><option value="row">横に並べる</option><option value="col">縦に並べる</option><option value="grid">2×2</option></select>
+    </label>
+    <label>文字の色 <input type="color" id="color" value="#ffffff"></label>
+    <label>文字の大きさ
+      <select id="size"><option value="0.06">小</option><option value="0.09" selected>中</option><option value="0.13">大</option></select>
+    </label>
+  </div>
+  <div class="slots" id="slots"></div>
+</div>
+
+<div class="card">
+  <canvas id="cv" width="800" height="400"></canvas>
+  <div class="row" style="justify-content:center;margin-top:14px">
+    <button id="save">画像を保存する（PNG）</button>
+    <p id="msg" class="note" style="margin:0;width:100%;text-align:center" role="status"></p>
+  </div>
+</div>
+<p class="note" style="text-align:center">この道具は、AI（Claude Code）に5回頼んで作りました。</p>
+</main>
+
+<script>
+const defaults=["前","後","3枚目","4枚目"];
+const state=[0,1,2,3].map(i=>({img:null,label:defaults[i]}));
+const $=id=>document.getElementById(id);
+const cv=$("cv"),ctx=cv.getContext("2d");
+
+function buildSlots(){
+  const n=+$("count").value,box=$("slots");box.innerHTML="";
+  for(let i=0;i<n;i++){
+    const s=state[i],d=document.createElement("div");d.className="slot";
+    const file=document.createElement("input");file.type="file";file.accept="image/*";file.hidden=true;
+    file.onchange=()=>load(file.files[0],i);
+    const pic=s.img?Object.assign(new Image(),{src:s.img.src}):Object.assign(document.createElement("div"),{className:"ph",textContent:"＋ 写真を選ぶ"});
+    pic.onclick=()=>file.click();pic.style.cursor="pointer";
+    d.ondragover=e=>e.preventDefault();
+    d.ondrop=e=>{e.preventDefault();load(e.dataTransfer.files[0],i)};
+    const t=document.createElement("input");t.type="text";t.value=s.label;t.placeholder="文字（例：前）";
+    t.oninput=()=>{s.label=t.value;draw()};
+    d.append(pic,file,t);box.append(d);
+  }
+  draw();
+}
+function load(f,i){
+  if(!f||!f.type.startsWith("image/"))return;
+  const url=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{
+    // 前の写真のデータをメモリから消す
+    if(state[i].url)URL.revokeObjectURL(state[i].url);
+    state[i].img=im;state[i].url=url;buildSlots();
+  };
+  im.onerror=()=>URL.revokeObjectURL(url);
+  im.src=url;
+}
+function hasPhoto(){const n=+$("count").value;return state.slice(0,n).some(s=>s.img)}
+function updateSave(){
+  const ok=hasPhoto();$("save").disabled=!ok;
+  $("msg").textContent=ok?"":"写真が1枚も入っていないので、まだ保存できません。「＋ 写真を選ぶ」から写真を入れてください。";
+}
+function draw(){
+  updateSave();
+  const n=+$("count").value;let lay=$("layout").value;
+  if(lay==="grid"&&n<3)lay="row";
+  const gap=12,MAX=3000; // 保存画像の長い辺の上限(px)
+  // 写真の縦横比（写真がないマスは4:3）
+  const ar=i=>state[i].img?state[i].img.width/state[i].img.height:4/3;
+  // 行ごとに分ける：横=1行、縦=1枚ずつの行、2×2=2枚ずつの行
+  const per=lay==="row"?n:lay==="col"?1:2,lines=[];
+  for(let i=0;i<n;i+=per)lines.push([...Array(Math.min(per,n-i)).keys()].map(k=>i+k));
+  // 各行：高さをそろえて横に並べる。そのあと全部の行の幅をそろえる
+  const W=1000*per,cells=[];let y=gap;
+  for(const L of lines){
+    const sum=L.reduce((t,i)=>t+ar(i),0),h=(W-gap*(L.length-1))/sum;let x=gap;
+    for(const i of L){const w=ar(i)*h;cells.push({i,x,y,w,h});x+=w+gap}
+    y+=h+gap;
+  }
+  let tw=W+gap*2,th=y;
+  const sc=Math.min(1,MAX/Math.max(tw,th));
+  cv.width=Math.round(tw*sc);cv.height=Math.round(th*sc);
+  ctx.setTransform(sc,0,0,sc,0,0);
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,tw,th);
+  // 全体が小さすぎ・大きすぎで文字がぶれないよう、文字の大きさは一番小さいマスの高さ基準
+  const base=Math.min(...cells.map(c=>Math.min(c.w,c.h)));
+  for(const {i,x,y,w,h} of cells){
+    const im=state[i].img;
+    if(im){ctx.drawImage(im,x,y,w,h)}
+    else{
+      ctx.fillStyle="#e4e4e4";ctx.fillRect(x,y,w,h);
+      ctx.fillStyle="#999";ctx.font=`${base*0.08}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText("写真"+(i+1),x+w/2,y+h/2);
+    }
+    const label=state[i].label.trim();
+    if(label){
+      const fs=Math.round(base*+$("size").value*1.2),m=base*0.03;
+      ctx.font=`bold ${fs}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="top";
+      const lw=ctx.measureText(label).width,p=fs*0.35;
+      ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+m,y+m,lw+p*2,fs+p*2);
+      ctx.fillStyle=$("color").value;ctx.fillText(label,x+m+p,y+m+p);
+    }
+  }
+}
+$("count").onchange=buildSlots;
+["layout","color","size"].forEach(id=>$(id).oninput=draw);
+$("save").onclick=()=>{
+  if(!hasPhoto()){updateSave();return}
+  const a=document.createElement("a");a.download="before-after.png";a.href=cv.toDataURL("image/png");a.click();
+};
+buildSlots();
+</script>
+</body>
+</html>
