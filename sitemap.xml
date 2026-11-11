@@ -1,13 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://tukurimichi.com/3d/</loc>
+    <lastmod>2026-10-20</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/3d/miniature.html</loc>
+    <lastmod>2026-10-20</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/3d/mono.html</loc>
+    <lastmod>2026-10-20</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/3d/night.html</loc>
+    <lastmod>2026-10-20</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/barcode/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/calendar/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/exif/</loc>
+    <lastmod>2026-10-24</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tukurimichi.com/apps/frames/</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/heic/</loc>
+    <lastmod>2026-10-24</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/hikaku/</loc>
+    <lastmod>2026-11-11</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/image/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/inkan/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/omise/</loc>
+    <lastmod>2026-11-01</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/pdf-image/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/pdf-split/</loc>
+    <lastmod>2026-10-09</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tukurimichi.com/apps/pdf/</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/qr/</loc>
+    <lastmod>2026-10-24</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/roulette/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/apps/sfx/</loc>
+    <lastmod>2026-10-09</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
@@ -22,12 +107,12 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/claude-code-news.html</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tukurimichi.com/claude-code.html</loc>
-    <lastmod>2026-08-26</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
@@ -42,8 +127,23 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/</loc>
-    <lastmod>2026-08-26</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/kari-9825f5129057886c/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/keiba-da155823d1323824/carrot.html</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/keiba-da155823d1323824/</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tukurimichi.com/made.html</loc>
@@ -63,6 +163,11 @@
   <url>
     <loc>https://tukurimichi.com/money.html</loc>
     <lastmod>2026-08-27</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tukurimichi.com/natsu.html</loc>
+    <lastmod>2026-08-28</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
@@ -86,6 +191,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tukurimichi.com/prompts.html</loc>
+    <lastmod>2026-10-17</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tukurimichi.com/soap.html</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.6</priority>
@@ -97,12 +207,12 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/tips.html</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://tukurimichi.com/tools.html</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -112,77 +222,7 @@
   </url>
   <url>
     <loc>https://tukurimichi.com/wallpapers.html</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/natsu.html</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/qr/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/roulette/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/inkan/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/calendar/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/pdf-split/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/image/</loc>
-    <lastmod>2026-10-05</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/sfx/</loc>
     <lastmod>2026-10-06</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/heic/</loc>
-    <lastmod>2026-10-06</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/pdf-image/</loc>
-    <lastmod>2026-10-08</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/exif/</loc>
-    <lastmod>2026-10-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/apps/barcode/</loc>
-    <lastmod>2026-10-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/prompts.html</loc>
-    <lastmod>2026-10-18</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tukurimichi.com/3d/</loc>
-    <lastmod>2026-10-20</lastmod>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
 </urlset>
