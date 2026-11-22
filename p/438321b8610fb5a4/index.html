@@ -1,0 +1,1775 @@
+<!doctype html>
+<html lang="ja">
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>町おこし商会</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+<style>
+/* 作り：スクロールなしの1画面。上の帯（季節・お金・冬の備え・余り）／つぎにやること／3Dの盤面／中身の欄／下の帯（建物・人）。
+   細かい数字・地方・できごとは引き出し（メニュー）。地方の地図・支店長えらび・おわりは、前面の1枚（.sheet） */
+:root{
+  --bg:#eef1ec; --panel:#fbfcf9; --ink:#1d2b2a; --muted:#5d6b68; --line:#cfd6cf;
+  --accent:#2b4a8b; --accent-ink:#ffffff; --accent-soft:#dfe6f5;
+  --plain:#dfe8d2; --good:#23704a; --bad:#b03434; --warn:#8a5a00;
+  --desk1:#f7f3ea; --desk2:#d9d0bf; --tint:#e3e9f7; --gold:#d8b545; --cold:#9fb6d6; --sel:#e8eefb;
+  /* 地方の地図の小さな札の色 */
+  --m-ground:#b9d98a; --m-river:#5aa5e2; --m-sea:#3d8ad2; --m-mount:#b3ad9f;
+  --m-field:#e2c24e; --m-mill:#9a6337; --m-bake:#d9783a; --m-house:#5b7fc7;
+  --font:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a19; --panel:#1c2423; --ink:#e6ece8; --muted:#9aa8a4; --line:#34413e;
+  --accent:#9db8ff; --accent-ink:#0e1524; --accent-soft:#26324d;
+  --plain:#2b3a2c; --good:#74d49c; --bad:#ff8f86; --warn:#e9b765;
+  --desk1:#3a3f44; --desk2:#22262a; --tint:#232c44; --gold:#d8b545; --cold:#5f7ba6; --sel:#26314d;
+  --m-ground:#3b5a34; --m-river:#3476b0; --m-sea:#285f96; --m-mount:#6b675e;
+  --m-field:#b0952f; --m-mill:#8a5a34; --m-bake:#c06a2e; --m-house:#5576bd; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141a19; --panel:#1c2423; --ink:#e6ece8; --muted:#9aa8a4; --line:#34413e;
+  --accent:#9db8ff; --accent-ink:#0e1524; --accent-soft:#26324d;
+  --plain:#2b3a2c; --good:#74d49c; --bad:#ff8f86; --warn:#e9b765;
+  --desk1:#3a3f44; --desk2:#22262a; --tint:#232c44; --gold:#d8b545; --cold:#5f7ba6; --sel:#26314d;
+  --m-ground:#3b5a34; --m-river:#3476b0; --m-sea:#285f96; --m-mount:#6b675e;
+  --m-field:#b0952f; --m-mill:#8a5a34; --m-bake:#c06a2e; --m-house:#5576bd; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%;overflow:hidden;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* 画面全体。ページはスクロールさせない */
+.app{position:fixed;inset:0;margin:0 auto;max-width:480px;display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);overflow:hidden}
+
+/* パソコンなど広い画面では、洋平さんのスマホ（Pixel 9 Pro＝412×915）と同じ大きさの枠で出す（スマホで見える形のまま確かめられるように） */
+@media (min-width:600px){ .app{max-width:412px;height:min(100dvh,915px);margin:auto;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 40px rgba(20,30,40,.18)}
+  .sheet.map{display:flex} .sheet.map .mapv{width:100%;max-width:412px;height:min(100%,915px);margin:auto;border:1px solid var(--line);border-radius:14px;overflow:hidden} }
+/* 上の帯 */
+.top{flex:none;display:grid;gap:5px;padding:calc(6px + env(safe-area-inset-top, 0px)) 10px 6px;background:var(--panel);border-bottom:1px solid var(--line)}
+.r1{display:flex;align-items:center;gap:8px}
+.when{flex:1;min-width:0}
+.when .l1{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.when .l1 b{font-size:15px;font-weight:900;overflow:hidden;text-overflow:ellipsis}
+.when .l1 span{font-size:12px;font-weight:700;color:var(--muted)}
+.when .l2{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.when .l2 .pp{color:var(--ink);font-weight:900}
+.yb{flex:1;min-width:24px;position:relative;display:flex;height:6px;border-radius:99px;overflow:hidden}   /* 1年の帯：暖かい季節｜冬。黒い印が今 */
+.yb .w{background:var(--gold)} .yb .s{background:var(--cold)}
+.yb i{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--ink)}
+.time{flex:none;display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.time button{width:32px;height:36px;border:0;background:transparent;display:grid;place-items:center}
+.time button svg{fill:currentColor}
+.time button.on{background:var(--accent);color:var(--accent-ink)}
+.menu{flex:none;width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--bg);display:grid;place-items:center}
+.r2{display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:6px}
+.st{display:flex;align-items:baseline;justify-content:space-between;gap:4px;min-height:30px;padding:4px 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg);white-space:nowrap;overflow:hidden}
+.st span{font-size:11px;font-weight:700;color:var(--muted)}
+.st b{font-size:15px;font-weight:900} .st b small{font-size:11px;font-weight:700}
+.st b.long{font-size:13px}
+.st em{font-style:normal;font-size:11px;font-weight:900;color:var(--good)} .st em.low{color:var(--bad)}
+.st .plus{color:var(--good)} .st .minus{color:var(--bad)}
+.r3{display:flex;justify-content:space-between;gap:8px;margin-top:4px;padding:3px 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden}
+.r3[hidden]{display:none} .r3 b{font-size:13px;font-weight:900;color:var(--ink)} .r3 .low,.r3 .low b{color:var(--bad)}
+@media (max-width:350px){ .r2{gap:4px;grid-template-columns:.85fr 1.8fr 1.1fr} .st{padding:4px 6px;gap:2px} .st span{font-size:10px} .st b{font-size:14px} .st b small,.st em{font-size:10px} }
+
+/* つぎにやること（押すと目標の一覧。町が仕上がったら地図へ） */
+.nrow{flex:none;display:flex;align-items:stretch;gap:6px;padding:4px 8px;border-bottom:1px solid var(--line);background:var(--tint)}
+.next{flex:1;min-width:0;display:flex;align-items:center;gap:6px;min-height:38px;padding:2px 4px;border:0;border-radius:8px;background:transparent;text-align:left}
+.next b{flex:1;min-width:0;font-size:13px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.next b span{font-weight:900;color:var(--accent)}
+.next i{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.next.go{background:var(--accent);color:var(--accent-ink);padding:2px 8px} .next.go b span,.next.go i{color:inherit}
+/* 「地図」と「数字」は盤面の外に置く（盤面に重ねると、奥のかどのマスが押せなくなる） */
+.sb{flex:none;min-width:46px;padding:2px 8px;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.sb.on{background:var(--accent);color:var(--accent-ink)}
+#nums{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+/* 盤面：上の帯・中身の欄・下の帯を引いた残りを全部使う。背の高い画面では机の上にゆとりができ、低い画面では盤面の幅を詰める */
+.mid{flex:1 1 0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,var(--desk1),var(--desk2))}
+.stage{position:relative;flex:none;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.stage canvas{display:block;width:100%;height:100%;filter:saturate(1.16) contrast(1.04)}
+.lab,.fx{position:absolute;inset:0;pointer-events:none}
+/* 数字の札はふだん出さない。出すのは「押したマス」「数字を押している間」「建てる・人をつける相手を選んでいる間の手がかり」 */
+.lab span{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:700;font-size:12px;line-height:1.5;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.96);color:#1d2b2a;box-shadow:0 1px 4px rgba(20,30,40,.4);opacity:0;transition:opacity .12s}
+.lab span.on,.stage.nums .lab span{opacity:1}
+.lab span.bad{color:#b03434}
+.lab span.den{background:#ffe2b8;box-shadow:0 0 0 2px #d8453a,0 1px 4px rgba(20,30,40,.4)}   /* こんだ区画（火事が燃え広がる） */
+.lab svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.lab polygon{fill:#e0362c;fill-opacity:0;stroke:#b3261e;stroke-opacity:0;stroke-width:1;transition:fill-opacity .12s}
+.stage.nums .lab polygon,.lab polygon.on{fill-opacity:.4;stroke-opacity:.9}
+.stage.nums .lab polygon.pre,.lab polygon.pre{fill:#ffd66b;stroke:#fff;stroke-width:2.5;stroke-opacity:1;fill-opacity:.85;transition:none;animation:prebl .7s steps(1,end) infinite}
+.lab span.pre{opacity:1;transform:translate(-50%,-190%);background:#ffd66b;color:#1d2b2a;font-size:12px;font-weight:900;border:1.5px solid #fff;animation:prebl2 .7s steps(1,end) infinite}
+.lab polygon.g1,.lab polygon.g2,.lab polygon.g3,.stage.nums .lab polygon.g1,.stage.nums .lab polygon.g2,.stage.nums .lab polygon.g3{fill:#ffcf3a;stroke:#fff3c2;stroke-width:1;stroke-opacity:.5}
+.lab polygon.g1,.stage.nums .lab polygon.g1{fill-opacity:.22} .lab polygon.g2,.stage.nums .lab polygon.g2{fill-opacity:.4} .lab polygon.g3,.stage.nums .lab polygon.g3{fill-opacity:.6}
+.lab polygon.bd,.stage.nums .lab polygon.bd{fill:#4d5661;fill-opacity:.5;stroke-opacity:0}
+.lab span.pre{white-space:pre;text-align:center;border-radius:12px;padding:2px 9px;line-height:1.45} .lab span.pre.warnp{background:#f0c8c0;color:#8a2a22}
+.lab polygon.rc,.stage.nums .lab polygon.rc{fill:#ffcf2e;fill-opacity:.55;stroke:#ffe27a;stroke-width:2;stroke-opacity:1;animation:prebl 1.6s ease-in-out infinite}
+@keyframes prebl{50%{fill-opacity:.25}}@keyframes prebl2{50%{opacity:.45}}
+.lab span.tag{transform:translate(-50%,-165%);background:#2b4a8b;color:#fff;font-size:10px;font-weight:900}
+.lab span.tag.away{background:#7b8683}
+.lab span.warn{opacity:1;width:17px;height:17px;padding:0;text-align:center;line-height:15px;font-size:12px;font-weight:900;background:#d8453a;color:#fff;border:1.5px solid #fff}
+.lab span.hint{opacity:1;background:#2b4a8b;color:#fff;font-size:11px;font-weight:900} .lab span.hint.bad{background:#b03434;color:#fff}
+.lab span.plot{background:#fff;color:#1d2b2a;font-size:11px;font-weight:900;border:1.5px solid #2b4a8b}
+.lab span.can{opacity:1;width:14px;height:14px;padding:0;background:#ffd66b;border:2px solid #fff}
+.err{padding:24px;font-size:14px}
+.pop{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:900;font-size:13px;color:#1d2b2a;background:#fbfcf9;border:1px solid #cfd6cf;border-radius:5px;padding:1px 6px;animation:rise 1.6s ease-out forwards}
+.pop.good{color:#23704a;border-color:#23704a} .pop.bad{color:#b03434;border-color:#b03434}
+@keyframes rise{0%{opacity:0;margin-top:6px}12%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-26px}}
+.dot{position:absolute;width:11px;height:11px;border-radius:50%;margin:-5px 0 0 -5px;background:#e8c14a;border:1.5px solid #5a3d24;box-shadow:0 1px 2px rgba(20,30,40,.4);transition:left .9s linear,top .9s linear}
+.dot.d-f{background:#fffaf0} .dot.d-b{background:#c98845}
+@media (prefers-reduced-motion:reduce){ .dot{display:none} .pop{animation-duration:2.2s} }
+.toast{position:absolute;left:0;right:0;bottom:8px;z-index:5;display:flex;justify-content:center;pointer-events:none;padding:0 10px}
+.toast div{background:var(--ink);color:var(--bg);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;max-width:100%;box-shadow:0 4px 14px rgba(20,30,40,.3)}
+
+/* 盤面の見え方のボタン：回す（左）・もとに戻す・縮小と拡大（右）。盤面には重ねない */
+.cbar{flex:none;display:flex;align-items:center;gap:6px;padding:3px 8px;background:var(--desk2);border-top:1px solid var(--line)}
+.cbar span{flex:1}
+.cbar button{min-width:44px;height:32px;padding:0 8px;display:grid;place-items:center;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+/* 中身の欄：押したマス／選んだ建物／選んだ人。盤面のすぐ下で、場所を動かさない */
+.ctx{flex:0 0 clamp(132px,27vh,240px);min-height:0;overflow-y:auto;padding:9px 14px 8px;background:var(--panel);border-top:1px solid var(--line)}
+.ctx .hd{display:flex;align-items:center;gap:8px;min-height:30px}
+.ctx .hd svg{flex:none}
+.ctx .hd b{font-size:16px;font-weight:900;white-space:nowrap}
+.ctx .hd em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+.ctx .hd .sk{font-size:13px;font-weight:900;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctx .hd .x{flex:none;margin-left:auto;min-height:32px;padding:2px 12px;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;background:var(--bg)}
+.ctx p{margin:2px 0 0;font-size:13px}
+.ctx p.do{font-weight:900;color:var(--accent)}
+.ctx p.no{font-weight:900;color:var(--bad)}
+.ctx p.sub{color:var(--muted);font-size:12px}
+.ctx p.hint{font-size:14px;font-weight:700;margin-top:4px}
+.ctx ul{margin:2px 0 0;padding-left:1.2em;font-size:13px;line-height:1.45}
+.ctx .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px}
+.ctx .btns button{min-height:38px;padding:4px 14px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.ctx .btns button.danger{color:var(--bad);border-color:var(--bad)}
+.ctx li button.lk{display:inline-block;padding:3px 11px;margin-left:4px;font-size:12px;font-weight:700;line-height:1.3;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:inherit}
+
+/* 下の帯：建物｜人。選んでからマスを押す */
+.dock{flex:none;display:flex;align-items:stretch;gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom, 0px));background:var(--panel);border-top:1px solid var(--line)}
+.dock button{position:relative;min-width:0;height:56px;padding:2px 0 1px;border:1px solid var(--line);border-radius:12px;background:var(--bg);display:grid;justify-items:center;align-content:center;gap:0;line-height:1.2}
+/* 建物は横に送れる（増えても1画面のまま）。人は右に固定 */
+.dock .tools{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:3px;margin-top:-3px} .dock .tools::-webkit-scrollbar{display:none}
+.dock .tool{flex:1 0 46px} .dock .who{flex:0 0 42px}   /* 5つめが少しのぞく幅（まだあると分かるように） */
+.dock b{font-size:11px;font-weight:900;white-space:nowrap}
+.dock small{font-size:10px;font-weight:700;color:var(--muted);white-space:nowrap}
+.dock button.on{border:2px solid var(--accent);background:var(--sel);transform:translateY(-3px);box-shadow:0 4px 10px rgba(20,30,40,.2)}
+.dock .tool.short svg,.dock .tool.short b{opacity:.42} .dock .tool.short small{color:var(--bad)}
+.dock .sep{flex:none;width:1px;margin:6px 2px;background:var(--line)}
+.dock .who small.free{color:var(--warn);font-weight:900}
+
+/* 引き出し（目標・メニュー）。中だけスクロールしてよい */
+.drawer{position:absolute;inset:0;z-index:15;display:flex;align-items:flex-end;background:rgba(15,22,28,.45)}
+.drawer .in{width:100%;max-height:84%;overflow:auto;background:var(--panel);border-radius:18px 18px 0 0;padding:12px 16px calc(16px + env(safe-area-inset-bottom, 0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.drawer .sh{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}
+.drawer h2{font-size:16px;font-weight:900;margin:0}
+.drawer .sh button{min-height:40px;padding:4px 16px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:99px;background:var(--bg)}
+.drawer h3{font-size:12px;font-weight:900;color:var(--muted);margin:12px 0 4px}
+.drawer p{font-size:13px;margin:0}
+.goal{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:6px 12px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;font-weight:700}
+.goal small{font-size:11px;font-weight:500;color:var(--muted)}
+.goal em{flex:none;font-style:normal;font-size:12px;font-weight:700;color:var(--muted)}
+.goal.done{border-color:var(--good)} .goal.done em{color:var(--good);font-weight:900}
+.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.grid5 div{padding:4px 6px;border:1px solid var(--line);border-radius:9px;background:var(--bg);min-width:0}
+.grid5 span{display:block;font-size:10px;font-weight:700;color:var(--muted);white-space:nowrap}
+.grid5 b{font-size:14px;font-weight:900;white-space:nowrap}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.flow em{font-style:normal;font-weight:700;color:var(--ink);padding:2px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.flow em.plus{color:var(--good);border-color:var(--good)} .flow em.minus{color:var(--bad);border-color:var(--bad)}
+.flow em.thin{color:var(--bad);border-color:var(--bad)}
+.drawer .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.drawer .row button{min-height:42px;padding:4px 14px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.drawer ul.log{margin:0;padding-left:1.2em;font-size:13px}
+.others{display:flex;flex-direction:column;gap:6px}
+.other{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:6px 10px;text-align:left;display:flex;flex-direction:column;min-width:0}
+.other.me{border-color:var(--accent)}
+.other span{font-size:12px;color:var(--muted)}
+
+/* 前面の1枚：地方の地図・支店長えらび・おわり（前の版のまま） */
+.sheet{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 88%,transparent);overflow:auto;z-index:20;
+  padding:calc(24px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.sheet .in{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+.sheet h1{margin:0 0 6px;font-size:22px;font-weight:900;text-wrap:balance}
+.sheet .lead{margin:0 0 14px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card h3{margin:0;font-size:18px} .card h3 i{font-style:normal;font-size:13px;color:var(--accent);margin-left:6px}
+.card p{margin:0;font-size:13px} .card .k{font-weight:700;color:var(--muted);font-size:12px;display:block}
+.card button{margin-top:auto;border:0;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-weight:900;padding:10px}
+.card button.sure{background:var(--bad);color:var(--panel)}
+.plain{border:1px solid var(--line);background:transparent;border-radius:6px;padding:8px 14px}
+.sheet .in.wide{max-width:980px}
+.wgrid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;align-items:start;margin-bottom:12px}
+.wmap{position:relative;width:100%;aspect-ratio:16/11;background:var(--plain);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.wmap svg{position:absolute;inset:0;width:100%;height:100%}
+.wmap .road{stroke:var(--muted);stroke-width:.6;stroke-dasharray:2 2}
+.wmap .route{stroke:var(--accent);stroke-width:.7}
+.wmap .rdot{fill:var(--accent);stroke:var(--panel);stroke-width:.3}
+.wmap .rlab{font-size:3px;font-weight:700;fill:var(--ink);font-family:var(--font);paint-order:stroke;stroke:var(--plain);stroke-width:.8}
+.wnode{position:absolute;transform:translate(-50%,-50%);border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:1px;width:clamp(52px,14%,96px);min-width:0;line-height:1.2}
+.wnode.cur{border-color:var(--accent);outline:2px solid var(--accent)}
+.wnode.sel{background:var(--accent-soft)}
+.wnode.un{border-style:dashed}
+.wnode.un .mini{opacity:.55}
+.wnode b{font-size:clamp(10px,2.3vw,13px);white-space:nowrap}
+.wnode small{font-size:clamp(9px,2vw,11px);color:var(--muted);white-space:nowrap}
+.mini{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:0;width:100%;aspect-ratio:1}
+.mini i{background:var(--m-ground);border-radius:1px}
+.mini .m-river{background:var(--m-river)} .mini .m-sea{background:var(--m-sea)} .mini .m-mount{background:var(--m-mount)}
+.mini .m-hiroba{background:#d9cfb8} .mini .m-bokujo{background:#cfe6a0} .mini .m-ichiba{background:#d8453a} .mini .m-hatake{background:var(--m-field)} .mini .m-seifun{background:var(--m-mill)} .mini .m-panya{background:var(--m-bake)} .mini .m-jutaku{background:var(--m-house)} .mini .m-kouei{background:#8f9bb0} .mini .m-terakoya{background:#5d6770} .mini .m-sakariba{background:#8a3a2e} .mini .m-hikeshi{background:#c9a23a} .mini .m-bansho{background:#7a5a3c}
+.wdetail{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.wdetail h3{margin:0 0 4px;font-size:18px}
+.wdetail p{margin:0 0 6px;font-size:13px}
+.wdetail .k{font-weight:700;color:var(--muted);font-size:12px;display:block}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.seg span{font-size:12px;font-weight:700;color:var(--muted);min-width:4.5em}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px 10px}
+.seg button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.gobtn{border:0;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-weight:900;padding:10px 16px;margin-top:4px}
+@media (max-width:820px){ .wgrid{grid-template-columns:minmax(0,1fr)} .sheet .in{padding:14px} }
+/* 地方の地図：スクロールなしの1画面。上＝題と「町にもどる」／まんなか＝地図（残りの高さ全部）／下＝押した町の様子と便（長いときは、ここの中だけスクロール） */
+.sheet.map{padding:0;overflow:hidden;background:var(--bg)}
+.mapv{max-width:480px;height:100%;margin:0 auto;display:flex;flex-direction:column;background:var(--panel)}
+.mapv .mh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + env(safe-area-inset-top, 0px)) 12px 2px}
+.mapv .mh h1{margin:0;font-size:18px}
+.mapv .mh button{min-height:40px;padding:4px 16px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:99px;background:var(--bg)}
+.mapv .ml{flex:none;margin:0;padding:0 12px 6px;font-size:12px;color:var(--muted)}
+.mapv .wmap{flex:1 1 0;min-height:150px;aspect-ratio:auto;border-radius:0;border-width:1px 0}
+.mapv .wdetail{flex:0 1 auto;max-height:54%;overflow-y:auto;border:0;border-radius:0;padding:8px 14px calc(10px + env(safe-area-inset-bottom, 0px))}
+.mapv .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.mapv .dh h3{margin:0;font-size:17px} .mapv .dh h3 small{font-size:12px;font-weight:700;color:var(--accent);margin-left:6px}
+.mapv .dh .gobtn{flex:none;margin:0;min-height:42px;padding:6px 14px;border-radius:10px;font-size:13px}
+.mapv .wdetail p{margin:0 0 4px;line-height:1.45}
+.mapv .wdetail .k{display:inline;margin-right:6px}
+.mapv .wdetail p.k{display:block;margin:0}
+.mapv .cv{flex:1 1 0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 12px calc(10px + env(safe-area-inset-bottom, 0px))}
+.mapv .cv .ml{padding:0}
+.pc{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.pc .ph{display:flex;align-items:center;gap:8px;min-height:34px}
+.pc .ph svg{flex:none} .pc .ph b{font-size:16px;font-weight:900;white-space:nowrap}
+.pc .ph i{flex:1;min-width:0;font-style:normal;font-size:12px;font-weight:900;color:var(--accent)}
+.pc .ph button{flex:none;min-height:42px;padding:4px 14px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:900}
+.pc .ph button.sure{background:var(--bad);color:var(--panel)}
+.pc p{margin:3px 0 0;font-size:12.5px;line-height:1.45}
+.pc .k{font-size:12px;font-weight:700;color:var(--muted);margin-right:6px}
+.kg{justify-content:center;gap:14px;padding:calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px))}
+.kg .kh{text-align:center}.kg .kh em{display:inline-block;font-style:normal;font-size:12px;font-weight:900;color:#fff;background:var(--accent);border-radius:99px;padding:2px 12px}
+.kg .kh h1{margin:8px 0 6px;font-size:24px;line-height:1.35}.kg .kh p,.kg .kb p{margin:0;font-size:13px;color:var(--muted)}
+.kg .kts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kg .kt{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 12px}.kg .kt span{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.kg .kt b{font-size:26px;font-weight:900;line-height:1.3}.kg .kt b small{font-size:13px;margin-left:2px}
+.kg .kb{display:flex;flex-direction:column;gap:8px}
+.kg .kb button{min-height:48px;font-size:15px;font-weight:900;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.kg .kb button.go{background:var(--accent);border-color:var(--accent);color:#fff}
+.kg .kb button.ko{display:block;text-align:left;padding:10px 14px;min-height:64px}.kg .kb button.ko b{display:block;font-size:16px}.kg .kb button.ko span{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.erow{display:flex;justify-content:flex-end} .erow button{min-height:42px;padding:4px 16px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.mapv .seg{margin:4px 0} .mapv .seg button{min-height:36px;padding:4px 12px;border-radius:8px}
+#nums{position:relative} #nums.on::after{content:'石・貫は半年ぶん';position:absolute;top:calc(100% + 6px);right:0;white-space:nowrap;font-size:11px;font-weight:700;line-height:1;padding:5px 8px;border-radius:10px;background:#fffdf5;color:#3a3028;box-shadow:0 1px 4px rgba(0,0,0,.25);z-index:30;pointer-events:none}
+.hima{position:absolute;right:8px;bottom:8px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-height:calc(100% - 16px)}
+.hima .hb{position:relative;display:grid;place-items:center;width:36px;height:36px;padding:0;border:2px solid #b9862a;border-radius:50%;background:#ffd24a;box-shadow:0 2px 6px rgba(20,30,40,.35)}
+.hima .hb::before{content:'';position:absolute;inset:-6px}
+.hima .hb svg{width:28px;height:28px}
+.hima .hb:active{transform:translateY(2px);box-shadow:0 0 2px rgba(20,30,40,.35)}
+.hima .hb.sel{border:3px solid var(--accent);background:var(--sel)} .hima .hb.none{opacity:.55}
+.hima .hb i{position:absolute;right:-6px;top:-6px;font-style:normal;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px #fffdf5}
+.ctx .hl{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ctx h4.hh{margin:6px 2px 3px;font-size:11.5px;font-weight:800;color:var(--sub,#6b6456)}
+.ctx .hl button{min-width:0;display:grid;grid-template-columns:30px 1fr auto;align-items:center;column-gap:7px;min-height:44px;padding:3px 9px 3px 5px;border:1px solid var(--line);border-radius:11px;background:var(--bg);text-align:left;line-height:1.25}
+.ctx .hl button.on{border:2px solid var(--accent);background:var(--sel)}
+.ctx .hl button b{font-size:13.5px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis} .ctx .hl button span{display:block;font-size:10.5px;color:var(--sub,#6b6456);font-weight:500}
+.ctx .hl button em{font-style:normal;font-size:11px;font-weight:700;color:var(--sub,#6b6456);white-space:nowrap} .ctx .hl button em.free{color:var(--warn);font-weight:900}
+</style>
+<div class="app" id="app">
+  <header class="top">
+    <div class="r1">
+      <div class="when"><div class="l1" id="land"></div><div class="l2" id="year"></div></div>
+      <div class="time" id="clock">
+        <button type="button" data-sp="0" aria-label="止める"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="3" y="2.5" width="3.6" height="11" rx="1"/><rect x="9.4" y="2.5" width="3.6" height="11" rx="1"/></svg></button>
+        <button type="button" data-sp="1" aria-label="進める"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+        <button type="button" data-sp="3" aria-label="3倍で進める"><svg viewBox="0 0 16 16" width="15" height="14" aria-hidden="true"><path d="M1.5 3v10L8 8zM8.5 3v10L15 8z"/></svg></button>
+        <button type="button" data-sp="8" aria-label="8倍で進める"><svg viewBox="0 0 22 16" width="20" height="14" aria-hidden="true"><path d="M1 3v10l6.5-5zM7.5 3v10L14 8zM14 3v10l6.5-5z"/></svg></button>
+      </div>
+      <button type="button" class="menu" data-dr="menu" aria-label="メニュー"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="r2" id="res"></div>
+    <div class="r3" id="pub" hidden></div>
+  </header>
+  <div class="nrow">
+    <button type="button" class="next" id="next"></button>
+    <button class="sb" type="button" data-act="map">地図</button>
+    <button class="sb" id="nums" type="button">数字</button>
+  </div>
+  <div class="mid" id="mid">
+    <div class="stage" id="stage"><div class="lab" id="lab"></div><div class="fx" id="fx"></div></div>
+    <div class="toast" id="toast" hidden><div></div></div>
+    <div class="hima" id="hima"></div>
+  </div>
+  <div class="cbar" id="cbar">
+    <button type="button" data-cam="l" aria-label="左へ回す"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5 8a6 6 0 1 1-1 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 5.500 5.400 9.600 9 6z" fill="currentColor"/></svg></button>
+    <button type="button" data-cam="r" aria-label="右へ回す"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M15 8a6 6 0 1 0 1 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 5.500 14.600 9.600 11 6z" fill="currentColor"/></svg></button>
+    <button type="button" class="home" id="chome" data-cam="home" hidden>もとに戻す</button>
+    <span></span>
+    <button type="button" data-cam="out" aria-label="縮小"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" stroke-width="2.400" stroke-linecap="round"/></svg></button>
+    <button type="button" data-cam="in" aria-label="拡大"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 10h12M10 4v12" stroke="currentColor" stroke-width="2.400" stroke-linecap="round"/></svg></button>
+  </div>
+  <section class="ctx" id="ctx" aria-live="polite"></section>
+  <nav class="dock" id="dock" aria-label="建てる・人"></nav>
+  <div class="drawer" id="drawer" hidden></div>
+</div>
+<div class="sheet" id="sheet" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+// ───────── 決まり（数字は全部仮） ─────────
+const SAVE='machi.save.v6';   // v5＝盤面16×16（v4 は12×12、v3 は8×8、v2 は6×6。形が違うので続きは開かない）
+const W=16,N=W*W,HN=10,FLOW=10,PRICE=10,EAT=FLOW/120,SHIP=100;   // 単位は現実：1マス＝1ヘクタール／人は10人ずつ動く／米は石（1人が1年に1石）／お金は今の円（万円で持つ。1石＝10万円）。家賃・とれ高・食べる量・維持費・資金は、1年（120秒）に現実の FLOW 年ぶん流れる   // 住民1人は半年で3個食べ、1個につき6万円払う。便は10秒に6個まで
+const B={
+  jutaku:{n:'長屋',ch:'長',cost:7500,need:0,d:'会社の長屋。百姓家が5軒ほどで、20人が住む。1人が白米を半年で5石食べ、1石につき10万円払う。家賃は1人につき年150万円で、毎月分けて入る（家賃の高さはメニューで変えられる）。売ることもできる。建てたあと、押して2階建てにできる'},
+  kouei:{n:'共同長屋',ch:'共',cost:10000,need:0,d:'共同の資金で建てる長屋。20人が住む。家賃は会社に入らない。維持費が毎年2000万円、空いていてもかかる（資金で足りない分は会社が払う）。建ててから3年は取り壊せない'},   // 町が「村」になると建てられる
+  hatake:{n:'田',ch:'田',cost:1000,need:2,d:'1回押すと4マス（2×2）まとめて建つ。1マスで もみ 半年で75石（10人が食べる分）。川のとなりは1.5倍。冬は休み。建てたあと、押して上田にできる'},
+  seifun:{n:'搗き屋',ch:'搗',cost:3000,need:5,d:'もみを玄米に 半年で750石。となりの田1つで+25%。となりの家はうるさくて10人しか住まない'},
+  panya:{n:'米屋',ch:'米',cost:4000,need:5,d:'玄米を白米に 半年で750石。となりの家1軒で+25%'},
+  bokujo:{n:'綿畑',ch:'綿',cost:1500,need:2,d:'木綿 半年で600貫。まわり8マスの空き地が多いほど増える（最大2倍）。冬は半分。木綿は1貫1万円で売れる'},   // 村から
+  ichiba:{n:'朝市',ch:'市',cost:8000,need:10,d:'まわり3マスの家の「買い物がしたい」を満たし、その家の売上が2割増える（寺子屋も届く家は1割）。余った白米も1石7万円で売る'},   // 町から
+  hiroba:{n:'神社',ch:'社',cost:6000,need:0,d:'村の鎮守。まわり2マスの家に、30人住めるようになる（重ねても30人まで）。共同の資金で建てる。維持費が毎年1500万円かかる'},
+  sakariba:{n:'盛り場',ch:'盛',cost:6000,need:10,d:'芝居小屋と飲み屋。まわり3マスの住民1人につき年60万円入る。まわり2マスの長屋は時価が3割下がる。春ごとに治安が10下がり、火事が増える。市になると、住民の「楽しみ」の欲を満たす（まわり3マス）'},
+  hikeshi:{n:'火消し',ch:'火',cost:3000,need:0,d:'火の見やぐらと火消しの組。まわり3マスの建物は、火事になっても「ぼや」で済む。建物が9軒以上つながった「こんだ区画」では止めきれず、燃え広がる数が半分になる。市になると、住民の「守り」の欲を満たす（まわり3マス）。共同の資金で建てる。維持費 年500万円'},
+  bansho:{n:'番所',ch:'番',cost:3000,need:0,d:'町の見回り。春ごとに治安が10上がる。市になると、住民の「守り」の欲を満たす（まわり3マス）。共同の資金で建てる。維持費 年500万円'},
+  terakoya:{n:'寺子屋',ch:'学',cost:5000,need:0,d:'まわり3マスの家の「学びたい」を満たす。届く長屋の家賃と時価が年8%ずつ上がる（最大48%。朝市も届く家は半分）。共同の資金で建てる。維持費 年1000万円'},   // 町が「村」になると建てられる
+};
+const ORDER=['jutaku','hatake','seifun','panya','hiroba','kouei','bokujo','ichiba','terakoya','sakariba','hikeshi','bansho'];
+const UNLOCK={hiroba:1,kouei:1,bokujo:1,ichiba:2,terakoya:2,sakariba:1,hikeshi:1,bansho:1},WOOL=1,MKT=7;   // 建てられるようになる位（1 村／2 町）。木綿1つ・朝市で売る白米1個の値段
+// 町の位：村＝町の仕上げができた／町＝人口40人／市＝人口100人。上がると便で送れる量が2倍・4倍になる（一度上がった位は下がらない。数字は仮）
+const RANK=['','村','町','市'],RANKPOP=[0,0,400,1000],rankOf=T=>T.done?(T.rank||1):0,shipOf=T=>SHIP*[1,1,2,4][rankOf(T)];
+// 共同の資金：町が「村」になると付く。春（年度がわり）に余りを返して、新しく付く。公共の物（いまは神社）は資金で建て、毎年の維持費も資金から出る。
+// 維持費が足りない物は 1年め＝知らせ／2年め＝効き目が半分／3年め＝休止。会社のお金で穴埋めできる（逆はできない）。数字は全部仮
+const KEEP={hiroba:1500,kouei:2000,terakoya:1000,hikeshi:500,bansho:500},YBASE=[0,6000,12000,20000],isPub=k=>!!KEEP[k];
+// 家は2つ：長屋（会社のお金で建てる・家賃が毎月入る・いつでも取り壊せる）と、共同長屋（共同の資金で建てる・家賃なし・維持費は空いていてもかかる・建ててから3年は取り壊せず休止もできない）。数字は全部仮
+const isHome=k=>k==='jutaku'||k==='kouei',RENT=150,LOCKY=3;
+const grantOf=(T,clean)=>Math.round((Math.round(YBASE[rankOf(T)]*eduMul(T))+Math.round((calc(T).pop*30+(clean?1500:0))*eduMul(T)))*(1+.05*(T.fame||0)));   // 位ごとの基本額＋成果（人口1人3万円・冬を越せたら30万円）
+const keepSum=T=>T.grid.reduce((a,c)=>a+(c&&KEEP[c.k]&&!c.off?KEEP[c.k]:0),0);
+const plazaR=g=>g.off||(g.bad||0)>=3?0:g.bad===2?1:2;   // 神社の効く広さ（休止＝0／半分＝まわり1マス／ふつう＝2マス）
+const GOODS={bread:'白米',flour:'玄米',wheat:'もみ'};
+const P={
+  gen:{n:'ゲン',t:'冬ごし',d:'受け持った田と、そのとなりの田は、冬でも半分とれる',on:['hatake'],stay:'冬も田が半分動くので、冬のあいだも便が出やすい'},
+  hana:{n:'ハナ',t:'水みち',d:'受け持った田と、そのとなりの田は、川のとなりでなくても1.5倍とれる',on:['hatake'],stay:'川から遠い田も1.5倍のまま。もみが減らない'},
+  take:{n:'タケ',t:'ひとり三役',d:'受け持った建物は、人手がいらない',on:['hatake','seifun','panya'],stay:'受け持ちの建物が人手なしで動き続ける'},
+  yuki:{n:'ユキ',t:'雪国育ち',d:'受け持った家と、そのとなりの家は、冬でも食べる量が増えない',on:['jutaku'],stay:'冬に食べる量が増えないまま'},
+  fuu:{n:'フウ',t:'静かな手',d:'受け持った搗き屋は、となりの家をうるさがらせない',on:['seifun'],stay:'搗き屋のとなりの家が20人のまま。働き手が減らない'},
+  nami:{n:'ナミ',t:'呼びこみ',d:'受け持った米屋は、ななめの家もお客に数える',on:['panya'],stay:'米屋1軒でたくさん搗けるまま'},
+  tsuchi:{n:'ツチ',t:'土づくり',d:'受け持った田と、そのとなりの田は、やせた土でもふつうにとれる',on:['hatake'],stay:'やせた土の田がふつうにとれるまま'},
+};
+const LANDS=[
+  {n:'はじまりの野',note:'川ぞいの広い野原。冬は短い',warm:80,winter:40,eat:1,soil:1,mill:1,price:1,goal:{w:1,pop:120},recruit:null,pos:[32,74],links:[1,2],
+   map:['.......~........','.......~........','.......~........','.......~~.......','........~.......','........~.......','........~.......','........~~......','.........~......','.........~......','.........~......','.........~~.....','..........~.....','..........~.....','..........~.....','..........~.....']},
+  {n:'雪の谷',note:'冬が長く、冬は2倍食べる。平地が少なく、田は半分',warm:60,winter:60,eat:2,soil:.5,mill:1,price:1,goal:{w:2,pop:60},recruit:'yuki',pos:[13,28],links:[0,4],
+   map:['^^^^^^^^.^^^^^^^','^^^^..^..^..^^^^','^^^.....~....^^^','^^............^^','^..............^','^..............^','^..............^','^..............^','^..............^','^..............^','^..............^','^..............^','^^............^^','^^^..........^^^','^^^^..^..^..^^^^','^^^^^^^^^^^^^^^^']},
+  {n:'風の丘',note:'風車で搗き屋が2倍はやい。川がない',warm:80,winter:40,eat:1,soil:1,mill:2,price:1,goal:{w:1,pop:120},recruit:'fuu',pos:[63,60],links:[0,3,4],
+   map:['.....^..........','................','..........^.....','..^.............','................','.............^..','......^.........','................','.^.......^......','................','....^...........','............^...','................','.......^........','..^...........^.','................']},
+  {n:'潮の浜',note:'港町。白米1石に15万円払う。塩で田は半分',warm:80,winter:40,eat:1,soil:.5,mill:1,price:1.5,goal:{w:1,pop:100},recruit:'nami',pos:[88,34],links:[2],
+   map:['================','================','================','====........====','==............==','=..............=','................','................','................','.....~..........','................','................','................','..........~.....','................','................']},
+  {n:'黒土の原',note:'田が2倍とれる。冬が長い',warm:60,winter:60,eat:1,soil:2,mill:1,price:1,goal:{w:2,pop:140},recruit:'tsuchi',pos:[42,22],links:[1,2],
+   map:['................','.....^^.........','.....^..........','................','............~...','.~..............','................','................','...........^^...','............^...','................','......~.........','................','...^............','................','................']},
+];
+const TIPS=[
+  {t:'長屋を3軒建てる（住民が働き手になります）',ok:T=>count(T,'jutaku')>=3},
+  {t:'田を川のとなりに建てる（とれる量が1.5倍）',ok:T=>some(T,'hatake',i=>riverAdj(T,i))},
+  {t:'搗き屋を田のとなりに建てる',ok:T=>some(T,'seifun',i=>adj(T,i,'hatake')>0)},
+  {t:'米屋を家のとなりに建てる',ok:T=>some(T,'panya',i=>adj(T,i,'jutaku')>0)},
+  {t:'下の帯の人を選んでから、建物を押す（受け持たせる）',ok:T=>T.grid.some(c=>c&&c.by)},
+  {t:'冬が来る前に、蓄えを「冬に食べる量」より多くする',ok:T=>T.t>=LANDS[T.land].warm||prep(T).have>=prep(T).need},
+];
+
+// ───────── 状態 ─────────
+let S=null,PRES=null;
+function newTown(land){return {land,t:0,open:[0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0].map(Boolean),grid:Array(N).fill(null),wheat:0,flour:0,bread:200,hungerT:0,growT:0,wasWinter:false,winterClean:true,lostW:0,
+  winters:0,eatAcc:0,chief:null,route:null,done:false,got:0,sent:0,last:0,started:false,hungryTold:false};}
+function newGame(){return {v:6,phase:'town',loc:0,towns:[newTown(0),null,null,null,null],hand:['gen','hana','take'],money:45000,speed:1,paused:true,
+  tool:null,sel:null,tip:0,log:[],hist:{},mute:false,sure:null,mapSel:0,pick:null,shipAcc:0,ended:false,clock:0,dr:''};}
+const cur=()=>S.towns[S.loc];
+const founded=()=>S.towns.filter(Boolean);
+const frontier=()=>founded().find(T=>!T.chief);
+const staffHere=()=>S.hand.concat(cur().chief?[cur().chief]:[]);
+
+// ───────── 町の計算 ─────────
+const terr=(T,i)=>LANDS[T.land].map[Math.floor(i/W)][i%W];
+function nb(i){const r=Math.floor(i/W),c=i%W,o=[];if(r>0)o.push(i-W);if(r<W-1)o.push(i+W);if(c>0)o.push(i-1);if(c<W-1)o.push(i+1);return o;}
+function dg(i){const r=Math.floor(i/W),c=i%W,o=[];for(const[a,b]of[[-1,-1],[-1,1],[1,-1],[1,1]]){const y=r+a,x=c+b;if(y>=0&&y<W&&x>=0&&x<W)o.push(y*W+x);}return o;}
+const here=(T,id)=>PRES?PRES.includes(id):(T.chief===id||(S.loc===T.land&&S.hand.includes(id)));
+const cb=(T,j,id)=>{const c=T.grid[j];return !!c&&c.by===id&&here(T,id);};
+const adj=(T,i,k)=>nb(i).filter(j=>T.grid[j]&&(k==='jutaku'?isHome(T.grid[j].k):T.grid[j].k===k)).length;   // 'jutaku' は家ぜんぶ（長屋・共同長屋）を数える
+const riverAdj=(T,i)=>nb(i).some(j=>terr(T,j)==='~');
+const count=(T,k)=>T.grid.filter(c=>c&&c.k===k).length;
+const some=(T,k,f)=>T.grid.some((c,i)=>c&&c.k===k&&f(i));
+const cover=(T,i,k,id)=>cb(T,i,id)||nb(i).some(j=>T.grid[j]&&T.grid[j].k===k&&cb(T,j,id));
+const genCover=(T,i)=>cover(T,i,'hatake','gen');
+const yukiCover=(T,i)=>cover(T,i,'jutaku','yuki');
+const wet=(T,i)=>riverAdj(T,i)||cover(T,i,'hatake','hana');
+const soilOf=(T,i)=>{const s=LANDS[T.land].soil;return s<1&&cover(T,i,'hatake','tsuchi')?1:s;};
+const noisy=(T,i)=>nb(i).some(j=>T.grid[j]&&T.grid[j].k==='seifun'&&!cb(T,j,'fuu'));
+const guests=(T,i)=>adj(T,i,'jutaku')+(cb(T,i,'nami')?dg(i).filter(j=>T.grid[j]&&isHome(T.grid[j].k)).length:0);
+const nearPlaza=(T,i)=>{const r=Math.floor(i/W),c=i%W;for(let y=Math.max(0,r-2);y<=Math.min(W-1,r+2);y++)for(let x=Math.max(0,c-2);x<=Math.min(W-1,c+2);x++){const g=T.grid[y*W+x];if(g&&g.k==='hiroba'){const pr=plazaR(g);if(pr&&Math.abs(y-r)<=pr&&Math.abs(x-c)<=pr)return true;}}return false;};
+const plazaHouses=(T,i)=>{const r=Math.floor(i/W),c=i%W;let n=0;for(let y=Math.max(0,r-2);y<=Math.min(W-1,r+2);y++)for(let x=Math.max(0,c-2);x<=Math.min(W-1,c+2);x++){const g=T.grid[y*W+x];if(g&&isHome(g.k))n++;}return n;};
+const around=(T,i,d,f)=>{const r=Math.floor(i/W),c=i%W;let n=0;for(let y=Math.max(0,r-d);y<=Math.min(W-1,r+d);y++)for(let x=Math.max(0,c-d);x<=Math.min(W-1,c+d);x++){const j=y*W+x;if(j!==i&&f(j))n++;}return n;};
+const emptyAround=(T,i)=>around(T,i,1,j=>!T.grid[j]&&terr(T,j)==='.');   // 綿畑のまわり8マスの空き地
+const housesNear=(T,i)=>around(T,i,3,j=>T.grid[j]&&isHome(T.grid[j].k));   // 朝市のまわり3マスの家
+const pastBase=(T,i)=>10*(1+emptyAround(T,i)/8)*(isWinter(T)?.5:1);
+const mktBase=(T,i)=>5*(1+.1*housesNear(T,i));
+// 建て増し（数字は仮）：長屋を2階建てにすると定員が20人増える（うるさい家は10人）。田を上田にすると、とれ高が1.5倍
+const UPG={ie:{cost:9000,add:2},ta:{cost:600,mul:1.5}};
+const houseCap=(T,i)=>{const c=T.grid[i],ns=noisy(T,i);return (ns||(c&&c.k==='kouei'&&(c.bad||0)>=2)?HN:nearPlaza(T,i)?3*HN:2*HN)+(c&&c.up&&c.k==='jutaku'?(ns?1:UPG.ie.add)*HN:0);};   // 共同長屋は、維持費を2年払えないと1人しか住めない
+const yrOf=T=>Math.floor(T.t/(LANDS[T.land].warm+LANDS[T.land].winter)),lockLeft=(T,c)=>c&&c.k==='kouei'?Math.max(0,LOCKY-(yrOf(T)-(c.y0||0))):0;   // 共同長屋を取り壊せるまでの年数
+const siteScore=(T,i)=>(nearPlaza(T,i)?2:0)-(noisy(T,i)?2:0)+(T.grid[i].k==='kouei'?1:0);   // 住む人が家を選ぶ点：神社の近く＋2／うるさい−2／共同長屋は家賃が無いぶん＋1
+// 家賃の水準（町ぜんたい。会社の長屋だけ）：m＝家賃の倍率／d＝1軒に住みたい人数の増減（10人単位）／k＝住みたい人数の倍率（10人単位に切り下げ）。安いと、欲が満たされない分を1つ打ち消す（定員は超えない）
+const RENTLV=[{n:'安い',m:.6,d:1,k:1},{n:'ふつう',m:1,d:0,k:1},{n:'高い',m:1.6,d:0,k:.75}],rentLv=T=>T.rentLv==null?1:T.rentLv;
+const houseRent=(T,i)=>Math.round(T.grid[i].pop*RENT*learnMul(T,i)*RENTLV[rentLv(T)].m);
+// 水準を変えたら、町の家賃と人口がどうなるかの見込み（いまの欲の満たし具合のまま、人が入りきったとして）
+function rentPlan(T,lv){const keep=T.rentLv;T.rentLv=lv;let yen=0,pop=0;try{for(let i=0;i<N;i++){const c=T.grid[i];if(!c||!isHome(c.k))continue;const q=liveCap(T,i);pop+=q;if(c.k==='jutaku'&&!c.sold)yen+=q*RENT*learnMul(T,i)*RENTLV[lv].m;}}finally{if(keep==null)delete T.rentLv;else T.rentLv=keep;}return {yen:Math.round(yen),pop};}
+function setRentLv(lv){const T=cur();if(!RENTLV[lv]||rentLv(T)===lv)return;T.rentLv=lv;S.sure=null;banner('長屋の家賃を「'+RENTLV[lv].n+'」にしました（1人 年'+Math.round(RENT*RENTLV[lv].m)+'万円）');beep(520,.08);dirty=true;save();}
+const rentOf=T=>T.grid.reduce((a,c,i)=>a+(c&&c.k==='jutaku'&&!c.sold?houseRent(T,i):0),0);
+// 長屋を売る：立地と住んでいる人数と町の入居率で時価が決まる。売りに出すと、買い手がつくまで待つ（入居率が低いほど長い）。売れた家は町に残り、住民もお客のまま。家賃は入らなくなり、会社の物ではないので取り壊せない。数字は仮
+// 時価＝（もと3000＋1人150＋神社の近く2000−うるさい1500）×町の入居率の倍率（満室1.2〜半分より下0.6）。人口の増減・乱数・景気の波は入れない
+const JIKA={hi:1.2,lo:.6,wait:60,cut:.8};   // 倍率の上と下／売れるまでの最大の秒／値下げしたときの値段（待つ時間は半分）
+const occMul=T=>Math.max(JIKA.lo,Math.min(JIKA.hi,JIKA.lo+(occ(T)-.5)*2*(JIKA.hi-JIKA.lo)));
+const sellPrice=(T,i)=>{const c=T.grid[i];return Math.max(500,Math.round((3000+150*c.pop+(nearPlaza(T,i)?2000:0)-(noisy(T,i)?1500:0))*occMul(T)*learnMul(T,i)*chianMul(T)*(nearSaka(T,i)?1-SAKA.price:1)*(c.sale&&c.sale.cut?JIKA.cut:1)/10)*10);};
+const saleNeed=(T,c)=>Math.min(JIKA.wait,JIKA.wait*2*(1-occ(T)))*(c&&c.sale&&c.sale.cut?.5:1);   // 満室ならすぐ、入居率が半分より下なら60秒
+// 欲が育つ：白米だけで満足するのは初めの数年。「村になって2年」か「町を始めて5年」の早い方の春から、神社が近く（まわり2マス）にない家は1人出ていく（定員は変えない＝入居率が動く）。その1年前に知らせ、神社を建てられるようにする。数字は全部仮
+const WANT={after:2,max:5,warn:1,leave:15};
+// 欲の年（yrW）：遊ぶ人がその町にいた時間だけで数える。離れているあいだは進まない（17回目の会議の手当て。洋平さん 2026-11-18「止める」）
+const yrW=T=>Math.floor((T.t-(T.frozen||0))/(LANDS[T.land].warm+LANDS[T.land].winter));   // 村になってからの年数／始めてからの年数／知らせる年数／1人出ていくまでの秒
+const wantY=T=>Math.min(T.doneY!=null?T.doneY+WANT.after:1e9,WANT.max),wantOn=T=>yrW(T)>=wantY(T),wantSoon=T=>yrW(T)>=wantY(T)-WANT.warn;
+const unmet=(T,i)=>wantOn(T)&&!nearPlaza(T,i),liveCap=(T,i)=>{const c=T.grid[i],cap=houseCap(T,i),R=c&&c.k==='jutaku'&&!c.sold?RENTLV[rentLv(T)]:RENTLV[1];return Math.max(HN,Math.min(cap,Math.floor((cap-(unmet(T,i)?HN:0)-(unmet2(T,i)?HN:0)-(unmet3a(T,i)?HN:0)-(unmet3b(T,i)?HN:0))*R.k/HN+1e-9)*HN+R.d*HN));};   // 住みたい人数（定員 houseCap はそのまま）
+const occ=T=>{let p=0,q=0;for(let i=0;i<N;i++){const c=T.grid[i];if(c&&isHome(c.k)){p+=c.pop;q+=houseCap(T,i);}}return q?p/q:1;};   // 町の入居率＝住んでいる人÷住める人
+// 欲の分岐：神社の欲が始まって WANT2.after 年たつと「買い物がしたい（朝市）」と「学びたい（寺子屋）」が同時に来る。まわり3マスにどちらも無い家は10人出ていく。
+// 朝市の近くの家は売上が2割増える（すぐお金）。寺子屋は春ごとに学びが積み重なり、とれ高と共同の資金が増える（あとから効く）。住民の半分以上に届いた方が町の性格（商・学）。数字は全部仮
+const WANT2={after:2,warn:1,r:3,shop:.2,edu:.05,eduMax:.3,line:.5,rent:.08,rentMax:.48};   // rent：寺子屋が届く長屋の家賃と時価が、学び1年ごとに上がる割合と上限
+const want2Y=T=>wantY(T)+WANT2.after,want2On=T=>yrW(T)>=want2Y(T),want2Soon=T=>yrW(T)>=want2Y(T)-WANT2.warn;
+const nearK=(T,i,k)=>{const r=Math.floor(i/W),c=i%W,R=WANT2.r;for(let y=Math.max(0,r-R);y<=Math.min(W-1,r+R);y++)for(let x=Math.max(0,c-R);x<=Math.min(W-1,c+R);x++){const g=T.grid[y*W+x];if(g&&g.k===k&&!g.off&&(g.bad||0)<3){const rr=g.bad===2?1:R;if(Math.abs(y-r)<=rr&&Math.abs(x-c)<=rr)return true;}}return false;};
+const nearShop=(T,i)=>nearK(T,i,'ichiba'),nearSchool=(T,i)=>nearK(T,i,'terakoya');
+const unmet2=(T,i)=>want2On(T)&&!nearShop(T,i)&&!nearSchool(T,i);
+// 欲の3段目：「市」になった次の年の春から、守り（番所か火消しがまわり3マス）と楽しみ（盛り場がまわり3マス）を、別々に求める。どちらも、無い家から10人ずつ出ていく。
+// 盛り場は治安を下げ、火事のもとになり、まわり2マスの長屋の時価を下げる＝番所・火消しで打ち消し、置く場所を選ぶ。数字は全部仮
+const WANT3={after:1};
+const want3Y=T=>T.cityY!=null?T.cityY+WANT3.after:1e9,want3On=T=>yrW(T)>=want3Y(T),want3Soon=T=>T.cityY!=null;
+const nearGuard=(T,i)=>nearK(T,i,'bansho')||nearK(T,i,'hikeshi'),nearFun=(T,i)=>nearK(T,i,'sakariba');
+const unmet3a=(T,i)=>want3On(T)&&!nearGuard(T,i),unmet3b=(T,i)=>want3On(T)&&!nearFun(T,i);
+const shareOf=(T,f)=>{let a=0,q=0;for(let i=0;i<N;i++){const c=T.grid[i];if(c&&isHome(c.k)){q+=c.pop;if(f(T,i))a+=c.pop;}}return q?a/q:0;};
+const shopShare=T=>shareOf(T,nearShop),schoolShare=T=>shareOf(T,nearSchool);
+// 朝市と寺子屋の両方が届く家は、売上の増えも家賃の増えも半分（区画を分ける理由。欲はどちらか片方で満たされる）
+const learnMul=(T,i)=>nearSchool(T,i)?1+Math.min(WANT2.rentMax,WANT2.rent*(T.edu||0))*(nearShop(T,i)?.5:1):1;
+const shopGain=T=>{let a=0,q=0;for(let i=0;i<N;i++){const c=T.grid[i];if(c&&isHome(c.k)){q+=c.pop;if(nearShop(T,i))a+=c.pop*(nearSchool(T,i)?.5:1);}}return q?WANT2.shop*a/q:0;};
+const eduMul=T=>1+Math.min(WANT2.eduMax,WANT2.edu*(T.edu||0));
+// 治安（0〜100。始まりは100）：春に、欲を満たしていない家の割合ぶん下がる（全部の家なら1年で30）。満たしていない家が無ければ1年で15戻る。
+// 治安が悪いと、時価が下がり（最大3割）、人が入ってくるのが遅くなる（最大3倍の時間）。数字は全部仮
+const CHIAN={down:30,up:15,price:.3,join:2,mark:70};
+const chianOf=T=>T.chian==null?100:T.chian;
+const unmetShare=T=>{let a=0,q=0;for(let i=0;i<N;i++){const c=T.grid[i];if(c&&isHome(c.k)){q++;if(unmet(T,i)||unmet2(T,i)||unmet3a(T,i)||unmet3b(T,i))a++;}}return q?a/q:0;};
+const chianMul=T=>1-CHIAN.price*(1-chianOf(T)/100);
+// 盛り場と守り：盛り場はすぐお金になるが、まわり2マスの長屋の時価が下がり、治安が毎年下がり、火事のもとになる。番所は治安を毎年上げ、火消しは火事を「ぼや」で止める
+// 火事（v46）：上下左右の建物へ燃え移る。空き地・田・綿畑・神社で止まる（火除け地）
+// 火事：冬の始まりに、町ごと・年ごとに決まった数で起きるかが決まる（同じ町の同じ年は、やり直しても同じ）。始めの3年は起きない。数字は全部仮
+const SAKA={per:60,r:3,price:.3,pr:2,chian:10},BAN={chian:10},FIRE={grace:3,base:.05,saka:.2,dense:9,max:8,den:.1};
+// 凶作の年：5〜8年に1度（町ごとに決まった年。やり直しても同じ）。その年は田のとれ高が半分。前の年の冬の入りに兆しを知らせる。数字は全部仮
+// 選び：0 高値のまま売る（米の値1.5倍・治安−10）／1 お救い米（その年は米をただで配る・治安+20・評判+1）／2 しぼって売る（食べる量8割・治安−15）
+// 評判：1つにつき、春の共同の資金 +5%（5つまで）。積み立て：春ごとに1人1石ぶん（10万円）を払って積む。5年分まで。凶作の年の春に蔵へ入る
+const KYO={yield:.5,price:1.5,ration:.8,ch:[-10,20,-15],gap:[5,8],fund:.05,fameMax:5,tsumiMax:5};
+const KYOY={};function kyoYears(T){if(KYOY[T.land])return KYOY[T.land];const o=[];let y=-1;for(let n=0;n<60;n++){y+=KYO.gap[0]+Math.floor(rnd(T.land*17.3+n*5.7,9)*(KYO.gap[1]-KYO.gap[0]+1));o.push(y);}return KYOY[T.land]=o;}
+const isKyo=T=>kyoYears(T).includes(yrOf(T)),kyoSoon=T=>kyoYears(T).includes(yrOf(T)+1),kyoPick=T=>T.kyo&&T.kyo.y===yrOf(T)?T.kyo.p:null;
+const tsumiCost=T=>Math.round(calc(T).pop*PRICE),tsumiCap=T=>calc(T).pop*KYO.tsumiMax;
+function kyoChoose(p){const T=cur();if(!T.kyo||T.kyo.p!=null||!(p>=0&&p<=2))return;T.kyo.p=p;const c0=chianOf(T);T.chian=Math.max(0,Math.min(100,c0+KYO.ch[p]));
+  if(p===1)T.fame=Math.min(KYO.fameMax,(T.fame||0)+1);
+  say(['凶作の年：米を高値のまま売ることにしました。','凶作の年：お救い米を出しました。町の評判が上がりました（'+(T.fame||0)+'）。','凶作の年：米をしぼって売ることにしました。'][p]+' 治安 '+Math.round(c0)+' → '+Math.round(T.chian),false);
+  if(S.phase==='kyo')S.phase='town';S.sure=null;beep(p===1?660:440,.12);dirty=true;save();}
+function tsumiToggle(){const T=cur();T.tsumiOn=!T.tsumiOn;banner(T.tsumiOn?'春ごとに積み立てます（1人1石ぶん）':'積み立てをやめました（積んだ米は残ります）');dirty=true;save();}
+const active=g=>!!g&&!g.off&&(g.bad||0)<3;
+const popNear=(T,i,d)=>{const r=Math.floor(i/W),c=i%W;let n=0;for(let y=Math.max(0,r-d);y<=Math.min(W-1,r+d);y++)for(let x=Math.max(0,c-d);x<=Math.min(W-1,c+d);x++){const g=T.grid[y*W+x];if(g&&isHome(g.k))n+=g.pop;}return n;};
+const sakaBase=(T,i)=>popNear(T,i,SAKA.r)*SAKA.per/120;   // 万円／秒
+const nearSaka=(T,i)=>{const r=Math.floor(i/W),c=i%W,R=SAKA.pr;for(let y=Math.max(0,r-R);y<=Math.min(W-1,r+R);y++)for(let x=Math.max(0,c-R);x<=Math.min(W-1,c+R);x++){const g=T.grid[y*W+x];if(g&&g.k==='sakariba')return true;}return false;};
+const guarded=(T,i)=>nearK(T,i,'hikeshi');
+// 火除け地：火は上下左右の建物へ燃え移る（最大 FIRE.max 軒）。空き地・田・綿畑・神社では止まる。建物が FIRE.dense 軒以上つながった「こんだ区画」は、火が出やすく、火消しでも止めきれない
+const burns=c=>!!c&&c.k!=='hatake'&&c.k!=='bokujo'&&c.k!=='hiroba';
+function fireBlock(T,i){if(!burns(T.grid[i]))return [];const seen=new Set([i]),q=[i];for(let h=0;h<q.length;h++)for(const j of nb(q[h]))if(!seen.has(j)&&burns(T.grid[j])){seen.add(j);q.push(j);}return q;}
+function denseMax(T){let m=0;const seen=new Set();for(let i=0;i<N;i++){if(seen.has(i)||!burns(T.grid[i]))continue;const b=fireBlock(T,i);for(const j of b)seen.add(j);if(b.length>m)m=b.length;}return m;}
+const fireChance=T=>{let n=0,u=0;for(let i=0;i<N;i++){const c=T.grid[i];if(c&&c.k==='sakariba'){n++;if(!guarded(T,i))u++;}}return FIRE.base+FIRE.saka*u+FIRE.saka*.2*(n-u)+(denseMax(T)>=FIRE.dense?FIRE.den:0);};
+function fire(T,ev){const y=yrOf(T);if(y<FIRE.grace||rnd(T.land*31.7+y*7.3,5)>=fireChance(T))return;
+  const sk=[],all=[];for(let i=0;i<N;i++){const c=T.grid[i];if(!c)continue;if(c.k==='sakariba')sk.push(i);if(c.k!=='hatake'&&c.k!=='bokujo')all.push(i);}
+  let cand=all;if(sk.length){const s0=sk[Math.floor(rnd(y,6+T.land)*sk.length)],r=Math.floor(s0/W),c=s0%W;cand=all.filter(j=>Math.abs(Math.floor(j/W)-r)<=1&&Math.abs(j%W-c)<=1);}
+  if(!cand.length)return;const i=cand[Math.floor(rnd(y*3.1+T.land,7)*cand.length)],k=T.grid[i].k;
+  const isG=j=>guarded(T,j)||T.grid[j].k==='hikeshi',g0=isG(i),dense=fireBlock(T,i).length>=FIRE.dense;
+  if(g0&&!dense){ev.push({e:'boya',i,k});return;}
+  const lim=!burns(T.grid[i])?1:dense&&g0?Math.ceil(FIRE.max/2):FIRE.max,out=[],seen=new Set([i]),q=[i];
+  for(let h=0;h<q.length&&out.length<lim;h++){const j=q[h];out.push(j);if(burns(T.grid[j]))for(const n of nb(j))if(!seen.has(n)&&burns(T.grid[n])){seen.add(n);if(dense||!isG(n))q.push(n);}}
+  for(const j of out)T.grid[j]=null;fixCaps(T);T.burnt=(T.burnt||0)+out.length;ev.push({e:'fire',i,k,is:out,dense,half:dense&&g0});}
+const charOf=T=>(shopShare(T)>=WANT2.line?'商':'')+(schoolShare(T)>=WANT2.line?'学':'');
+const canBuild=(T,k)=>!UNLOCK[k]||rankOf(T)>=UNLOCK[k]||(k==='hiroba'&&wantSoon(T))||((k==='ichiba'||k==='terakoya')&&want2Soon(T));   // 神社は、欲の知らせが出たら村でなくても建てられる（資金がまだ無いので会社のお金で）
+function wantLeave(T){let b=-1,bs=0;for(let i=0;i<N;i++){const c=T.grid[i];if(!c||!isHome(c.k)||c.pop<=liveCap(T,i))continue;const sc=siteScore(T,i);if(b<0||sc<bs){b=i;bs=sc;}}
+  if(b>=0)T.grid[b].pop-=HN;return b;}
+const cycle=T=>LANDS[T.land].warm+LANDS[T.land].winter;
+const isWinter=T=>(T.t%cycle(T))>=LANDS[T.land].warm;
+const fieldBase=(T,i)=>1.25*soilOf(T,i)*(wet(T,i)?1.5:1)*(T.grid[i]&&T.grid[i].up?UPG.ta.mul:1);
+const millBase=(T,i)=>12.5*LANDS[T.land].mill*(1+.25*adj(T,i,'hatake'));
+const bakeBase=(T,i)=>12.5*(1+.25*guests(T,i));
+
+function calc(T){
+  const L=LANDS[T.land],win=isWinter(T);
+  let pop=0,need=0,ww=0,wwin=0,mill=0,bake=0,ew=0,ewin=0,wool=0,mkt=0,saka=0;
+  for(let i=0;i<N;i++){const c=T.grid[i];if(!c)continue;
+    if(isHome(c.k)){pop+=c.pop;ew+=c.pop*EAT;ewin+=c.pop*EAT*(yukiCover(T,i)?1:L.eat);}
+    else{need+=cb(T,i,'take')?0:B[c.k].need;
+      if(c.k==='hatake'){const r=fieldBase(T,i);ww+=r;if(genCover(T,i))wwin+=r*.5;}
+      else if(c.k==='seifun')mill+=millBase(T,i);
+      else if(c.k==='panya')bake+=bakeBase(T,i);
+      else if(c.k==='bokujo')wool+=pastBase(T,i);
+      else if(c.k==='ichiba')mkt+=mktBase(T,i);
+      else if(c.k==='sakariba')saka+=sakaBase(T,i);}
+  }
+  const eff=need>0?Math.min(1,pop/need):1;
+  const em=eduMul(T);ww*=eff*em;wwin*=eff*em;if(isKyo(T)){ww*=KYO.yield;wwin*=KYO.yield;}mill*=eff*em;bake*=eff*em;wool*=eff;mkt*=eff;saka*=eff;
+  const steady=Math.min(ww,mill,bake);
+  return {saka,wool,mkt,pop,need,eff,win,ww,wwin,wheat:win?wwin:ww,mill,bake,ew,ewin,eat:win?ewin:ew,steady,surplus:(steady-ew)*60};
+}
+function prep(T){const L=LANDS[T.land],c=calc(T),win=c.win;
+  const left=win?cycle(T)-(T.t%cycle(T)):L.winter;
+  return {need:c.ewin*left,have:T.bread+T.flour+T.wheat+c.wwin*left,left,win};}
+function yearNet(T){const L=LANDS[T.land],c=calc(T);return c.steady*L.warm+Math.min(c.wwin,c.mill,c.bake)*L.winter-c.ew*L.warm-c.ewin*L.winter;}
+function ifLeft(id){const T=JSON.parse(JSON.stringify(cur()));PRES=[id];try{fixCaps(T);const c=calc(T);return {year:yearNet(T),surplus:c.surplus,winter:Math.min(c.wwin,c.mill,c.bake)*60,pop:c.pop};}finally{PRES=null;}}
+function fixCaps(T,ev){for(let i=0;i<N;i++){const c=T.grid[i];if(c&&isHome(c.k)){const cap=houseCap(T,i);
+  if(c.pop>cap){c.pop=cap;ev&&ev.push({e:'noise',i});}}}}
+function leaveOne(T){let b=-1,bs=0;for(let i=0;i<N;i++){const c=T.grid[i];if(!c||!isHome(c.k)||c.pop<=HN)continue;const sc=siteScore(T,i);if(b<0||sc<bs||(sc===bs&&c.pop>T.grid[b].pop)){b=i;bs=sc;}}
+  if(b>=0)T.grid[b].pop-=HN;return b;}
+function joinOne(T){let b=-1,bs=0;for(let i=0;i<N;i++){const c=T.grid[i];if(!c||!isHome(c.k)||c.pop>=liveCap(T,i))continue;const sc=siteScore(T,i);if(b<0||sc>bs||(sc===bs&&c.pop<T.grid[b].pop)){b=i;bs=sc;}}
+  if(b>=0)T.grid[b].pop+=HN;return b;}
+
+function step(T,dt,ev){
+  T.t+=dt;const away=T!==cur();if(away)T.frozen=(T.frozen||0)+dt;
+  if(isKyo(T)&&(!T.kyo||T.kyo.y!==yrOf(T))){const ts=Math.floor(T.tsumi||0);T.kyo={y:yrOf(T),p:null};if(ts>0){T.bread+=ts;T.tsumi=0;}ev.push({e:'kyo',tsumi:ts});}
+  if(!away&&(wantOn(T)||rentLv(T)===2)){T.wantT=(T.wantT||0)+dt;if(T.wantT>=WANT.leave){T.wantT=0;const i=wantLeave(T);if(i>=0)ev.push({e:'want',i});}}
+  for(let i=0;i<N;i++){const c=T.grid[i];if(c&&c.sale){c.sale.t+=dt;if(c.sale.t>=saleNeed(T,c)){const pr=sellPrice(T,i);S.money+=pr;c.sold=true;delete c.sale;ev.push({e:'sold',i,p:pr});}}}
+  const win=isWinter(T);
+  // 家賃は毎月（10秒ごと）に、年の額の12分の1ずつ入る。端数は次の月へ送る
+  T.rentAcc=(T.rentAcc||0)+dt;while(T.rentAcc>=10){T.rentAcc-=10;const x=rentOf(T)/12+(T.rentRem||0),m=Math.floor(x);T.rentRem=x-m;if(m>0){S.money+=m;ev.push({e:'rent',m});}}
+  if(win&&!T.wasWinter){T.wasWinter=true;T.winterClean=true;T.lostW=0;ev.push({e:'winterStart'});fire(T,ev);if(kyoSoon(T))ev.push({e:'kyoSoon'});}
+  if(!win&&T.wasWinter){T.wasWinter=false;T.edu=(T.edu||0)+schoolShare(T);if(!away){const u=unmetShare(T),c0=chianOf(T);let nS=0,nB=0;for(const g of T.grid){if(g&&g.k==='sakariba')nS++;if(g&&g.k==='bansho'&&active(g))nB++;}T.chian=Math.max(0,Math.min(100,c0+(u>0?-CHIAN.down*u:nS>nB?0:CHIAN.up)-SAKA.chian*nS+BAN.chian*nB));if(T.chian!==c0)ev.push({e:'chian',from:c0,to:T.chian});}if(!T.denseTold&&denseMax(T)>=FIRE.dense){T.denseTold=true;ev.push({e:'dense',n:denseMax(T)});}if(T.winterClean)T.winters++;ev.push({e:'winterEnd',clean:T.winterClean,lost:T.lostW,rent:0});
+    if(T.tsumiOn&&!isKyo(T)){const x=tsumiCost(T),add=calc(T).pop;if((T.tsumi||0)+add<=tsumiCap(T)&&S.money>=x){S.money-=x;T.tsumi=(T.tsumi||0)+add;ev.push({e:'tsumi',x,add});}}if(T.done)newYear(T,T.winterClean,ev);}
+  const c=calc(T);
+  T.wheat+=c.wheat*dt;
+  const m=Math.min(c.mill*dt,T.wheat);T.wheat-=m;T.flour+=m;
+  const b=Math.min(c.bake*dt,T.flour);T.flour-=b;T.bread+=b;
+  const kp=kyoPick(T),want=c.eat*dt*(kp===2?KYO.ration:1),eat=Math.min(want,T.bread);
+  T.bread-=eat;S.money+=eat*PRICE*LANDS[T.land].price*(1+shopGain(T))*(kp===0?KYO.price:kp===1?0:1);T.eatAcc+=eat;
+  if(c.saka>0)S.money+=c.saka*dt;
+  if(c.wool>0)S.money+=c.wool*dt*WOOL;                                                               // 木綿はとれたそばから売れる
+  if(c.mkt>0){const p=prep(T),sell=Math.max(0,Math.min(c.mkt*dt,T.bread-20,p.have-p.need));T.bread-=sell;S.money+=sell*MKT*LANDS[T.land].price;}   // 朝市：冬の備えを残して、余った白米だけ売る
+  if(want>0&&eat<want-1e-9){
+    T.hungerT+=dt;
+    if(T.hungerT>=10){T.hungerT=0;const i=leaveOne(T);
+      if(win){T.winterClean=false;if(i>=0){T.lostW++;T.lostAll=(T.lostAll||0)+1;}}
+      ev.push({e:'hungry',i});}
+  }else{
+    T.hungerT=Math.max(0,T.hungerT-dt);
+    if(T.bread>50){T.growT+=dt;if(T.growT>=8*(1+CHIAN.join*(1-chianOf(T)/100))){T.growT=0;const i=joinOne(T);if(i>=0)ev.push({e:'back',i});}}
+  }
+}
+function newYear(T,clean,ev){   // 年度がわり：余りは返して新しい資金が付き、公共の物の維持費を引く。払えなかった物は1段ずつ寂れる
+  const grant=grantOf(T,clean),bad=[],kb=[],ix=[];let forced=0;T.yosan=grant;
+  for(let i=0;i<N;i++){const c=T.grid[i];if(c&&KEEP[c.k]&&!c.off)ix.push(i);}
+  ix.sort((a,b)=>(T.grid[a].k==='kouei'?0:1)-(T.grid[b].k==='kouei'?0:1)||a-b);   // 共同長屋が先（やめられないので）
+  for(const i of ix){const c=T.grid[i],k=KEEP[c.k];
+    if(T.yosan>=k){T.yosan-=k;c.bad=0;}
+    else if(c.k==='kouei'){if(S.money>=k){S.money-=k;forced+=k;c.bad=0;}else{c.bad=Math.min(3,(c.bad||0)+1);kb.push(c.bad);}}   // 共同長屋は、資金で足りなければ会社の資産から払う
+    else{c.bad=Math.min(3,(c.bad||0)+1);bad.push(c.bad);}}
+  fixCaps(T);if(ev)ev.push({e:'year',grant,left:T.yosan,bad,kb,forced});}
+function goals(T){const c=calc(T),G=LANDS[T.land].goal;
+  const g=[{t:'冬を'+G.w+'回、白米を切らさずに越す',ok:T.winters>=G.w,now:'いま '+T.winters+'回'},
+           {t:'人口 '+G.pop+'人以上',ok:c.pop>=G.pop,now:'いま '+c.pop+'人'}];
+  if(G.sur)g.push({t:'白米の余り 半年で'+G.sur+'石以上',ok:c.surplus>=G.sur-1e-6,now:'いま '+sign(c.surplus)});
+  return g;}
+const sign=x=>(x>=0?'+':'−')+Math.abs(Math.round(x));
+const UP=1.02;   // 同じ建物を建てるたびの値上がり（5%→2%。18回目の会議。仮）
+const costOf=(T,k)=>Math.round(B[k].cost*Math.pow(UP,count(T,k)));
+const AMT=[{n:'少なめ',k:1.5,d:'冬の分の1.5倍を残して、余りを送ります（送り元が安全）'},{n:'ふつう',k:1,d:'自分の冬の分を残して、余りを送ります'},{n:'多め',k:.5,d:'冬の分の半分だけ残して送ります（送り元の冬が足りなくなる恐れ）'}];
+const amtOf=T=>T.route&&T.route.amt!=null?T.route.amt:1;
+function led(T,d){if(!T||!d)return;const l=T.led||(T.led={i:0,o:0});if(d>0)l.i+=d;else l.o-=d;}
+let ledDepth=0;const ledWrap=f=>function(){if(ledDepth)return f.apply(this,arguments);const T=cur(),m0=S.money;ledDepth++;try{return f.apply(this,arguments);}finally{ledDepth--;led(T,S.money-m0);}};
+const ledLine=(l)=>'入り '+yenFix(Math.round(l.i)+'万円')+'・出 '+yenFix(Math.round(l.o)+'万円')+'＝<b class="'+(l.i-l.o<0?'low':'')+'">'+(l.i-l.o<0?'−':'＋')+yenFix(Math.abs(Math.round(l.i-l.o))+'万円')+'</b>';
+function excess(T,good){const p=prep(T);return Math.floor(Math.min(T[good]-20,p.have-p.need*AMT[amtOf(T)].k));}
+
+// ───────── 進める ─────────
+function advance(dt,quiet){
+  S.clock+=dt;
+  const C=cur();
+  for(const T of founded()){
+    if(!T.started)continue;
+    const ev=[],mine=T===C,nm=LANDS[T.land].n;
+    {const m0=S.money;step(T,dt,ev);led(T,S.money-m0);}
+    for(const e of ev){
+      if(e.e==='kyoSoon'){dirty=true;say((mine?'':nm+'：')+'夏が寒く、稲の育ちがよくありません。来年は凶作になりそうです（田のとれ高が半分）。蔵の白米を増やしておきましょう。'+(T.tsumiOn?'':'メニューの「凶作への積み立て」を始めておくと、次の凶作から、春に蔵へ米が入ります。'),quiet);if(mine&&!quiet)beep(300,.2);}
+      else if(e.e==='kyo'){dirty=true;say((mine?'':nm+'：')+'凶作の年です。今年は田のとれ高が半分になります。'+(e.tsumi?'積み立ての '+e.tsumi+'石を蔵に入れました。':''),quiet);}
+      else if(e.e==='tsumi'){dirty=true;if(mine)say('積み立て：'+e.x+'万円で '+e.add+'石を積みました（いま '+Math.floor(T.tsumi)+'石）。',true);}
+      else if(e.e==='winterStart'){if(mine)say('冬が来ました。田は休み'+(LANDS[T.land].eat>1?'、住民は'+LANDS[T.land].eat+'倍食べます。':'です。'),quiet);dirty=true;}
+      else if(e.e==='winterEnd'){dirty=true;T.ledPrev=T.led||{i:0,o:0};T.led={i:0,o:0};
+        const who=(T.chief?[T.chief]:[]).concat(mine?S.hand:[]);
+        if(e.clean){for(const id of who)addHist(id,nm+'で冬を越した');
+          if(mine){say('冬を越しました。'+(e.rent?'家賃 +'+e.rent+'万円。':''),quiet);if(!quiet){beep(660,.12);setTimeout(()=>beep(880,.18),130);}}
+          else if(T.chief)say(P[T.chief].n+'（'+nm+'）より：冬を越しました。',true);}
+        else if(mine)say('冬のあいだに白米が切れました'+(e.lost?'（'+e.lost+'人が出て行った）':'')+'。次の冬でもう一度。'+(e.rent?'家賃 +'+e.rent+'万円。':''),quiet);
+        else say((T.chief?P[T.chief].n+'（'+nm+'）より：':nm+'：')+'冬に白米が切れました。'+(e.lost?e.lost+'人が町を出ました。':''),quiet);}
+      else if(e.e==='year'){dirty=true;
+        if(mine)say('新しい年度の資金 '+e.grant+'万円（維持費を引いて残り '+Math.floor(e.left)+'万円）。',quiet);   // よその町の分は、足りないときだけ知らせる
+        if(e.bad.length){const w=Math.max.apply(null,e.bad);say((mine?'':nm+'：')+'維持費が足りない公共の建物が'+e.bad.length+'か所あります。'+(w>=3?'休止になりました。':w===2?'効き目が半分になりました。':'次の春も払えないと、効き目が半分になります。'),quiet);if(mine&&!quiet)beep(170,.2);}
+        if(e.forced)say((mine?'':nm+'：')+'共同長屋の維持費が資金で足りず、会社の資産から'+e.forced+'万円払いました。',quiet);
+        if(e.kb&&e.kb.length)say((mine?'':nm+'：')+'共同長屋'+e.kb.length+'軒の維持費が払えません。'+(Math.max.apply(null,e.kb)>=2?'10人しか住めなくなりました。':'次の春も払えないと、10人しか住めなくなります。'),quiet);}
+      else if(e.e==='hungry'){dirty=true;
+        if(mine&&!quiet){if(e.i>=0)popAt(e.i,'白米がない −10人','bad');beep(170,.2);}
+        if(!T.hungryTold){T.hungryTold=true;say((mine?'':nm+'：')+'白米が足りず、住民が出て行き始めました。',quiet);}}
+      else if(e.e==='back'){dirty=true;T.hungryTold=false;if(mine&&!quiet)popAt(e.i,'もどってきた +10人','good');}
+      else if(e.e==='chian'){dirty=true;const a=Math.round(e.from),b=Math.round(e.to);
+        if(b<a&&(a===100||Math.floor(b/25)!==Math.floor(a/25))){say((mine?'':nm+'：')+'治安が悪くなってきました（'+b+'）。欲を満たしていない家があるためです。長屋の時価が下がり、人が入りにくくなります。',quiet);if(mine&&!quiet)beep(170,.2);}
+        else if(b>a&&b===100)say((mine?'':nm+'：')+'治安が元に戻りました。',quiet);}
+      else if(e.e==='fire'){dirty=true;const is=e.is||[e.i];if(mine&&is.includes(S.sel))S.sel=null;
+        say(nm+'で火事。'+B[e.k].n+(is.length>1?'など'+is.length+'軒が焼けました。となりの建物へ燃え移りました。':'が焼けました。')+(e.dense?'建物が'+FIRE.dense+'軒以上つながった「こんだ区画」は、火消し'+(e.half?'があっても止めきれません':'でも止めきれません')+'。空き地・田・神社で区切ると、火はそこで止まります。':is.length>1?'空き地・田・神社で区切るか、火消しを近くに置くと止まります。':'火消しが近く（まわり3マス）にあれば、ぼやで済みます。'),quiet);
+        if(mine&&!quiet){for(const j of is)popAt(j,'火事','bad');beep(140,.3);}}
+      else if(e.e==='dense'){dirty=true;say((mine?'':nm+'：')+'建物が'+e.n+'軒つながって、こみ合ってきました。'+FIRE.dense+'軒以上つながった区画は火が出やすく、火事になると火消しがあっても燃え広がります。空き地・田・神社で区切っておくと、火はそこで止まります（火除け地）。',quiet);if(mine&&!quiet)beep(300,.2);}
+      else if(e.e==='boya'){dirty=true;say(nm+'の'+B[e.k].n+'でぼやが出ましたが、火消しが消し止めました。',quiet);if(mine&&!quiet)popAt(e.i,'ぼやで済んだ','good');}
+      else if(e.e==='sold'){dirty=true;if(mine&&!quiet){popAt(e.i,'売却 +'+e.p+'万円','good');beep(660,.1);}say((mine?'':nm+'：')+'長屋が'+e.p+'万円で売れました。',quiet);}
+      else if(e.e==='want'){dirty=true;if(mine&&!quiet)popAt(e.i,(unmet(T,e.i)?'神社がない':'店も寺子屋もない')+' −10人','bad');}
+    }
+    if(mine&&T.grid.some(c=>c&&c.sale))dirty=true;   // 売却待ちのゲージを進める
+    if(T.done&&T.doneY==null)T.doneY=yrW(T);   // 村になった年（欲が来る年を数える元）
+    if(wantSoon(T)&&!T.wantTold){T.wantTold=1;dirty=true;say((mine?'':nm+'：')+'住民が、白米だけでは物足りなくなってきました。来年の春から、神社が近く（まわり2マス）にない家は10人出ていきます。'+(T.done?'':'神社を会社のお金で建てられるようになりました。'),quiet);if(mine&&!quiet)beep(440,.15);}
+    else if(wantOn(T)&&(T.wantTold||0)<2){T.wantTold=2;dirty=true;say((mine?'':nm+'：')+'住民が集まる場をほしがっています。神社が近くにない家から、10人ずつ出ていきます。',quiet);if(mine&&!quiet)beep(170,.2);}
+    if(rankOf(T)>=3&&T.cityY==null){T.cityY=yrW(T);dirty=true;}   // 市になった年（前の続きで、もう市の町はこの時から数える）
+    if(want3Soon(T)&&!T.want3Told){T.want3Told=1;dirty=true;say((mine?'':nm+'：')+'市の住民が、守りと楽しみをほしがり始めました。来年の春から、番所か火消しが近く（まわり3マス）にない家と、盛り場が近く（まわり3マス）にない家は、それぞれ10人出ていきます。',quiet);if(mine&&!quiet)beep(440,.15);}
+    else if(want3On(T)&&(T.want3Told||0)<2){T.want3Told=2;dirty=true;say((mine?'':nm+'：')+'守り（番所か火消し）が近くにない家、楽しみ（盛り場）が近くにない家から、10人ずつ出ていきます。',quiet);if(mine&&!quiet)beep(170,.2);}
+    if(want2Soon(T)&&!T.want2Told){T.want2Told=1;dirty=true;say((mine?'':nm+'：')+'住民が、買い物や学びの場をほしがり始めました。来年の春から、朝市か寺子屋が近く（まわり3マス）にない家は10人出ていきます。朝市と寺子屋を建てられるようになりました。',quiet);if(mine&&!quiet)beep(440,.15);}
+    else if(want2On(T)&&(T.want2Told||0)<2){T.want2Told=2;dirty=true;say((mine?'':nm+'：')+'朝市も寺子屋も近くにない家から、10人ずつ出ていきます。',quiet);if(mine&&!quiet)beep(170,.2);}
+    if(T.done&&T.yosan==null)T.yosan=grantOf(T,false);   // 村になったとき（と、資金の無かった続きを開いたとき）に最初の資金が付く
+    if(T.done&&rankOf(T)<3){const pp=calc(T).pop,nr=pp>=RANKPOP[3]?3:pp>=RANKPOP[2]?2:1;
+      if(nr>rankOf(T)){T.rank=nr;dirty=true;say(nm+'が「'+RANK[nr]+'」になりました。便で送れる量が'+(nr===3?4:2)+'倍になります。'+(nr===2?'長屋の家賃の高さ（安い・ふつう・高い）を変えられます。長屋を押して「家賃を変える」か、メニューから。':''),quiet);
+        if(nr===3&&mine&&!quiet&&S.phase==='town'){S.phase='kugiri';S.tool=null;S.sel=null;S.sure=null;S.dr='';}   // 一区切りの知らせ（試験の早回しでは出さない）
+if(!quiet){beep(660,.1);setTimeout(()=>beep(990,.2),120);}}}
+    if(!T.done&&goals(T).every(g=>g.ok)){T.done=true;dirty=true;say(nm+'が「村」になりました。共同の資金が付きます。資金で神社と共同長屋を建てられます。'+(T.land===0?'人口'+RANKPOP[2]+'人で「町」になると、次の土地を開けます。':'地図から次の土地を開けます。'),quiet);if(!quiet){beep(660,.1);setTimeout(()=>beep(990,.2),120);}}
+  }
+  if(C.started&&C.kyo&&C.kyo.p==null&&isKyo(C)&&S.phase==='town'){if(quiet){if(S.kyoAuto!=null)kyoChoose(S.kyoAuto);}else{S.phase='kyo';S.tool=null;S.sel=null;S.sure=null;S.dr='';dirty=true;}}
+  S.shipAcc+=dt;
+  if(S.shipAcc>=10){S.shipAcc-=10;
+    for(const T of founded()){T.last=0;const r=T.route,D=r&&S.towns[r.to];if(!D||!T.started)continue;
+      const n=Math.min(shipOf(T),excess(T,r.good));
+      if(n>0){T[r.good]-=n;D[r.good]+=n;T.sent+=n;D.got+=n;T.last=n;dirty=true;
+        if(D===C&&!quiet)banner(LANDS[T.land].n+'から '+GOODS[r.good]+n+'石が届いた');}}}
+  if(!quiet){while(C.eatAcc>=20){C.eatAcc-=20;const hs=[];C.grid.forEach((c,i)=>{if(c&&isHome(c.k)&&c.pop>0)hs.push(i);});
+      if(hs.length&&Math.random()<.5)popAt(hs[Math.floor(Math.random()*hs.length)],'+'+Math.round(20*PRICE*LANDS[C.land].price)+'万円','');}}
+  else C.eatAcc=0;
+  if(S.loc===0)while(S.tip<TIPS.length&&TIPS[S.tip].ok(C)){if(!quiet){banner('できた：'+TIPS[S.tip].t.replace(/（.*）/,''));beep(740,.1);}S.tip++;dirty=true;}
+  if(!S.ended&&S.towns.every(T=>T&&T.done)){S.ended=true;S.phase='end';S.paused=true;dirty=true;}
+}
+function addHist(id,line){const h=S.hist[id]||(S.hist[id]=[]);if(!h.includes(line)){h.push(line);dirty=true;}}
+function say(t,quiet){S.log.unshift(t);S.log.length=Math.min(S.log.length,8);if(!quiet)banner(t);dirty=true;}
+
+// ───────── 操作 ─────────
+// ───────── 区画（4×4マスが1区画。16区画のうち、最初に使えるのはまんなかの4つ＝8×8マス。まわりの12こはお金で買う。数字は仮） ─────────
+const blk=i=>Math.floor(Math.floor(i/W)/4)*4+Math.floor((i%W)/4);
+const isOpen=(T,i)=>!T.open||T.open[blk(i)];
+const plotCost=T=>Math.round(16000*Math.pow(1.4,T.open.filter(Boolean).length-4));   // 買うたびに4割ずつ高くなる
+const canBuy=(T,b)=>!T.open[b]&&[[0,1],[0,-1],[1,0],[-1,0]].some(([dr,dc])=>{const r=Math.floor(b/4)+dr,c=b%4+dc;return r>=0&&r<4&&c>=0&&c<4&&T.open[r*4+c];});   // 買えるのは、持っている区画のとなりだけ
+function buyPlot(b){const T=cur();if(!T.open||!canBuy(T,b))return false;const c=plotCost(T);
+  if(S.money<c){banner('お金が足りません（あと'+Math.ceil(c-S.money)+'万円）');beep(170,.15);return false;}
+  S.money-=c;T.open[b]=true;S.sel=null;say(LANDS[T.land].n+'の土地を広げました（'+T.open.filter(Boolean).length+'／16区画）。');beep(520,.1);dirty=true;save();return true;}
+// 最初の手順のあいだの「おすすめの場所」：いまの手順で建てる物と、点の高い空き地（家はまんなか寄りで川と搗き屋から離す／田は川のとなり／搗き屋は田のとなり／米屋は家のとなり）
+function recCells(T){if(S.loc!==0||T.land!==0||S.tip>=4)return null;const k=['jutaku','hatake','seifun','panya'][S.tip],f=[];
+  for(let i=0;i<N;i++)if(!T.grid[i]&&terr(T,i)==='.'&&isOpen(T,i))f.push(i);
+  const d=i=>Math.abs(Math.floor(i/W)-W/2+.5)+Math.abs(i%W-W/2+.5);
+  const sc=i=>k==='jutaku'?-d(i)*.3-(riverAdj(T,i)?3:0)+adj(T,i,'jutaku')-adj(T,i,'hatake')*2-adj(T,i,'seifun')*5
+    :k==='hatake'?(riverAdj(T,i)?5:0)-d(i)*.3-adj(T,i,'jutaku')*3+adj(T,i,'hatake')*.5
+    :k==='seifun'?adj(T,i,'hatake')*3-adj(T,i,'jutaku')*6-d(i)*.1
+    :adj(T,i,'jutaku')*3-adj(T,i,'hatake')-d(i)*.1;
+  const v=new Map(f.map(i=>[i,sc(i)]));f.sort((a,b)=>v.get(b)-v.get(a));
+  return {k,cells:f.slice(0,1)};}   // 候補は1つだけ（いくつも出すと、どこのことか分からない）
+function place(i,k){
+  const T=cur();if(T.grid[i]||terr(T,i)!=='.'||!isOpen(T,i))return false;
+  if(!canBuild(T,k)){banner(B[k].n+'は、町が「'+RANK[UNLOCK[k]]+'」になると建てられます');return false;}
+  const cost=costOf(T,k);
+  if(isPub(k)&&T.done){const sh=Math.max(0,cost-Math.max(0,T.yosan||0));   // 共同の資金が足りない分は、会社のお金で払う
+    if(S.money<sh){banner('共同の資金と会社のお金を合わせても足りません（あと'+Math.ceil(sh-S.money)+'万円）');beep(170,.15);return false;}
+    payPub(T,cost);if(sh>0)banner('共同の資金が足りない分 '+Math.ceil(sh)+'万円を、会社のお金で払いました');}
+  else{if(S.money<cost){banner('お金が足りません（あと'+Math.ceil(cost-S.money)+'万円）');beep(170,.15);return false;}S.money-=cost;}
+  T.grid[i]={k,by:null};
+  if(isHome(k))T.grid[i].pop=liveCap(T,i);
+  if(k==='kouei')T.grid[i].y0=yrOf(T);
+  if(!T.started){T.started=true;S.paused=false;}
+  const ev=[];fixCaps(T,ev);
+  if(k==='hatake'){if(riverAdj(T,i))popAt(i,'川のとなり ×1.5','good');else if(wet(T,i))popAt(i,'水みち ×1.5','good');
+    nb(i).forEach(j=>{if(T.grid[j]&&T.grid[j].k==='seifun')popAt(j,'田がふえた +25%','good');});}
+  if(k==='seifun'){const f=adj(T,i,'hatake');if(f)popAt(i,'田'+f+'つ +'+25*f+'%','good');}
+  if(k==='panya'){const h=adj(T,i,'jutaku');if(h)popAt(i,'お客'+h+'軒 +'+25*h+'%','good');}
+  if(isHome(k)){popAt(i,noisy(T,i)?'うるさい 10人だけ':'+'+T.grid[i].pop+'人',noisy(T,i)?'bad':'good');
+    nb(i).forEach(j=>{if(T.grid[j]&&T.grid[j].k==='panya')popAt(j,'お客がふえた +25%','good');});}
+  ev.forEach(e=>popAt(e.i,'うるさい！ −10人','bad'));
+  lastPlaced=i;beep(520,.07);dirty=true;save();return true;
+}
+// 田は1回押すと、押したマスから右と下へ2×2の4マスをまとめて建てる（空いているマスだけ。お金が足りなくなった所で止まる）
+// 田を押したとき、実際に田になるマス（押したマスから右と下の2×2のうち、空いている所）
+function fieldCells(T,i){const r=Math.floor(i/W),c=i%W,o=[];for(const[dr,dc]of[[0,0],[0,1],[1,0],[1,1]]){const y=r+dr,x=c+dc;if(y>=W||x>=W)continue;const j=y*W+x;if(!T.grid[j]&&terr(T,j)==='.'&&isOpen(T,j))o.push(j);}return o;}
+function placeField(i){const T=cur(),r=Math.floor(i/W),c=i%W;let n=0;
+  for(const[dr,dc]of[[0,0],[0,1],[1,0],[1,1]]){const y=r+dr,x=c+dc;if(y>=W||x>=W)continue;const j=y*W+x;
+    if(T.grid[j]||terr(T,j)!=='.'||!isOpen(T,j))continue;
+    if(n>0&&S.money<costOf(T,'hatake'))break;
+    if(place(j,'hatake'))n++;else if(n===0)return false;}
+  return n>0;}
+// 田の上に、ほかの建物をそのまま建てる（田の取り壊しのお金は加わる）
+function overwrite(i,k){const T=cur(),c=T.grid[i];if(!c||c.k!=='hatake'||k==='hatake'||!B[k])return false;
+  if(!canBuild(T,k)){banner(B[k].n+'は、町が「'+RANK[UNLOCK[k]]+'」になると建てられます');return false;}
+  const cost=costOf(T,k),dc=demoCost('hatake'),have=S.money+(isPub(k)&&T.done?Math.max(0,T.yosan||0):0);
+  if(have<cost+dc){banner('お金が足りません（田の取り壊し'+dc+'万円＋'+B[k].n+cost+'万円。あと'+Math.ceil(cost+dc-have)+'万円）');beep(170,.15);return false;}
+  S.money-=dc;T.grid[i]=null;if(!place(i,k)){T.grid[i]=c;S.money+=dc;return false;}return true;}
+function upHouse(i){const T=cur(),c=T.grid[i];if(!c||c.k!=='jutaku'||c.sold||c.sale||c.up)return false;const x=UPG.ie.cost;
+  if(S.money<x){S.sure=null;banner('お金が足りません（2階建て'+x+'万円。あと'+Math.ceil(x-S.money)+'万円）');beep(170,.15);dirty=true;return false;}
+  S.money-=x;c.up=1;S.sure=null;popAt(i,'2階建て 定員+'+(noisy(T,i)?1:UPG.ie.add)*HN+'人','good');beep(660,.1);dirty=true;save();return true;}
+// つながっている、まだ上田でない田（押した田から上下左右にたどる）
+function taGroup(T,i){const seen={},out=[],q=[i];seen[i]=1;while(q.length){const j=q.shift(),g=T.grid[j];if(!g||g.k!=='hatake')continue;if(!g.up)out.push(j);const r=Math.floor(j/W),c=j%W;
+    for(const[dr,dc]of[[-1,0],[1,0],[0,-1],[0,1]]){const y=r+dr,x=c+dc;if(y<0||x<0||y>=W||x>=W)continue;const k=y*W+x;if(!seen[k]){seen[k]=1;q.push(k);}}}return out;}
+function upField(i,all){const T=cur(),c=T.grid[i];if(!c||c.k!=='hatake')return 0;const x=UPG.ta.cost,ls=all?taGroup(T,i):(c.up?[]:[i]),n=Math.min(ls.length,Math.floor(S.money/x));
+  if(!ls.length)return 0;if(n<1){S.sure=null;banner('お金が足りません（上田'+x+'万円。あと'+Math.ceil(x-S.money)+'万円）');beep(170,.15);dirty=true;return 0;}
+  ls.slice(0,n).forEach(j=>{T.grid[j].up=1;});S.money-=n*x;S.sure=null;popAt(i,n>1?'上田 '+n+'マス ×'+UPG.ta.mul:'上田 ×'+UPG.ta.mul,'good');
+  if(n<ls.length)banner('お金が足りる分の '+n+'マスだけ上田にしました');beep(660,.1);dirty=true;save();return n;}
+const demoCost=k=>Math.round(B[k].cost*.3);   // 取り壊しにかかるお金（お金は戻らない。洋平さん「現実もそうだし」）
+function payPub(T,x){const y=Math.min(Math.max(0,T.yosan||0),x);if(S.money<x-y)return false;T.yosan=(T.yosan||0)-y;S.money-=x-y;return true;}   // 公共の払い：まず共同の資金、足りない分は会社のお金
+function pubFund(i){const T=cur(),c=T.grid[i];if(!c||!c.bad)return;const k=KEEP[c.k];
+  if(S.money<k){banner('お金が足りません（あと'+Math.ceil(k-S.money)+'万円）');beep(170,.15);return;}
+  S.money-=k;c.bad=0;fixCaps(T);banner('会社のお金で維持費を払いました。もとどおり動きます');beep(600,.08);dirty=true;save();}
+function pubOff(i){const T=cur(),c=T.grid[i];if(!c||!KEEP[c.k]||c.k==='kouei')return;c.off=true;c.bad=0;S.sure=null;fixCaps(T);banner(B[c.k].n+'を休止しました。維持費はかかりません');dirty=true;save();}
+function pubOn(i){const T=cur(),c=T.grid[i];if(!c||!c.off)return;const k=KEEP[c.k];
+  if(!payPub(T,k)){banner('再開するお金が足りません（維持費'+k+'万円）');beep(170,.15);return;}
+  c.off=false;c.bad=0;fixCaps(T);banner(B[c.k].n+'を再開しました');beep(600,.08);dirty=true;save();}
+function sellHouse(i){const T=cur(),c=T.grid[i];if(!c||c.k!=='jutaku'||c.sold||c.sale)return;   // 売りに出す（売れるまで家賃は入る。取り消せる）
+  c.sale={t:0,cut:false};S.sure=null;banner('長屋を売りに出しました');beep(520,.08);dirty=true;save();}
+function saleCut(i){const c=cur().grid[i];if(!c||!c.sale||c.sale.cut)return;c.sale.cut=true;S.sure=null;banner('2割下げました。売れるまでの時間が半分になります');beep(520,.08);dirty=true;save();}
+function saleStop(i){const c=cur().grid[i];if(!c||!c.sale)return;delete c.sale;S.sure=null;banner('売るのを取り消しました');dirty=true;save();}
+function demolish(i){const T=cur(),c=T.grid[i];if(!c)return;const dc=demoCost(c.k);
+  if(c.sold){S.sure=null;banner('売った家は会社の物ではないので、取り壊せません');beep(170,.15);dirty=true;return;}
+  if(lockLeft(T,c)){S.sure=null;banner('共同長屋は、建ててから'+LOCKY+'年は取り壊せません（あと'+lockLeft(T,c)+'年）');beep(170,.15);dirty=true;return;}
+  if(isPub(c.k)?!payPub(T,dc):S.money<dc){S.sure=null;banner('取り壊すお金が足りません（'+dc+'万円）');beep(170,.15);dirty=true;return;}
+  if(!isPub(c.k))S.money-=dc;T.grid[i]=null;S.sel=null;S.sure=null;fixCaps(T);dirty=true;save();}
+function assign(id,i){
+  const T=cur(),c=T.grid[i];
+  if(!c||!P[id].on.includes(c.k)){banner(P[id].n+'が受け持てるのは '+P[id].on.map(k=>B[k].n).join('・')+' です');return false;}
+  T.grid.forEach(x=>{if(x&&x.by===id)x.by=null;});
+  c.by=id;const ev=[];fixCaps(T,ev);ev.forEach(e=>popAt(e.i,'うるさい！ −10人','bad'));
+  popAt(i,P[id].n+'：'+P[id].t,'good');beep(600,.08);dirty=true;save();return true;
+}
+function unassign(i){const T=cur(),c=T.grid[i];if(c){c.by=null;const ev=[];fixCaps(T,ev);ev.forEach(e=>popAt(e.i,'うるさい！ −10人','bad'));dirty=true;save();}}
+function buyBread(){const T=cur();if(S.money<1500){banner('お金が足りません（あと'+Math.ceil(1500-S.money)+'万円）');return;}
+  S.money-=1500;T.bread+=100;banner('行商から白米100石を買った');dirty=true;save();}
+// 時間の進み：SLOW＝実際の1秒に進むゲームの秒数（▶のとき）。見ている間（メニュー・マスの中身）は止める
+const SLOW=.5,looking=()=>!!S.dr||(S.sel!=null&&!S.tool);
+function tap(i){
+  const T=cur(),c=T.grid[i],tool=S.tool,sure0=S.sure;S.sure=null;
+  if(!isOpen(T,i)){S.tool=null;S.sel=S.sel===i?null:i;dirty=true;return;}   // まだ買っていない土地：中身の欄に「買う」を出す
+  if(tool&&B[tool]){if(c){
+      if(c.k==='hatake'&&tool!=='hatake'){   // 田の上に建て替え：1度目は知らせるだけ。同じ田をもう一度押すと建つ
+        if(sure0==='ow:'+i)overwrite(i,tool);
+        else{S.sure='ow:'+i;banner('この田をつぶして'+B[tool].n+'を建てます（取り壊し'+demoCost('hatake')+'万円が加わります）。もう一度押すと建ちます');beep(300,.08);}}
+      else{S.tool=null;S.sel=i;}}else if(terr(T,i)==='.'){   // 空き地：1度目は点滅させるだけ。同じマスをもう一度押すと建つ
+      if(sure0==='pl:'+i){if(tool==='hatake')placeField(i);else place(i,tool);}
+      else{S.sure='pl:'+i;beep(300,.05);}}}
+  else if(tool&&tool.slice(0,2)==='p:'){const id=tool.slice(2);
+    // すでにほかの人がいる建物は、1度目は知らせるだけ。同じ建物をもう一度押したら入れ替える（黙って追い出さない）
+    if(c&&c.by&&c.by!==id&&P[id].on.includes(c.k)&&sure0!=='rep:'+i){S.sure='rep:'+i;beep(300,.08);}
+    else if(c&&assign(id,i)){S.tool=null;S.sel=i;}}
+  else S.sel=S.sel===i?null:i;
+  dirty=true;
+}
+// 次の土地へ進めるか：仕上げ（村）ができていること。1つめの土地（はじまりの野）だけは「町」になってから（村では早すぎる。洋平さん 2026-11-19）
+const canGo=T=>!!T.done&&(T.land!==0||rankOf(T)>=2);
+function canReach(k){return !S.towns[k]&&LANDS[k].links.some(j=>S.towns[j]);}
+function whyNot(k){ // 開けない理由。開けるなら ''
+  if(S.towns[k])return 'もう開いています';
+  if(!canReach(k))return 'となりの土地を先に開くと、道がつながります';
+  const F=frontier();
+  if(!F.done)return 'いちばん新しい町（'+LANDS[F.land].n+'）を仕上げると開けます';
+  if(!canGo(F))return LANDS[F.land].n+'が「町」（人口'+RANKPOP[2]+'人）になると開けます';
+  if(S.loc!==F.land)return LANDS[F.land].n+'に行ってから開きます（そこに1人残します）';
+  return '';
+}
+function found(k){if(whyNot(k))return false;S.pick=k;S.phase='choose';S.paused=true;S.sure=null;dirty=true;save();return true;}
+function leave(id){
+  const T=cur(),k=S.pick,L=LANDS[k];if(k==null||!S.hand.includes(id))return;
+  T.chief=id;S.hand=S.hand.filter(x=>x!==id);if(L.recruit)S.hand.push(L.recruit);
+  if(!T.route)T.route={to:k,good:'bread'};
+  S.towns[k]=newTown(k);S.loc=k;S.pick=null;S.phase='town';S.tool=null;S.sel=null;S.paused=true;S.sure=null;S.mapSel=k;
+  fixCaps(T);
+  say(P[id].n+'を'+LANDS[T.land].n+'に残し、'+L.n+'に着きました。'+(L.recruit?P[L.recruit].n+'が加わりました。':''));
+  dirty=true;save();
+}
+function travel(k){
+  if(!S.towns[k]||k===S.loc)return;const from=cur();
+  S.loc=k;S.tool=null;S.sel=null;S.sure=null;S.phase='town';S.mapSel=k;
+  fixCaps(from);fixCaps(cur());say(LANDS[k].n+'に来ました。手元の人の力は、いまいる町でだけ効きます。',true);dirty=true;save();
+}
+function setRoute(k,good,to){const T=S.towns[k];if(!T)return;
+  if(good==='none')T.route=null;
+  else{const d=to!=null?to:(T.route?T.route.to:S.towns.findIndex((x,j)=>x&&j!==k));if(d<0||d===k||!S.towns[d])return;T.route={to:d,good:good||(T.route?T.route.good:'bread'),amt:amtOf(T)};}
+  dirty=true;save();}
+function setAmt(k,a){const T=S.towns[k];if(!T||!T.route||!AMT[a])return;T.route.amt=a;dirty=true;save();}
+function restart(){S=newGame();dirty=true;save();}
+
+// ───────── 表示の小道具 ─────────
+const $=id=>document.getElementById(id);
+let dirty=true,lastPlaced=-1,toastT=0;
+const yenFix=t=>String(t).replace(/(\d+(?:\.\d+)?)(<\/b>)?万円/g,(m,n,b)=>{const v=+n;return (v>=100000?(Math.round(v/1000)/10):v>=10000?(Math.round(v/100)/100):Math.round(v).toLocaleString('ja-JP'))+(b||'')+(v>=10000?'億円':'万円');});
+function setH(el,h){h=yenFix(h);if(el._h!==h){el.innerHTML=h;el._h=h;}}
+const f0=x=>Math.floor(x+1e-6);
+const rc=i=>(Math.floor(i/W)+1)+'行'+(i%W+1)+'列';
+const tname=t=>t==='~'?'川':t==='^'?'山':t==='='?'海':'空き地';
+function hintFor(T,i,k){   // そこへ建てたときの効き目：{t＝理由の言葉（1回めのタップで出す）, lv＝強さ1〜3（地面の色の濃さ）, bad＝損}
+  const lv=(n,a,b)=>n>=b?3:n>=a?2:1;
+  if(k==='hatake')return wet(T,i)?{t:(riverAdj(T,i)?'川のそば':'水みち')+'：よくとれる（1.5倍）',lv:2}:nb(i).some(j=>cb(T,j,'hana'))?{t:'水みちが届く：よくとれる（1.5倍）',lv:2}:null;
+  if(k==='seifun'){const f=adj(T,i,'hatake'),h=adj(T,i,'jutaku');if(h)return{t:'家のとなり：音がうるさく、その家は10人しか住めない',bad:1};return f?{t:'となりに田'+f+'つ：よく搗ける（+'+25*f+'%）',lv:Math.min(3,f)}:null;}
+  if(k==='panya'){const h=adj(T,i,'jutaku');return h?{t:'となりに家'+h+'軒：お客がふえる（+'+25*h+'%）',lv:Math.min(3,h)}:null;}
+  if(isHome(k)){if(noisy(T,i))return{t:'搗き屋のとなり：うるさくて10人しか住めない',bad:1};if(nearPlaza(T,i))return{t:'神社の近く：30人住める',lv:2};return adj(T,i,'panya')?{t:'米屋のとなり：店の売上がふえる（+25%）',lv:1}:null;}
+  if(k==='terakoya'||k==='hikeshi'){const n=housesNear(T,i);return n?{t:'まわりの家'+n+'軒に届く',lv:lv(n,3,6)}:null;}
+  if(k==='sakariba'){const n=popNear(T,i,SAKA.r);return n?{t:'まわりに'+n+'人：お客になる',lv:lv(n,80,200)}:null;}
+  if(k==='hiroba'){const n=plazaHouses(T,i);return n?{t:'まわりの家'+n+'軒が30人住める',lv:lv(n,3,6)}:null;}
+  if(k==='bokujo'){const n=emptyAround(T,i);return n<4?{t:'まわりの空き地'+n+'／8：せまくて育ちにくい',bad:1}:{t:'まわりの空き地'+n+'／8：よく育つ',lv:lv(n,6,8)};}
+  if(k==='ichiba'){const n=housesNear(T,i);return n?{t:'まわりの家'+n+'軒：買い物に来る',lv:lv(n,3,6)}:null;}
+  return null;
+}
+const rnd=(a,b)=>{const x=Math.sin(a*127.1+b*311.7+1.3)*43758.5453;return x-Math.floor(x);};   // 同じ入力なら同じ値（0〜1）。絵のゆらぎ用
+const SEASON={sp:'春',su:'夏',au:'秋',wi:'冬'};
+const seasonOf=T=>{const w=LANDS[T.land].warm,ph=T.t%cycle(T);return ph>=w?'wi':ph<w/3?'sp':ph<w*2/3?'su':'au';};   // 春・夏・秋は見た目だけ（決まりは「あたたかい季」で同じ）
+
+// ───────── 3Dの盤面（three.js r128）。ゲームの状態から組み立てる。もとは sample3d.html の試作 ─────────
+// ・マスごとに1つの形にまとめる（建てた・人が変わった、のときは変わったマスだけ作り直す）
+// ・地面の絵は 土地×季節 ごとに1枚描いて貼る。川が盤面を通るのは「はじまりの野」だけ（RIV）。ほかの土地の川のマスは泉、海は青い板、山は峰
+const B3D=(function(){
+const stage=$('stage');
+const fail=t=>{stage.insertAdjacentHTML('afterbegin','<p class="err">'+t+'</p>');return null;};
+if(!window.THREE)return fail('3Dの部品（three.js）を読み込めませんでした。通信を確かめて、開き直してください。');
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){return fail('この端末では3Dを表示できませんでした。');}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const scene=new THREE.Scene();
+const COL={},colOf=h=>COL[h]||(COL[h]=new THREE.Color(h).convertSRGBToLinear());
+const MAT={},mat=h=>MAT[h]||(MAT[h]=new THREE.MeshStandardMaterial({color:colOf(h),roughness:.9,metalness:0,flatShading:true}));
+
+// 光は左手前の上から（影は右奥へ落ちる）。日なたは暖かく強く、影は空の青で暗く
+scene.add(new THREE.HemisphereLight(0xb9d0ff,0x7f89b4,.42));
+const sun=new THREE.DirectionalLight(0xffe6bc,1.05);sun.position.set(W/2-5.6*W/6,8*W/6,W/2+5.4*W/6);sun.target.position.set(W/2,0,W/2);scene.add(sun,sun.target);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0007;sun.shadow.normalBias=.018;
+Object.assign(sun.shadow.camera,{left:-5.4*W/6,right:5.4*W/6,top:5.4*W/6,bottom:-5.4*W/6,near:1,far:40});
+
+// 動かない部品は1つの形にまとめる（描く回数を減らして、スマホでも軽くする）
+const _v=new THREE.Vector3(),_m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(0,0,0,'YXZ'),_p=new THREE.Vector3(),_s=new THREE.Vector3();
+class Batch{constructor(ao){this.p=[];this.c=[];this.ao=ao;}
+  add(geo,m,col){const pos=geo.attributes.position,idx=geo.index,n=idx?idx.count:pos.count,c=colOf(col),s0=this.p.length;let lo=1e9,hi=-1e9;
+    for(let i=0;i<n;i++){_v.fromBufferAttribute(pos,idx?idx.getX(i):i).applyMatrix4(m);this.p.push(_v.x,_v.y,_v.z);this.c.push(c.r,c.g,c.b);if(_v.y<lo)lo=_v.y;if(_v.y>hi)hi=_v.y;}
+    if(!this.ao||hi-lo<=.05)return;   // 暗がりの焼き込み：地面に立つものは足もとを濃く、浮いているものは下側を少し。暗い所ほど青みに寄せる
+    const g=lo<.1&&lo>-.05,span=g?Math.min(hi-lo,.2):hi-lo,base=g?.6:.8;
+    for(let k=s0;k<this.p.length;k+=3){let t=Math.min(1,(this.p[k+1]-lo)/span);t=t*t*(3-2*t);const f=base+(1-base)*t;this.c[k]*=f;this.c[k+1]*=f+(1-f)*.1;this.c[k+2]*=f+(1-f)*.3;}}
+  mesh(material){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(this.p,3));g.setAttribute('color',new THREE.Float32BufferAttribute(this.c,3));g.computeVertexNormals();return new THREE.Mesh(g,material);}}
+let SB=null,EB=null,AO=null;   // いま作っているマスの入れ物：SB＝光を受ける部品／EB＝明かりのついた窓（光らせる）／AO＝足もとの暗がり
+let OX=0,OZ=0;                 // いま作っているマスの左奥のかど
+// 建物はマスの主役にする（数字の札をふだん出さないので、大きく・マスのまんなか寄りに置ける）。big() で囲んだ間の部品だけ、中心のまわりに大きくして前へずらす
+const HS=1.4,BKS=1.28,MS=1.4,CZ2=.42,CZB=CZ2-.02,EL=40;
+let BS=1,BPX=0,BPZ=0,BDZ=0;
+const big=(s,px,pz,dz)=>{BS=s||1;BPX=px||0;BPZ=pz||0;BDZ=dz||0;};
+const bpos=(x,y,z)=>[OX+BPX+(x-BPX)*BS,y*BS,OZ+BPZ+(z-BPZ)*BS+BDZ];
+function put(bt,geo,x,y,z,col,sx,sy,sz,rx,ry,rz){_e.set(rx||0,ry||0,rz||0);_q.setFromEuler(_e);const w=bpos(x,y,z);_p.set(w[0],w[1],w[2]);_s.set(sx*BS,sy*BS,sz*BS);_m.compose(_p,_q,_s);bt.add(geo,_m,col);}
+const GB=new THREE.BoxGeometry(1,1,1),GI=new THREE.IcosahedronGeometry(1,0),GO=new THREE.OctahedronGeometry(1,0),GC={};
+const box=(w,h,d,x,y,z,col,rx,ry,rz)=>put(SB,GB,x,y,z,col,w,h,d,rx,ry,rz);              // x,y,z は箱のまんなか
+const blob=(r,x,y,z,col,sx,sy,sz)=>put(SB,GI,x,y,z,col,r*(sx||1),r*(sy||1),r*(sz||1));
+const bit=(r,x,y,z,col,sx,sy,sz)=>put(SB,GO,x,y,z,col,r*(sx||1),r*(sy||1),r*(sz||1));   // 小さなもの（田の作物・花）は角の少ない形で軽く
+const cyl=(rt,rb,h,x,y,z,col,seg,rx,rz)=>{const k=rt+'_'+rb+'_'+(seg||8),g=GC[k]||(GC[k]=new THREE.CylinderGeometry(rt,rb,1,seg||8));put(SB,g,x,y,z,col,1,h,1,rx,0,rz);};
+const dim=(h,f)=>'#'+new THREE.Color(h).lerp(new THREE.Color('#2a3660'),f||.42).getHexString();   // 軒下の影の色（青みに寄せて暗く）
+const RG={};
+function roofGeo(w,d,h,ridge){const k=[w,d,h,ridge].join('_');if(RG[k])return RG[k];   // 底が w×d、棟の長さ ridge の屋根（ridge=w で切妻、0 でとんがり）
+  const a=w/2,b=d/2,r=ridge/2,A=[-a,0,b],Bq=[a,0,b],C=[a,0,-b],D=[-a,0,-b],E=[-r,h,0],F=[r,h,0],g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute([].concat(A,Bq,F,A,F,E,C,D,E,C,E,F,D,A,E,Bq,C,F),3));return RG[k]=g;}
+function hip(cx,cz,yb,w,d,h,ridge,col,dark){box(w+.1,.022,d+.1,cx,yb+.004,cz,dark);put(SB,roofGeo(w+.1,d+.1,h,ridge),cx,yb+.014,cz,col,1,1,1);}
+function gable(cx,cz,yb,w,d,h,wall,col,dark,yaw,ovb){yaw=yaw||0;   // w＝棟の向きの長さ、d＝屋根の幅。三角の壁（wall）に、厚みのある屋根板を2枚のせる
+  // 屋根板は厚く・軒を深く。瓦の段（細い筋）と、妻の白い板（破風）と、太い棟をのせる。ovb＝棟の向きの奥側の出（ほかの屋根に差し込むときは負にする）
+  put(SB,roofGeo(w,d,h,w),cx,yb,cz,wall,1,1,1,0,yaw);
+  const L=Math.hypot(d/2,h),s=L+.075,t=.036,ph=Math.atan2(h,d/2),ny=(d/2)/L,nz=h/L,sn=Math.sin(yaw),cs=Math.cos(yaw),ov=.055,ob=ovb===undefined?ov:ovb,len=w+ov+ob,mid=(ob-ov)/2;
+  for(const g of[1,-1]){const at=(u,n,lx)=>{const lz=g*(ny*u+nz*n);return[cx+lx*cs+lz*sn,yb+h-nz*u+ny*n,cz-lx*sn+lz*cs];};   // 棟から斜面を u 下り、面から n 浮いた所（lx＝棟の向きのずれ）
+    const c=at(s/2-.012,t/2,mid);put(SB,GB,c[0],c[1],c[2],g>0?col:dark,len,t,s,g*ph,yaw);
+    for(const u of[.3,.57,.84]){const p=at(u*s,t+.002,mid);put(SB,GB,p[0],p[1],p[2],g>0?dark:dim(dark,.2),len+.004,.008,.013,g*ph,yaw);}
+    for(const e of ob>0?[1,-1]:[-1]){const p=at(s/2-.012,t/2+.004,e>0?w/2+ob+.007:-(w/2+ov+.007));put(SB,GB,p[0],p[1],p[2],'#fff8e6',.02,t+.012,s+.006,g*ph,yaw);}}
+  put(SB,GB,cx+mid*cs,yb+h+.03,cz-mid*sn,dark,len+.03,.034,.05,0,yaw);}
+
+// ───────── 季節の色（前の版の2Dの絵と同じ考え方：春は花の木が桃色、秋は紅葉と金色の田、冬は雪） ─────────
+const SEAS={
+  sp:{g:'#b4dc84',pa:'rgba(214,240,165,.55)',pb:'rgba(140,196,104,.5)',bl:'rgba(98,150,70,.7)',fl:1,leaf:['#58a64e','#7fc667','#afe08b'],blo:['#e58fb0','#f6b5cc','#ffdce8'],pine:['#3f8a63','#2d7652'],
+      crop:['#95cb5e','#7fb850'],ch:.8,soil:'#b08455',fur:'#96693d',yard:'#dbe9aa',water:'#63b4ec',deep:'#2f83d4',sea:'#3d8ad2'},
+  su:{g:'#a6d078',pa:'rgba(200,232,150,.55)',pb:'rgba(128,186,98,.5)',bl:'rgba(98,150,70,.7)',fl:1,leaf:['#4a9446','#69b358','#97d378'],blo:['#4a9446','#69b358','#97d378'],pine:['#3f8a63','#2d7652'],
+      crop:['#bcd35c','#a4c24a'],ch:1,soil:'#b08455',fur:'#96693d',yard:'#d6e2a0',water:'#63b4ec',deep:'#2f83d4',sea:'#3d8ad2'},
+  au:{g:'#c2cc7a',pa:'rgba(226,226,150,.55)',pb:'rgba(160,172,92,.5)',bl:'rgba(140,146,70,.7)',fl:0,leaf:['#c76c2a','#e89a38','#f8cd5e'],blo:['#ae392b','#d95b39','#f2905e'],pine:['#3f8a63','#2d7652'],
+      crop:['#f4ca4c','#e0b03a'],ch:1.15,soil:'#b08455',fur:'#96693d',yard:'#dcd99a',water:'#63b4ec',deep:'#2f83d4',sea:'#3d8ad2'},
+  wi:{g:'#edf2f7',pa:'rgba(255,255,255,.7)',pb:'rgba(205,220,235,.55)',bl:'rgba(170,186,200,.6)',fl:0,leaf:['#98a7ad','#c2cfd6','#ffffff'],blo:['#98a7ad','#c2cfd6','#ffffff'],pine:['#eff5f7','#457a66'],
+      crop:['#d8d3be','#c9c4ad'],ch:.45,soil:'#e8e6e0',fur:'#cbc7bd',yard:'#e2e9ef',water:'#9fc6e3',deep:'#7fb0d8',sea:'#5f9ccf'}};
+const LTINT=[null,'rgba(214,230,246,.3)','rgba(244,232,150,.2)','rgba(244,226,170,.34)','rgba(66,48,30,.3)'];   // 土地ごとの地面の色あい（雪の谷・風の丘・潮の浜・黒土の原）
+let PAL=SEAS.su;
+
+// ───────── 部品（マスの中の位置は 0〜1。手前が z=1） ─────────
+function tree(x,z,s,kind){AO.push([OX+x+.02*s,OZ+z,.36*s,.27*s]);
+  if(kind===2){cyl(.016*s,.022*s,.07*s,x,.035*s,z,'#6f4c30',6);for(let k=0;k<3;k++)cyl(.004,(.105-.022*k)*s,.13*s,x,(.1+.085*k)*s,z,PAL.pine[k%2],7);return;}
+  const a=kind===1?PAL.blo:PAL.leaf;
+  cyl(.018*s,.026*s,.13*s,x,.065*s,z,'#7a5536',6);
+  blob(.115*s,x,.2*s,z,a[0],1,.9,1);blob(.085*s,x+.06*s,.17*s,z+.03*s,a[0]);blob(.09*s,x-.035*s,.255*s,z+.02*s,a[1]);blob(.05*s,x-.06*s,.3*s,z+.05*s,a[2]);}
+const bush=(x,z)=>{AO.push([OX+x,OZ+z,.24,.17]);blob(.05,x-.035,.035,z,PAL.leaf[0]);blob(.058,x+.03,.04,z-.01,PAL.leaf[1]);blob(.036,x-.005,.065,z+.02,PAL.leaf[2]);};
+const rock=(x,z,s)=>{blob(.05*s,x,.022*s,z,'#a3a199',1.2,.62,.9);blob(.028*s,x+.05*s,.014*s,z+.02*s,'#c9c7bf',1,.6,1);};
+function sheep(x,z,d){blob(.05,x,.075,z,'#fbf8f0',1.25,.85,.9);blob(.03,x-.02*d,.105,z,'#ffffff');blob(.026,x+.066*d,.085,z+.01,'#4a3f38',.9,1,.9);
+  for(const[a,b]of[[-.035,-.02],[.035,-.02],[-.035,.02],[.035,.02]])box(.012,.045,.012,x+a,.0225,z+b,'#4a3f38');}
+function person(x,z,col,hat){cyl(.02,.03,.075,x,.045,z,col,7);blob(.027,x,.108,z,'#f2cfa6');
+  if(hat===1){cyl(.05,.05,.008,x,.126,z,'#e3c26a',8);cyl(.024,.028,.022,x,.14,z,'#d4ad4e',8);}else blob(.028,x,.118,z-.004,hat===2?'#b8504a':'#5a3d24',1,.75,1);}
+function win(x,y,fz,lit,sc){box(.1,.1,.012,x,y,fz+.004,'#fff8e6');
+  if(lit)put(EB,GB,x,y,fz+.008,'#ffd66b',.074,.074,.012);else box(.074,.074,.014,x,y,fz+.006,'#6f8fb0');
+  box(.008,.074,.016,x,y,fz+.008,'#fff8e6');box(.074,.008,.016,x,y,fz+.008,'#fff8e6');
+  if(sc){box(.026,.092,.012,x-.066,y,fz+.005,sc);box(.026,.092,.012,x+.066,y,fz+.005,sc);}
+  box(.105,.018,.03,x,y-.06,fz+.016,'#7a5536');bit(.013,x-.03,y-.046,fz+.02,'#e5533d');bit(.013,x,y-.044,fz+.02,'#ffd66b');bit(.013,x+.03,y-.046,fz+.02,'#e5533d');}
+function yard(x,z,k){   // 庭の小物：0 まき／1 井戸／2 物干し／3 菜園／4 にわとり／5 たると木箱
+  if(k===0){for(const[a,b]of[[-.045,.023],[0,.023],[.045,.023],[-.023,.062],[.023,.062]])cyl(.022,.022,.1,x+a,b,z,'#c79c66',7,Math.PI/2);}
+  else if(k===1){cyl(.052,.055,.055,x,.0275,z,'#aeb4b8',9);cyl(.04,.04,.006,x,.056,z,'#4f7fa8',9);box(.011,.1,.011,x-.05,.1,z,'#7a5536');box(.011,.1,.011,x+.05,.1,z,'#7a5536');put(SB,roofGeo(.15,.11,.045,.15),x,.15,z,'#9a6337',1,1,1);}
+  else if(k===2){box(.011,.14,.011,x-.075,.07,z,'#7a5536');box(.011,.14,.011,x+.075,.07,z,'#7a5536');box(.15,.004,.004,x,.134,z,'#8a7a66');
+    box(.036,.055,.005,x-.04,.104,z,'#ffffff');box(.03,.044,.005,x+.002,.11,z,'#e77b6b');box(.032,.058,.005,x+.042,.103,z,'#8fb8e6');}
+  else if(k===3){box(.16,.014,.11,x,.007,z,'#a47a4c');for(let j=0;j<8;j++)bit(.015,x-.054+(j%4)*.036,.024,z-.025+Math.floor(j/4)*.05,j%3?'#5fa648':'#7fbf52');}
+  else if(k===4){for(const[a,b,d]of[[-.035,.02,1],[.04,-.02,-1]]){blob(.024,x+a,.03,z+b,'#fffdf6',1.15,.9,.9);blob(.013,x+a+.024*d,.05,z+b,'#fffdf6');bit(.006,x+a+.026*d,.064,z+b,'#e5533d');}}
+  else{cyl(.03,.03,.075,x-.035,.0375,z,'#9b6a3f',9);cyl(.031,.031,.008,x-.035,.02,z,'#5f3f25',9);cyl(.031,.031,.008,x-.035,.055,z,'#5f3f25',9);box(.062,.056,.062,x+.04,.028,z,'#b98d5b');}}
+function kouei(i,pop,bad){   // 共同長屋：共同の資金で建てる、2階建ての大きな長屋。瓦屋根・しっくいの壁・四間。前に共同の井戸。維持費が払えないと壁がくすむ
+  const cx=.5,cz=.31,b0=.03,w=.64,d=.22,h1=.15,h=.3,top=b0+h,fz=cz+d/2,wall=bad>=2?'#c9c3b6':'#f2ead8',wd=NWOOD[1],c2=CZ2+.03,n=4,uw=w/n;
+  big(HS,cx,cz,c2-cz);
+  box(w+.03,b0,d+.03,cx,b0/2,cz,'#a59a86');box(w,h,d,cx,b0+h/2,cz,wall);box(w+.004,.058,d+.004,cx,b0+.029,cz,wd);
+  for(let k=0;k<=n;k++)box(.016,h,.016,cx-w/2+k*uw+(k===0?.006:k===n?-.006:0),b0+h/2,fz-.004,wd);
+  for(let k=0;k<n;k++){const ux=cx-w/2+(k+.5)*uw;shoji(ux-uw*.18,b0+.064,fz,.06,.116,pop>k,wd);koushi(ux+uw*.21,b0+.094,fz,.052,.05,false,wd);koushi(ux,b0+h1+.085,fz,uw*.62,.05,pop>k+1,wd);}
+  box(w+.07,.016,.085,cx,b0+h1+.012,fz+.028,KAWARA[0],.3);box(w+.074,.007,.012,cx,b0+h1+.002,fz+.066,KAWARA[1],.3);
+  jroof(cx,cz,top,w,d,.1,wall,KAWARA[0],KAWARA[1],.065,false);
+  big();
+  cyl(.052,.055,.055,.2,.0275,.84,'#aeb4b8',9);cyl(.04,.04,.006,.2,.056,.84,'#4f7fa8',9);box(.011,.1,.011,.15,.1,.84,'#7a5536');box(.011,.1,.011,.25,.1,.84,'#7a5536');put(SB,roofGeo(.15,.11,.045,.15),.2,.15,.84,'#6c5843',1,1,1);   // 共同の井戸
+  AO.push([OX+cx+.03,OZ+c2+.02,w*HS+.4,d*HS+.44]);
+}
+const HROOF=[['#5b7fc7','#4567ad'],['#4a8db8','#3a749b'],['#6a72c2','#555ca6'],['#4f74b4','#3d5e98']],HWALL=['#f4ead3','#f9e4d2','#efe9df','#f7edc6'],HSHUT=['#5f9a6a','#b8504a','#4f7fa8',''];
+// 江戸ふうの色：板（こげ茶）・しっくい／土壁・板ぶきの屋根・瓦（灰）。屋根の色は建物ごとに分けない（25回目の会議）
+const NWOOD=['#6b5140','#5f4a3c','#74583f'],NWALL=['#efe6d2','#e6d9bd','#f2ead8'],NITA=[['#8f775b','#6c5843'],['#84705a','#62523f'],['#977f60','#72604a']],KAWARA=['#7b838c','#5a6169'];
+function jroof(cx,cz,yb,w,d,h,wall,col,dark,ov,stone){   // 棟が左右に走る切妻（平入り）。w＝棟の長さ、d＝奥行き、ov＝軒の出。stone＝板ぶきの置き石
+  put(SB,roofGeo(w,d,h,w),cx,yb,cz,wall,1,1,1);
+  const bb=d/2,L=Math.hypot(bb,h),ph=Math.atan2(h,bb),sn=Math.sin(ph),cs=Math.cos(ph),t=.03,len=w+.08,sl=L+ov;
+  const at=(g,u,n)=>[yb+h-sn*u+cs*n,cz+g*(cs*u+sn*n)];
+  for(const g of[1,-1]){const c=at(g,sl/2,t/2);put(SB,GB,cx,c[0],c[1],g>0?col:dark,len,t,sl,g*ph,0);
+    for(const u of[.36,.68,.97]){const e=at(g,u*sl,t+.002);put(SB,GB,cx,e[0],e[1],g>0?dark:dim(dark,.2),len+.004,.007,.012,g*ph,0);}}
+  if(stone)for(let k=0;k<5;k++){const e=at(1,sl*(.3+.36*((k*7)%3)/2),t+.012);bit(.014,cx-len/2+len*(k+.5)/5+.02*((k%2)-.5),e[0],e[1],'#b9b4a8',1.2,.7,1);}
+  box(len+.02,.028,.05,cx,yb+h+.02,cz,dark);}
+function shoji(x,y,fz,w,h,lit,fr){   // 腰高障子の戸：下は板、上は紙。住んでいれば明かり
+  box(w+.014,h+.014,.01,x,y,fz+.004,fr);const ph=h*.66,py=y+h/2-ph/2;
+  if(lit)put(EB,GB,x,py,fz+.008,'#ffd98a',w,ph,.01);else box(w,ph,.012,x,py,fz+.006,'#f4eedc');
+  box(.005,ph,.014,x,py,fz+.008,fr);box(w,.005,.014,x,py,fz+.008,fr);box(w,h-ph,.012,x,y-h/2+(h-ph)/2,fz+.006,dim(fr,.12));}
+function koushi(x,y,fz,w,h,lit,fr){   // 格子窓：たての桟
+  box(w+.014,h+.014,.01,x,y,fz+.004,fr);if(lit)put(EB,GB,x,y,fz+.007,'#ffd98a',w,h,.01);else box(w,h,.012,x,y,fz+.005,'#4a3d33');
+  const n=Math.max(3,Math.round(w/.016));for(let k=1;k<n;k++)box(.005,h,.014,x-w/2+k*w/n,y,fz+.009,'#a98c66');}
+function house(i,v,pop,up){   // 長屋：低くて横に長い棟割り長屋。棟は左右に走り、戸の並ぶ長い面がこちらを向く。平屋は板ぶきに置き石、2階建ては瓦
+  const q=k=>v*k%1,kd=(i%W+2*Math.floor(i/W))%4,wd=NWOOD[Math.floor(q(3)*2.99)],wc=NWALL[Math.floor(q(41)*2.99)],[rc,rd]=up?KAWARA:NITA[Math.floor(q(59)*2.99)],lf=q(7)<.5,s=lf?1:-1;
+  const cx=.5,cz=.31,b0=.03,h1=.15,h=up?.29:h1,top=b0+h,c2=CZ2+.06,shed=kd%2===1;
+  const w=shed?.44:.58,d=.21,mx=shed?cx-s*.07:cx,fz=cz+d/2,n=shed?2:3,uw=w/n,fw=shed?.62:w,fd=d+.06;
+  big(HS,cx,cz,c2-cz);
+  box(w+.03,b0,d+.03,mx,b0/2,cz,'#a59a86');box(w,h,d,mx,b0+h/2,cz,wc);box(w+.004,.058,d+.004,mx,b0+.029,cz,wd);   // 土台・しっくいの壁・腰板
+  for(let k=0;k<=n;k++)box(.016,h,.016,mx-w/2+k*uw+(k===0?.006:k===n?-.006:0),b0+h/2,fz-.004,wd);   // 柱
+  box(w,.016,.014,mx,b0+h1-.006,fz+.004,wd);
+  for(let k=0;k<n;k++){const ux=mx-w/2+(k+.5)*uw;shoji(ux-uw*.19,b0+.064,fz,.066,.116,pop>=k+1,wd);koushi(ux+uw*.2,b0+.094,fz,.06,.05,false,wd);
+    box(.09,.012,.04,ux-uw*.19,.006,fz+.03,'#cfc4ae');}   // 一間ごとに、腰高障子の戸と格子窓と踏み石
+  if(up){box(w+.07,.016,.085,mx,b0+h1+.012,fz+.028,rc,.3);box(w+.074,.007,.012,mx,b0+h1+.002,fz+.066,rd,.3);   // 1階の庇（瓦）
+    for(let k=0;k<n;k++)koushi(mx-w/2+(k+.5)*uw,b0+h1+.082,fz,uw*.62,.05,pop>=3,wd);
+    cyl(.028,.031,.06,mx+s*(w/2-.03),.03,fz+.06,'#7a5f45',9);cyl(.03,.03,.008,mx+s*(w/2-.03),.062,fz+.06,'#3f5f7a',9);}   // 天水桶
+  jroof(mx,cz,top,w,d,up?.1:.085,wc,rc,rd,.065,!up);
+  if(shed){const lw=.15,lh=.105,ld=.16,lx=mx+s*(w/2+lw/2-.004);   // 下屋：板張りの物置（片流れの板ぶき）
+    box(lw,lh,ld,lx,b0+lh/2,cz,dim(wd,-.18));box(lw+.05,.022,ld+.08,lx+s*.012,b0+lh+.034,cz,rc,0,0,-s*.3);
+    for(let k=1;k<4;k++)box(.005,lh,.005,lx-lw/2+k*lw/4,b0+lh/2,cz+ld/2+.002,wd);}
+  big();
+  // 前庭（家と道のあいだ）：木と小物。板べい
+  tree(lf?.09:.91,.78,.62,q(13)<.4?1:0);yard(lf?.86:.14,.785,Math.floor(q(71)*5.99));
+  if(q(83)<.5&&kd<2){for(const x0 of[.05,.63]){box(.32,.05,.008,x0+.16,.03,.85,'#7a6248');box(.33,.008,.014,x0+.16,.058,.85,'#5f4a3c');}}
+  AO.push([OX+cx+.03,OZ+c2+.02,fw*HS+.4,fd*HS+.44]);
+}
+// 人のコマ：人がついている所の目印。ボードゲームのコマのように丸い台に立たせて、ふつうの人の倍より大きくする。hat：1 麦わら帽子／2 白い帽子／0 髪に花
+const PAWN={gen:['#4f8a5a',1],hana:['#4f7fb8',0],take:['#c8553d',2],yuki:['#7fa9d8',2],fuu:['#8a67b0',0],nami:['#e08a2b',2],tsuchi:['#8a6a3c',1]};
+function pawn(x,z,col,hat,away){const K=2.3,y0=.024;AO.push([OX+x+.02,OZ+z,.36,.28]);if(away)col='#9aa3a0';   // いまこの町にいない人は灰色
+  cyl(.082,.088,.022,x,.011,z,away?'#7b8683':'#2b4a8b',14);cyl(.068,.068,.006,x,.024,z,'#fff8e6',14);
+  cyl(.019*K,.034*K,.08*K,x,y0+.04*K,z,col,9);box(.05*K,.012*K,.036*K,x,y0+.05*K,z+.004,'#fff8e6');blob(.031*K,x,y0+.107*K,z,'#f2cfa6');
+  if(hat===1){cyl(.056*K,.056*K,.008*K,x,y0+.127*K,z,'#e3c26a',10);cyl(.026*K,.03*K,.024*K,x,y0+.142*K,z,'#d4ad4e',9);}
+  else{blob(.032*K,x,y0+.119*K,z-.008,'#5a3d24',1,.72,1);if(hat===2)cyl(.03*K,.032*K,.014*K,x,y0+.134*K,z,'#fbf6e9',9);else blob(.012*K,x+.026*K,y0+.132*K,z+.012,'#e98fb0');}}
+function mill(wind){const cx=.5,cz=.34;   // 搗き屋：水車小屋（板壁・板ぶきに置き石・わきに樋）。水車は動くので別に作る。風の丘だけは風車（石の土台、白い塔、茶色の帽子）
+  big(MS,cx,cz,CZ2-cz);
+  if(!wind){const wd=NWOOD[0],w=.3,d=.24,h=.17,b0=.03,fz=cz+d/2,ITA='#8f775b';
+    box(w+.03,b0,d+.03,cx,b0/2,cz,'#a59a86');box(w,h,d,cx,b0+h/2,cz,ITA);for(let k=0;k<6;k++)box(.005,h,.005,cx-w/2+.025+k*.05,b0+h/2,fz+.002,wd);
+    box(.085,.125,.012,cx-.07,b0+.0625,fz+.005,'#3f3128');box(.1,.012,.04,cx-.07,.006,fz+.03,'#cfc4ae');
+    jroof(cx,cz,b0+h,w,d,.1,ITA,NITA[0][0],NITA[0][1],.06,true);
+    const tz=fz+.085;box(.4,.012,.07,cx+.13,.014,tz,PAL.water);box(.4,.034,.012,cx+.13,.017,tz-.04,'#8a7a66');box(.4,.034,.012,cx+.13,.017,tz+.04,'#8a7a66');   // 樋（水路）：小屋の前を横に流れる
+    cyl(.012,.012,.11,cx+.09,.145,fz+.04,wd,6,Math.PI/2);
+  }else{
+  cyl(.2,.225,.08,cx,.04,cz,'#cbbfa9',12);cyl(.118,.185,.46,cx,.31,cz,'#9a8262',12);for(let k=0;k<12;k++){const a=k/12*Math.PI*2;box(.006,.44,.006,cx+Math.cos(a)*.152,.3,cz+Math.sin(a)*.152,'#6b5140',0,-a,(k%2?.07:-.07)*0);}cyl(.2,.2,.022,cx,.27,cz,'#8a5a34',12);
+  for(let k=0;k<12;k++){const a=k/12*Math.PI*2;box(.012,.05,.012,cx+Math.cos(a)*.19,.305,cz+Math.sin(a)*.19,'#6b4a2c');}cyl(.198,.198,.01,cx,.335,cz,'#6b4a2c',12);
+  cyl(.004,.15,.16,cx,.62,cz,'#9a6337',12);box(.09,.14,.014,cx,.15,cz+.172,'#7d5233');box(.13,.014,.05,cx,.007,cz+.24,'#d6ccb6');box(.06,.075,.012,cx,.41,cz+.128,'#3f3128');
+  cyl(.014,.014,.2,cx,.5,cz+.13,'#6b4a2c',6,Math.PI/2);}
+  big();
+  blob(.045,.28,.04,.8,'#f1e5c6',.9,1,.8);blob(.04,.31,.036,.87,'#e4d6b1',.9,1,.8);   // 玄米の袋と荷車は、塔の前の左右に
+  {const x=.11,z=.8;box(.17,.05,.1,x,.075,z,'#9b6a3f');cyl(.038,.038,.014,x-.05,.04,z+.055,'#6b4a2c',10,Math.PI/2);cyl(.038,.038,.014,x+.05,.04,z+.055,'#6b4a2c',10,Math.PI/2);blob(.04,x-.03,.125,z,'#f1e5c6',.95,.8,.9);blob(.038,x+.03,.122,z,'#e4d6b1',.95,.8,.9);}
+  AO.push([OX+cx+.03,OZ+CZ2+.02,.45*MS+.34,.45*MS+.3]);}
+function bakery(){const cx=.5,cz=.33,w=.6,d=.3,b0=.03,h=.2,top=b0+h,fz=cz+d/2,wd=NWOOD[0],wall='#f2ead8';   // 米屋：瓦屋根の商家。広い店先に白いのれん、庇、前に米俵、木の看板。屋根に煙出し。返すのは、けむりの出る所
+  big(BKS,cx,cz,CZB-cz);
+  box(w+.03,b0,d+.03,cx,b0/2,cz,'#a59a86');box(w,h,d,cx,b0+h/2,cz,wall);box(w+.004,.058,d+.004,cx,b0+.029,cz,wd);
+  for(const x of[-w/2+.006,.07,w/2-.006])box(.016,h,.016,cx+x,b0+h/2,fz-.004,wd);
+  box(.34,.13,.012,cx-.115,b0+.065,fz+.004,'#3a2e26');put(EB,GB,cx-.115,b0+.05,fz+.008,'#ffd98a',.3,.06,.012);   // 店先（中に明かり）
+  box(.34,.05,.008,cx-.115,b0+.118,fz+.014,'#f4eedc');for(const a of[-.085,0,.085])box(.005,.05,.01,cx-.115+a,b0+.118,fz+.015,'#cfc4ae');box(.03,.03,.01,cx-.115,b0+.12,fz+.016,'#3a3028');   // 白いのれん
+  shoji(cx+.18,b0+.064,fz,.07,.116,true,wd);
+  box(w+.07,.016,.09,cx,b0+.168,fz+.03,KAWARA[0],.3);box(w+.074,.007,.012,cx,b0+.157,fz+.07,KAWARA[1],.3);   // 庇
+  jroof(cx,cz,top,w,d,.13,wall,KAWARA[0],KAWARA[1],.065,false);
+  box(.1,.04,.08,cx-.15,top+.155,cz,KAWARA[1]);box(.12,.012,.1,cx-.15,top+.18,cz,KAWARA[0]);   // 煙出し
+  const sm=bpos(cx-.15,top+.2,cz);big();
+  for(const[x,y]of[[.12,.036],[.2,.036],[.28,.036],[.16,.1],[.24,.1]]){cyl(.036,.036,.085,x,y,.8,'#d9bd6a',9,Math.PI/2);cyl(.037,.037,.008,x,y,.775,'#a98c4a',9,Math.PI/2);cyl(.037,.037,.008,x,y,.825,'#a98c4a',9,Math.PI/2);}   // 米俵
+  box(.014,.2,.014,.9,.1,.78,'#6b5140');box(.1,.075,.014,.9,.19,.78,'#8a6a4a');box(.04,.04,.016,.9,.19,.782,'#f4eedc');   // 看板
+  person(.74,.86,'#5f6f8a',2);
+  AO.push([OX+cx+.03,OZ+CZB+.02,w*BKS+.4,d*BKS+.44]);return sm;}
+function pasture(i){const wi=PAL===SEAS.wi,sp=PAL===SEAS.sp,au=PAL===SEAS.au;   // 綿畑：畝に綿の木。春は苗、夏は緑のしげみ（黄色い花）、秋は白い綿がはじける、冬は枯れた茎。すみに納屋と綿のかご
+  box(.92,.02,.92,.5,.01,.5,wi?'#e9eef2':'#a8895e');
+  for(const[w,d,x,z]of[[.96,.05,.5,.03],[.96,.05,.5,.97],[.05,.96,.03,.5],[.05,.96,.97,.5]]){box(w,.04,d,x,.02,z,'#8f7650');box(w-.012,.008,d-.012,x,.044,z,wi?'#e8eef3':au?'#b5ad6c':'#7fb35a');}
+  for(let k=0;k<6;k++){const z=.15+k*.14;box(.8,.018,.07,.5,.029,z,wi?'#d5dbe0':'#8a6f49');
+    for(let j=0;j<8;j++){const x=.14+j*.103+(k%2)*.03;if(x<.42&&z<.4)continue;const h=sp?.5:1;
+      if(wi){box(.006,.05,.006,x,.06,z,'#7a6248');continue;}
+      bit(.03*h,x,.06+.012*h,z,j%2?'#5fa648':'#4f9440',1,1.25,1);
+      if(au){bit(.016,x-.012,.094,z+.006,'#ffffff');bit(.014,x+.014,.085,z-.008,'#fbf8f0');if((j+k)%2)bit(.013,x+.002,.104,z-.004,'#ffffff');}
+      else if(!sp&&(j+k)%3===0)bit(.01,x+.01,.092,z,'#f6e58a');}}
+  big(1.15,.24,.24,0);box(.22,.11,.16,.24,.055,.22,'#8f775b');box(.07,.085,.012,.21,.0425,.305,'#3f3128');jroof(.24,.22,.11,.22,.16,.07,'#8f775b',NITA[1][0],NITA[1][1],.05,false);big();
+  cyl(.045,.035,.045,.4,.045,.3,'#c79c66',9);blob(.04,.4,.08,.3,'#ffffff',1,.6,1);
+  AO.push([OX+.26,OZ+.24,.42,.34]);}
+function market(){   // 朝市：白木の屋台が2つ（板の屋根・紺ののれん）、むしろに野菜のかご、おけ
+  const KI='#d9bd8f',KD='#a98c66',KON='#27406b';
+  for(const[x,z]of[[.3,.4],[.7,.52]]){
+    for(const[a,b]of[[-.14,-.09],[.14,-.09],[-.14,.09],[.14,.09]])box(.016,.22,.016,x+a,.11,z+b,KD);
+    box(.3,.02,.2,x,.09,z,KI);box(.3,.05,.012,x,.062,z+.1,KD);
+    box(.34,.016,.27,x,.238,z-.01,'#8f775b',-.2);box(.345,.006,.012,x,.27,z+.122,'#6c5843',-.2);   // 板の屋根（前が高い。のれんが見えるように）
+    box(.28,.07,.006,x,.2,z+.112,KON);for(const a of[-.09,0,.09])box(.006,.07,.008,x+a+.045,.2,z+.113,'#1c2f52');box(.036,.036,.008,x,.202,z+.115,'#f4eedc');   // 紺ののれん（白い印）
+    for(let k=0;k<4;k++)blob(.026,x-.09+k*.06,.115,z+.02,['#f4f1e6','#5fa648','#c98845','#e8d27a'][k],1,.8,1);}
+  box(.2,.006,.14,.2,.004,.8,'#d8c48a');cyl(.04,.032,.04,.15,.026,.79,'#c79c66',9);blob(.034,.15,.055,.79,'#5fa648',1,.6,1);cyl(.04,.032,.04,.25,.026,.82,'#c79c66',9);blob(.034,.25,.055,.82,'#f4f1e6',1,.6,1);
+  cyl(.04,.036,.06,.82,.03,.82,'#9b7a55',9);cyl(.042,.042,.008,.82,.05,.82,'#5f4a3c',9);
+  person(.5,.78,'#4f7fb8',0);person(.62,.86,'#8a5a4a',2);
+  AO.push([OX+.3,OZ+.42,.5,.4],[OX+.7,OZ+.54,.5,.4]);}
+function sakariba(){   // 盛り場：赤い柱の芝居小屋、のぼり、ちょうちん、前に人
+  box(.62,.03,.5,.5,.015,.45,'#b9b3a6');box(.54,.24,.38,.5,.15,.42,'#8a3a2e');box(.545,.06,.385,.5,.06,.42,'#4a3524');
+  box(.2,.14,.012,.5,.13,.612,'#2b2320');box(.56,.04,.012,.5,.25,.612,'#f2e3b3');jroof(.5,.42,.27,.58,.42,.15,'#8a3a2e',KAWARA[0],KAWARA[1],.06,false);
+  for(const x of[.26,.38,.62,.74]){blob(.028,x,.2,.64,'#e0432f',1,1.25,1);box(.03,.008,.03,x,.236,.64,'#2b2320');}
+  box(.012,.34,.012,.14,.17,.74,'#6b4a2c');box(.07,.18,.006,.18,.25,.74,'#d8453a');box(.012,.34,.012,.86,.17,.74,'#6b4a2c');box(.07,.18,.006,.82,.25,.74,'#27406b');
+  person(.4,.82,'#c8553d',0);person(.56,.86,'#4f7fb8',0);person(.68,.8,'#6a8f3f',0);AO.push([OX+.5,OZ+.45,.66,.52]);}
+function hikeshi(){   // 火消し：火の見やぐら（はしごの塔に半鐘）、となりに道具の小屋、まとい
+  for(const[a,b]of[[-.07,-.07],[.07,-.07],[-.07,.07],[.07,.07]])box(.018,.52,.018,.36+a,.26,.42+b,'#6b4a2c');
+  for(const y of[.14,.28,.42])box(.16,.012,.16,.36,y,.42,'#8a6a45');box(.2,.02,.2,.36,.5,.42,'#6b4a2c');hip(.36,.42,.56,.2,.2,.07,0,KAWARA[0],KAWARA[1]);blob(.03,.36,.5,.42,'#c9a23a',1,1.2,1);
+  box(.3,.14,.24,.7,.07,.5,'#efe6cf');box(.305,.05,.245,.7,.03,.5,'#6b4a2c');jroof(.7,.5,.14,.32,.26,.09,'#efe6cf',KAWARA[0],KAWARA[1],.05,false);
+  box(.012,.3,.012,.56,.15,.78,'#4a3524');blob(.04,.56,.32,.78,'#f7f1dc',1,.9,1);person(.7,.8,'#2f4f8f',0);AO.push([OX+.36,OZ+.42,.3,.3],[OX+.7,OZ+.5,.4,.34]);}
+function bansho(){   // 番所：小さな板の小屋、前にさすまた、見張りが1人
+  box(.44,.03,.38,.5,.015,.45,'#b9b3a6');box(.38,.17,.3,.5,.115,.44,'#7a5a3c');box(.14,.12,.012,.5,.11,.592,'#2b2320');box(.385,.02,.305,.5,.19,.44,'#4a3524');
+  jroof(.5,.44,.2,.42,.34,.11,'#7a5a3c',NITA[0][0],NITA[0][1],.05,true);box(.012,.3,.012,.76,.15,.66,'#6b4a2c');box(.07,.012,.012,.76,.3,.66,'#8a8f94');
+  box(.012,.22,.012,.26,.11,.66,'#6b4a2c');blob(.028,.26,.24,.66,'#f4b942',1,1.2,1);person(.62,.76,'#3a3f52',0);AO.push([OX+.5,OZ+.45,.5,.42]);}
+function terakoya(){   // 寺子屋：石の土台、白い壁に板の腰、瓦の屋根、縁側、前に子どもが2人
+  box(.6,.03,.46,.5,.015,.45,'#b9b3a6');box(.52,.19,.36,.5,.125,.43,'#efe6cf');box(.525,.07,.365,.5,.065,.43,'#6b4a2c');
+  box(.13,.12,.012,.5,.12,.612,'#4a3524');box(.1,.07,.012,.3,.15,.612,'#f7f1dc');box(.1,.07,.012,.7,.15,.612,'#f7f1dc');box(.56,.018,.1,.5,.045,.66,'#9b6a3f');
+  jroof(.5,.43,.22,.56,.4,.14,'#efe6cf',KAWARA[0],KAWARA[1],.06,false);
+  person(.36,.82,'#4f7fb8',0);person(.5,.86,'#c8553d',0);AO.push([OX+.5,OZ+.45,.62,.48]);}
+function plaza(){   // 神社：玉砂利の境内、朱の鳥居、石の参道、小さな社（しめ縄）、石灯籠2つ、鎮守の木
+  const SHU='#d24a2f',ISHI='#b9b3a6',KI='#9a6b45',KD='#5a4636';
+  cyl(.47,.47,.012,.5,.006,.5,'#cfc5ad',16);cyl(.4,.4,.006,.5,.015,.52,'#e6dfcd',16);
+  box(.1,.006,.5,.5,.02,.6,'#d2cab6');for(let k=0;k<5;k++)box(.1,.004,.008,.5,.024,.4+k*.1,'#b7af9b');   // 参道
+  big(1.25,.5,.56,0);
+  // 鳥居（手前）
+  for(const x of[.37,.63]){cyl(.017,.021,.27,x,.135,.82,SHU,8);cyl(.026,.028,.02,x,.01,.82,'#4a4038',8);}
+  box(.3,.02,.022,.5,.2,.82,SHU);box(.36,.026,.036,.5,.272,.82,SHU);box(.4,.014,.044,.5,.292,.82,'#3a3028');box(.022,.05,.012,.5,.238,.82,SHU);
+  // 社（奥）：石の基壇、板壁、戸、しめ縄、切妻の屋根
+  box(.34,.045,.26,.5,.0225,.3,ISHI);box(.12,.02,.05,.5,.01,.455,ISHI);box(.1,.02,.03,.5,.03,.44,ISHI);
+  box(.22,.13,.16,.5,.11,.3,KI);for(const x of[.395,.605])box(.016,.13,.016,x,.11,.378,KD);
+  box(.09,.1,.01,.5,.1,.384,'#3f3128');box(.004,.1,.012,.5,.1,.386,KD);
+  box(.2,.012,.014,.5,.168,.39,'#f4eedc');for(const x of[.44,.5,.56])box(.016,.03,.006,x,.148,.392,'#ffffff');
+  jroof(.5,.3,.175,.26,.2,.1,KI,KD,'#463628',.07,false);
+  // 石灯籠
+  for(const x of[.3,.7]){cyl(.022,.028,.02,x,.03,.62,ISHI,6);cyl(.012,.012,.07,x,.075,.62,ISHI,6);box(.04,.035,.04,x,.127,.62,'#ffe9a8');cyl(.008,.036,.022,x,.156,.62,'#8f897c',6);}
+  big();tree(.9,.2,.6,2);tree(.1,.24,.5,2);AO.push([OX+.5,OZ+.5,.56,.46]);}
+const isK=(T,r,c,f)=>{if(r<0||r>=W||c<0||c>=W)return false;const x=T.grid[r*W+c];return !!x&&f(x.k);};
+const isF=(T,r,c)=>isK(T,r,c,k=>k==='hatake'),isBd=(T,r,c)=>isK(T,r,c,k=>k!=='hatake'&&k!=='bokujo');
+function field(T,i,r,c){const u=isF(T,r-1,c),ri=isF(T,r,c+1),dn=isF(T,r+1,c),l=isF(T,r,c-1);   // 田：となりの田とつながる。外まわりに柵。水がとどく田（川のとなり・水みち）には水路
+  const x0=l?0:.07,x1=ri?1:.93,z0=u?0:.07,z1=dn?1:.93,wt=wet(T,i),wi=isWinter(T),live=!wi||genCover(T,i),cp=wi&&live?SEAS.sp.crop:PAL.crop,ch=wi&&live?.6:PAL.ch;
+  const jo=!!(T.grid[i]&&T.grid[i].up);   // 上田：石の畦で囲み、稲をこませる
+  if(jo)box(x1-x0+.03,.022,z1-z0+.03,(x0+x1)/2,.011,(z0+z1)/2,'#cfc6b2');
+  const mizu=PAL===SEAS.sp||PAL===SEAS.su;   // 春・夏は水を張る。秋は水を落として刈り入れ、冬は土
+  box(x1-x0,.03,z1-z0,(x0+x1)/2,.015,(z0+z1)/2,mizu?(PAL===SEAS.sp?'#9cc9da':'#86b7c4'):PAL.soil);
+  if(mizu){WQ={x0:OX+x0,x1:OX+x1,z0:OZ+z0,z1:OZ+z1,s:PAL===SEAS.sp?'sp':'su'};const RIM='#5d8ba3',ry=.0352;   // 水面は別の面（つや・映り込み）。畦ぎわは濡れて濃い
+    if(!u)box(x1-x0,.003,.03,(x0+x1)/2,ry,z0+.015,RIM);if(!dn)box(x1-x0,.003,.03,(x0+x1)/2,ry,z1-.015,RIM);if(!l)box(.03,.003,z1-z0,x0+.015,ry,(z0+z1)/2,RIM);if(!ri)box(.03,.003,z1-z0,x1-.015,ry,(z0+z1)/2,RIM);}
+  for(let k=0;k<7;k++){const z=.13+k*.125;if(!mizu)box(x1-x0-.04,.022,.06,(x0+x1)/2,.04,z,PAL.fur);
+    for(let x=x0+.06;x<x1-.03;x+=jo?.07:wt?.085:.105)bit(mizu&&PAL===SEAS.sp?.024:.034,x,(mizu?.05:.066)+rnd(i,k+x*9)*.012,z,cp[(k+Math.round(x*20))%2],1,(jo?1.7:1.3)*ch,1);}
+  if(wt&&!mizu)for(const z of[.317,.692])box(x1-x0-.02,.012,.035,(x0+x1)/2,.034,z,wi?'#cfe2f0':'#4a9be0');
+  const AZE='#8f7650',AZG=wi?'#e8eef3':PAL===SEAS.au?'#b5ad6c':'#7fb35a',aze=(w,d,x,z)=>{box(w,.046,d,x,.023,z,AZE);box(w-.012,.008,d-.012,x,.05,z,AZG);};   // 畦：土を盛って、上に草
+  if(!u)aze(1,.07,.5,.035);if(!dn)aze(1,.07,.5,.965);if(!l)aze(.07,1,.035,.5);if(!ri)aze(.07,1,.965,.5);
+  if(rnd(i,11)<.3){box(.012,.17,.012,.76,.085,.5,'#7a5536');box(.13,.012,.012,.76,.13,.5,'#7a5536');box(.085,.06,.02,.76,.1,.5,'#b8504a');blob(.026,.76,.18,.5,'#f0d9a8');cyl(.004,.045,.04,.76,.215,.5,'#c9702e',8);}   // かかし
+  else if(rnd(i,11)>.62&&!wi)person(.3,.44,'#5f86b8',1);
+}
+function decor(i,land){const R=k=>rnd(i*7.3+land*131.7,k),wi=PAL===SEAS.wi,pine=land===1?.7:land===3?.1:.28;   // 空き地：木・しげみ・石・花（建てると消える。羊は時代に合わないので消した）。雪の谷は針葉樹が多く、潮の浜は木が少ない
+  const n=R(8)<(land===3?.4:.66)?1+Math.floor(R(9)*3.4):0;for(let k=0;k<n;k++){const q=R(80+k);tree(.14+R(50+k)*.72,.2+R(60+k)*.66,.66+R(70+k)*.44,q<pine?2:q<pine+.27?1:0);}
+  if(R(90)<.6)bush(.14+R(91)*.72,.2+R(92)*.66);if(R(93)<.3)bush(.14+R(94)*.72,.2+R(95)*.66);
+  if(R(5)<.3)rock(.14+R(6)*.72,.2+R(7)*.66,.8+R(4)*.6);
+  if(PAL.fl){const nf=Math.floor(R(2)*10),fx=.22+R(3)*.56,fz=.22+R(14)*.56;for(let k=0;k<nf;k++)bit(.013,fx+(R(30+k)-.5)*.3,.014,fz+(R(40+k)-.5)*.26,['#ffffff','#ffe27a','#ffb7cb'][k%3]);}
+  if(R(104)<.16){const x=.2+R(105)*.56,z=.3+R(106)*.56;cyl(.027,.027,.14,x,.027,z,'#8f6a43',7,0,Math.PI/2);cyl(.02,.02,.004,x+.071,.027,z,'#d9b888',7,0,Math.PI/2);}
+}
+function mountain(i,land){const R=k=>rnd(i*5.1+land*17,k),wi=PAL===SEAS.wi,hill=land===2;   // 山：岩の峰が3つ、上は雪。風の丘は草の丘（冬は白い）。後ろのマスを隠しすぎない高さにする
+  AO.push([OX+.5,OZ+.5,1.05,.8]);
+  if(hill){const g=wi?['#e4ebf1','#f6f9fb']:[PAL.leaf[1],PAL.leaf[2]];
+    blob(.36,.5,.0,.46,g[0],1.05,.62,.8);blob(.24,.27+R(1)*.06,.0,.66,g[1],1,.6,.8);blob(.2,.76,.0,.64,g[0],1,.55,.8);rock(.2+R(2)*.5,.82,1);return;}
+  const pk=(x,z,h,rad,col)=>{cyl(.012,rad,h,x,h/2,z,col,7);cyl(.004,rad*(wi?.62:.4)+.012,h*(wi?.6:.38),x,h*(wi?.71:.82),z,'#ffffff',7);};
+  pk(.5+(R(1)-.5)*.08,.44,.46,.36,'#96928b');pk(.25,.62,.3,.24,'#8a8e87');pk(.77,.64,.25,.2,'#a39f98');
+  rock(.12+R(3)*.2,.86,.9);tree(.86,.86,.5,2);}
+function sea(T,i,r,c){const P0=PAL,isS=(rr,cc)=>rr<0||rr>=W||cc<0||cc>=W||LANDS[T.land].map[rr][cc]==='=';   // 海：青い板と波。陸ととなり合う辺に、砂浜と白い波打ちぎわ
+  box(1,.012,1,.5,.008,.5,P0.sea);
+  for(let k=0;k<4;k++)box(.2+rnd(i,k)*.22,.004,.022,.2+rnd(i,10+k)*.6,.0165,.16+k*.22+rnd(i,20+k)*.06,'#a8e0f6');
+  if(!isS(r+1,c)){box(1,.006,.2,.5,.004,1.07,'#eedfae');box(1,.014,.035,.5,.011,.985,'#ffffff');}
+  if(!isS(r-1,c)){box(1,.006,.2,.5,.004,-.07,'#eedfae');box(1,.014,.035,.5,.011,.015,'#ffffff');}
+  if(!isS(r,c+1)){box(.2,.006,1,1.07,.004,.5,'#eedfae');box(.035,.014,1,.985,.011,.5,'#ffffff');}
+  if(!isS(r,c-1)){box(.2,.006,1,-.07,.004,.5,'#eedfae');box(.035,.014,1,.015,.011,.5,'#ffffff');}
+  if(rnd(i,31)<.3){box(.16,.03,.06,.5,.03,.5,'#9b6a3f');box(.012,.14,.012,.5,.1,.5,'#6b4a2c');box(.07,.09,.006,.54,.12,.5,'#fffaf0');}}   // 小舟
+function pond(i){cyl(.43,.43,.006,.5,.004,.5,'#eedfae',16);cyl(.37,.37,.008,.5,.009,.5,PAL.water,16);cyl(.2,.2,.004,.46,.0145,.52,PAL.deep,12);   // 泉（川のマスが1つだけの土地）
+  rock(.2,.3,.9);rock(.8,.74,.7);for(let k=0;k<5;k++)box(.008,.09+rnd(i,k)*.05,.008,.78+rnd(i,5+k)*.1,.05,.28+rnd(i,9+k)*.1,PAL.leaf[k%3]);}
+
+// ───────── 川（はじまりの野だけ。まんなかの線を、上の端から下の端へ） ─────────
+const RIV={0:[[7.5,-1.2],[7.5,-0.3],[7.5,0.5],[7.5,1.5],[7.5,2.5],[7.5600000000000005,3.22],[8.0,3.52],[8.43,3.82],[8.5,4.5],[8.5,5.5],[8.5,6.5],[8.56,7.22],[9.0,7.52],[9.43,7.82],[9.5,8.5],[9.5,9.5],[9.5,10.5],[9.56,11.22],[10.0,11.52],[10.43,11.82],[10.5,12.5],[10.5,13.5],[10.5,14.5],[10.5,15.5],[10.5,16.4],[10.5,17.3],[10.5,18.2]]};
+const BRIDGE={0:{i:153,x:9.47,z:9.87}},HW=.27;
+let CP=null;
+function bank(sign,hw){const o=[];for(let k=0;k<CP.length;k++){const a=CP[Math.max(0,k-1)],b=CP[Math.min(CP.length-1,k+1)],tx=b.x-a.x,tz=b.z-a.z,l=Math.hypot(tx,tz)||1;o.push([CP[k].x+sign*tz/l*hw,CP[k].z-sign*tx/l*hw]);}return o;}
+function clipB(p){const q=p.filter(a=>a[1]>.002&&a[1]<W-.002);return[[q[0][0],0]].concat(q,[[q[q.length-1][0],W]]);}
+function landShape(p,ex){const s=new THREE.Shape();s.moveTo(ex,0);p.forEach(a=>s.lineTo(a[0],a[1]));s.lineTo(ex,W);s.closePath();return s;}
+function ribbon(hw,y){const A=bank(-1,hw),Bk=bank(1,hw),pos=[],uv=[],idx=[];let len=0;   // 川にそった帯（盤面の外へは出さない）
+  for(let k=0,n=0;k<CP.length;k++){if(k)len+=CP[k].distanceTo(CP[k-1]);if(CP[k].z<.03||CP[k].z>W-.03)continue;
+    pos.push(A[k][0],y,A[k][1],Bk[k][0],y,Bk[k][1]);uv.push(0,len*.8,1,len*.8);if(n){const a=n*2;idx.push(a-2,a,a-1,a-1,a,a+1);}n++;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;}
+const flowTex=(()=>{const c=document.createElement('canvas');c.width=64;c.height=256;const x=c.getContext('2d');x.strokeStyle='#fff';x.lineCap='round';   // 流れの筋（白い筋の絵を流す）
+  for(let j=0;j<16;j++){x.globalAlpha=.35+rnd(j,1)*.5;x.lineWidth=1.5+rnd(j,2)*2;const a=6+rnd(j,3)*52,b=rnd(j,4)*256,l=14+rnd(j,5)*34;x.beginPath();x.moveTo(a,b);x.lineTo(a,b+l);x.stroke();if(b+l>256){x.beginPath();x.moveTo(a,b-256);x.lineTo(a,b+l-256);x.stroke();}}
+  const t=new THREE.CanvasTexture(c);t.wrapT=THREE.RepeatWrapping;return t;})();
+
+// 地面の模様（草のむら・粒・草の筋・花・マス目の点線・川岸）を1枚の絵に描いて、地面に貼る。土地と季節で描き分ける
+function groundTex(land,se){const P0=SEAS[se],NN=innerWidth<700?1024:1536,k=NN/W,c=document.createElement('canvas');c.width=c.height=NN;const x=c.getContext('2d'),u=NN/1536;
+  x.fillStyle=P0.g;x.fillRect(0,0,NN,NN);
+  for(let j=0;j<70;j++){const cx=rnd(j,1)*NN,cy=rnd(j,2)*NN,r=(70+rnd(j,3)*190)*u,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,j%2?P0.pa:P0.pb);g.addColorStop(1,se==='wi'?'rgba(235,242,248,0)':'rgba(160,205,120,0)');x.fillStyle=g;x.fillRect(cx-r,cy-r,r*2,r*2);}
+  x.globalCompositeOperation='saturation';x.fillStyle='rgba(128,128,128,.3)';x.fillRect(0,0,NN,NN);x.globalCompositeOperation='source-over';   // 芝生の鮮やかさを3割落とす（いちばん目立つのは屋根にする）
+  if(LTINT[land]){x.globalAlpha=se==='wi'?.4:1;x.fillStyle=LTINT[land];x.fillRect(0,0,NN,NN);x.globalAlpha=1;}
+  if(CP){x.lineCap='round';x.strokeStyle=se==='wi'?'rgba(190,205,220,.6)':'rgba(122,150,84,.55)';x.lineWidth=(HW+.075)*2*k;x.beginPath();CP.forEach((p,j)=>j?x.lineTo(p.x*k,p.z*k):x.moveTo(p.x*k,p.z*k));x.stroke();   // 川岸の濃い草
+    x.strokeStyle=se==='wi'?'rgba(244,246,247,.95)':'rgba(232,216,168,.95)';x.lineWidth=(HW+.03)*2*k;x.stroke();}                                                                                             // 川岸の砂
+  for(let j=0;j<9000*u;j++){x.fillStyle=j%2?'rgba(255,255,220,.16)':se==='wi'?'rgba(90,120,160,.1)':'rgba(40,90,40,.14)';x.fillRect(rnd(j,4)*NN,rnd(j,5)*NN,2,2);}
+  x.strokeStyle=P0.bl;x.lineWidth=2.2*u;x.beginPath();for(let j=0;j<(se==='wi'?260:900);j++){const a=rnd(j,6)*NN,b=rnd(j,7)*NN;x.moveTo(a,b);x.lineTo(a-4*u,b-9*u);x.moveTo(a,b);x.lineTo(a,b-12*u);x.moveTo(a,b);x.lineTo(a+4*u,b-9*u);}x.stroke();
+  if(P0.fl)for(let j=0;j<260;j++){x.fillStyle=['#ffffff','#ffe27a','#ffb7cb','#cfd8ff'][j%4];x.beginPath();x.arc(rnd(j,8)*NN,rnd(j,9)*NN,2.6*u,0,7);x.fill();}
+  x.strokeStyle=se==='wi'?'rgba(60,84,110,.34)':'rgba(29,58,44,.3)';x.lineWidth=2.4*u;x.setLineDash([7*u,11*u]);x.beginPath();for(let j=1;j<W;j++){x.moveTo(j*k,0);x.lineTo(j*k,NN);x.moveTo(0,j*k);x.lineTo(NN,j*k);}x.stroke();
+  const t=new THREE.CanvasTexture(c);t.flipY=false;t.encoding=THREE.sRGBEncoding;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1/W,1/W);t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;}
+
+// ───────── 動かない土台：木の箱（台）と、机に落ちる影 ─────────
+const townMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9,metalness:0,flatShading:true}),glowMat=new THREE.MeshBasicMaterial({vertexColors:true});
+{SB=new Batch(true);OX=0;OZ=0;box(W+.36,.2,W+.36,W/2,-.3,W/2,'#8a5d3b');box(W+.5,.07,W+.5,W/2,-.395,W/2,'#6f4628');box(W+.4,.012,W+.4,W/2,-.205,W/2,'#a87646');const m=SB.mesh(townMat);m.castShadow=true;m.receiveShadow=true;scene.add(m);}
+{const desk=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.ShadowMaterial({opacity:.24}));desk.rotation.x=-Math.PI/2;desk.position.set(W/2,-.43,W/2);desk.receiveShadow=true;scene.add(desk);}
+const aoTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),g=x.createRadialGradient(64,64,6,64,64,64);g.addColorStop(0,'rgba(22,30,66,.66)');g.addColorStop(.5,'rgba(22,30,66,.4)');g.addColorStop(1,'rgba(22,30,66,0)');x.fillStyle=g;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);})();
+const aoMat=new THREE.MeshBasicMaterial({map:aoTex,transparent:true,depthWrite:false});
+function aoMesh(list){const pos=[],uv=[],idx=[];list.forEach(([x0,z0,w,d],k)=>{const a=w/2,b=d/2,o=k*4;pos.push(x0-a,.0115,z0-b,x0+a,.0115,z0-b,x0+a,.0115,z0+b,x0-a,.0115,z0+b);uv.push(0,0,1,0,1,1,0,1);idx.push(o,o+2,o+1,o,o+3,o+2);});
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);return new THREE.Mesh(g,aoMat);}
+// 田の水面：空の濃淡と、うすい雲の映り込み（動かない絵。盤面ぜんたいに1枚で貼るので、となりの田へ続く）。つやは川（.18）よりにぶく
+const mizuTex=(()=>{const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d'),g=x.createLinearGradient(0,0,512,512);
+  g.addColorStop(0,'#cfe9f3');g.addColorStop(.5,'#a6d0e2');g.addColorStop(1,'#7fb3cc');x.fillStyle=g;x.fillRect(0,0,512,512);
+  for(let k=0;k<26;k++){const cx=rnd(k,301)*512,cy=rnd(k,302)*512,rw=40+rnd(k,303)*70,rh=10+rnd(k,304)*16;x.save();x.translate(cx,cy);x.rotate(-.5+rnd(k,305)*.25);x.scale(1,rh/rw);
+    const r=x.createRadialGradient(0,0,2,0,0,rw);r.addColorStop(0,'rgba(255,255,255,.72)');r.addColorStop(.6,'rgba(255,255,255,.28)');r.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=r;x.beginPath();x.arc(0,0,rw,0,Math.PI*2);x.fill();x.restore();}
+  for(let k=0;k<14;k++){const cx=rnd(k,311)*512,cy=rnd(k,312)*512,rw=50+rnd(k,313)*60;const r=x.createRadialGradient(cx,cy,2,cx,cy,rw);r.addColorStop(0,'rgba(70,120,150,.22)');r.addColorStop(1,'rgba(70,120,150,0)');x.fillStyle=r;x.fillRect(cx-rw,cy-rw,rw*2,rw*2);}
+  const t=new THREE.CanvasTexture(c);if('encoding'in t)t.encoding=THREE.sRGBEncoding;return t;})();
+const mizuMat={sp:new THREE.MeshStandardMaterial({map:mizuTex,roughness:.5,metalness:0}),su:new THREE.MeshStandardMaterial({map:mizuTex,color:0xb4cdbf,roughness:.55,metalness:0})};
+let WQ=null;   // いま作っているマスの水面（田が field() で入れる）
+function mizuMesh(q){const y=.0336,P=[q.x0,y,q.z0, q.x0,y,q.z1, q.x1,y,q.z1, q.x1,y,q.z0],uv=[];for(let k=0;k<4;k++)uv.push(P[k*3]/W,1-P[k*3+2]/W);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('normal',new THREE.Float32BufferAttribute([0,1,0,0,1,0,0,1,0,0,1,0],3));g.setIndex([0,1,2,0,2,3]);
+  const m=new THREE.Mesh(g,mizuMat[q.s]);m.receiveShadow=true;return m;}
+const kill=o=>{if(!o)return;scene.remove(o);o.traverse(m=>{if(m.geometry&&m.geometry!==GB&&m.geometry!==GI)m.geometry.dispose();});};
+
+// ───────── 土地（地面・川・橋）。土地が変わったら作り直す。地面の絵は季節でも描き直す ─────────
+let gLand=null,gTex=null,gMat=null,wMat=null,dMat=null,curLand=-1,curTex='';
+function buildLand(land){kill(gLand);gLand=new THREE.Group();scene.add(gLand);
+  const cl=RIV[land];CP=cl?new THREE.CatmullRomCurve3(cl.map(p=>new THREE.Vector3(p[0],0,p[1])),false,'centripetal').getPoints(600):null;
+  let shapes;if(CP)shapes=[landShape(clipB(bank(-1,HW)),0),landShape(clipB(bank(1,HW)),W)];else{const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(W,0);s.lineTo(W,W);s.lineTo(0,W);s.closePath();shapes=[s];}
+  gMat=new THREE.MeshStandardMaterial({roughness:.95,metalness:0});
+  const ground=new THREE.Mesh(new THREE.ExtrudeGeometry(shapes,{depth:.2,bevelEnabled:false}),[gMat,mat('#b08a5e')]);ground.rotation.x=Math.PI/2;ground.receiveShadow=true;ground.castShadow=true;gLand.add(ground);
+  wMat=dMat=null;
+  if(CP){wMat=new THREE.MeshStandardMaterial({roughness:.18,metalness:.05,transparent:true,opacity:.95});
+    const water=new THREE.Mesh(new THREE.BoxGeometry(W-.1,.09,W-.004),wMat);water.position.set(W/2,-.155,W/2);water.receiveShadow=true;gLand.add(water);
+    dMat=new THREE.MeshStandardMaterial({roughness:.2,metalness:.05,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide});
+    const d=new THREE.Mesh(ribbon(.16,-.1085),dMat);d.receiveShadow=true;d.renderOrder=1;gLand.add(d);   // まんなかの深い色
+    const f=new THREE.Mesh(ribbon(.22,-.107),new THREE.MeshBasicMaterial({map:flowTex,transparent:true,opacity:.62,depthWrite:false,side:THREE.DoubleSide}));f.renderOrder=2;gLand.add(f);
+    // 橋（ゆるい弓なり）と両たもとの小道、川の中の石、かもの親子
+    SB=new Batch(true);OX=0;OZ=0;const br=BRIDGE[land];
+    if(br){const bx=br.x,z=br.z,n=11,len=.76;
+      for(let k=0;k<n;k++){const t=(k+.5)/n,x=bx-len/2+t*len,y=.012+Math.sin(t*Math.PI)*.05,a=Math.cos(t*Math.PI)*.2;box(len/n+.004,.02,.19,x,y,z,k%2?'#c8a06c':'#bb9360',0,0,a);
+        for(const s of[-1,1]){box(len/n+.004,.012,.012,x,y+.07,z+s*.09,'#7a5536',0,0,a);if(k%2===0)box(.014,.075,.014,x,y+.035,z+s*.09,'#6b4a2c');}}
+      box(.13,.008,.105,bx-.375,.004,z,'#e3cf9c');box(.21,.008,.105,bx+.455,.004,z,'#e3cf9c');}
+    for(const[t,o,s]of[[.2,.08,1],[.47,-.1,.8],[.74,.09,1.1]]){const p=CP[Math.round(t*(CP.length-1))];blob(.05*s,p.x+o,-.105,p.z,'#8e99a2',1.2,.7,1);blob(.03*s,p.x+o+.05,-.107,p.z+.03,'#bcc5cc',1,.6,1);}
+    {const p=CP[Math.round(.56*(CP.length-1))];blob(.034,p.x-.02,-.097,p.z,'#ffffff',1.25,.8,.85);blob(.02,p.x+.025,-.069,p.z,'#ffffff');blob(.008,p.x+.048,-.071,p.z,'#f0a030',1.4,.6,.7);
+      blob(.018,p.x-.09,-.102,p.z+.02,'#ffe27a',1.2,.8,.85);blob(.018,p.x-.15,-.102,p.z-.01,'#ffe27a',1.2,.8,.85);}
+    const m=SB.mesh(townMat);m.castShadow=true;m.receiveShadow=true;gLand.add(m);}
+  curLand=land;curTex='';}
+function setSeason(land,se){PAL=SEAS[se];if(gTex)gTex.dispose();gTex=groundTex(land,se);gMat.map=gTex;gMat.needsUpdate=true;
+  if(wMat){wMat.color.copy(colOf(PAL.water));dMat.color.copy(colOf(PAL.deep));}curTex=land+se;}
+
+// ───────── マスごとの形 ─────────
+const cells=[];for(let i=0;i<N;i++)cells.push({key:'',ms:[],smoke:null});
+const pathTo=(T,r,c)=>isBd(T,r,c)||(BRIDGE[T.land]&&BRIDGE[T.land].i===r*W+c&&c>=0&&c<W);
+function cellKey(T,i,se){const x=T.grid[i],r=Math.floor(i/W),c=i%W,t=terr(T,i);
+  if(!x)return t+se;
+  const by=x.by?x.by+(here(T,x.by)?1:0):'';
+  if(x.k==='hatake')return 'f'+se+(isF(T,r-1,c)?1:0)+(isF(T,r,c+1)?1:0)+(isF(T,r+1,c)?1:0)+(isF(T,r,c-1)?1:0)+(wet(T,i)?'w':'')+(se==='wi'&&genCover(T,i)?'g':'')+by+(x.up?'u':'');
+  return x.k+se+(x.pop||0)+(pathTo(T,r,c-1)?1:0)+(pathTo(T,r,c+1)?1:0)+(isBd(T,r+1,c)?1:0)+by+(x.off?'o':'')+(x.bad||'')+(x.sold?'s':'')+(x.up?'u':'');}
+function buildCell(T,i){const C=cells[i],r=Math.floor(i/W),c=i%W,x=T.grid[i],t=terr(T,i);C.ms.forEach(kill);C.ms=[];C.smoke=null;
+  SB=new Batch(true);EB=new Batch(false);AO=[];WQ=null;OX=c;OZ=r;big();
+  if(x){
+    if(x.k==='hatake')field(T,i,r,c);else if(x.k==='bokujo')pasture(i);
+    else{put(SB,GC.yd||(GC.yd=new THREE.CylinderGeometry(.5,.5,1,16)),.5,.003,.58,PAL.yard,.98,.006,.8);   // 建物のまわりの庭（明るい地面）と、戸口から出る小道。となりの建物・橋とつながる
+      if(x.k==='seifun')mill(LANDS[T.land].mill>1);else if(x.k==='panya')C.smoke=bakery();else if(x.k==='hiroba')plaza();else if(x.k==='terakoya')terakoya();else if(x.k==='sakariba')sakariba();else if(x.k==='hikeshi')hikeshi();else if(x.k==='bansho')bansho();else if(x.k==='ichiba')market();else if(x.k==='kouei')kouei(i,x.pop,x.bad||0);else house(i,rnd(i,9+T.land),x.pop,x.up);
+      const x0=pathTo(T,r,c-1)?0:.3,x1=pathTo(T,r,c+1)?1:.7;
+      box(.1,.008,.44,.5,.01,.7,'#e3cf9c');box(x1-x0,.008,.105,(x0+x1)/2,.01,.87,'#e3cf9c');if(isBd(T,r+1,c))box(.1,.008,.14,.5,.01,.93,'#e3cf9c');}
+    if(x.by){const pw=PAWN[x.by]||['#4f8a5a',2],aw=!here(T,x.by);if(x.k==='seifun')pawn(.82,.72,pw[0],pw[1],aw);else pawn(.76,.8,pw[0],pw[1],aw);}
+  }else if(t==='.'){if(riverAdj(T,i)&&PAL!==SEAS.wi){box(1,.004,1,.5,.003,.5,dim(PAL.g,.3));for(let k=0;k<3;k++){const r=.09+rnd(i,220+k)*.08;cyl(r,r,.002,.2+rnd(i,240+k)*.6,.0062,.2+rnd(i,250+k)*.6,dim(PAL.g,.4),12);}for(let k=0;k<7;k++){const x=.12+rnd(i,200+k)*.76,z=.12+rnd(i,210+k)*.76;bit(.016,x,.05,z,'#4f8a3e',1,3.2,1);bit(.014,x+.025,.04,z+.012,'#6fae56',1,2.8,1);if(k%2===0)bit(.012,x,.1,z,'#7a5a3a',1,1.9,1);}}decor(i,T.land);}else if(t==='^')mountain(i,T.land);else if(t==='=')sea(T,i,r,c);else if(t==='~'&&!RIV[T.land])pond(i);
+  if(SB.p.length){const m=SB.mesh(townMat);m.castShadow=true;m.receiveShadow=true;m.userData.i=i;scene.add(m);C.ms.push(m);}
+  if(EB.p.length){const m=EB.mesh(glowMat);scene.add(m);C.ms.push(m);}
+  if(WQ){const m=mizuMesh(WQ);m.userData.i=i;scene.add(m);C.ms.push(m);WQ=null;}
+  if(AO.length){const m=aoMesh(AO);scene.add(m);C.ms.push(m);}}
+
+// ───────── まだ買っていない区画：上から暗い幕をかける（木や山はそのまま見えるが、暗い） ─────────
+let fog=null,fogSig='';const fogMat=new THREE.MeshBasicMaterial({color:0x1c2a44,transparent:true,opacity:.46,depthWrite:false}),fogGeo=new THREE.PlaneGeometry(4,4);
+function setFog(T){const sig=T.land+(T.open?T.open.map(x=>x?1:0).join(''):'');if(sig===fogSig)return;fogSig=sig;if(fog)scene.remove(fog);fog=new THREE.Group();scene.add(fog);if(!T.open)return;
+  for(let b=0;b<16;b++)if(!T.open[b]){const m=new THREE.Mesh(fogGeo,fogMat);m.rotation.x=-Math.PI/2;m.position.set(b%4*4+2,.5,Math.floor(b/4)*4+2);m.renderOrder=5;fog.add(m);}}
+
+// ───────── 動くもの：羽根・けむり・歩く人 ─────────
+let dyn=null,sails=[],puffs=[],walkers=[];
+const sailGeo=[new THREE.BoxGeometry(.016,.35,.016),new THREE.BoxGeometry(.1,.24,.008),new THREE.BoxGeometry(.1,.008,.012),new THREE.CylinderGeometry(.03,.03,.05,8)];
+const wheelGeo=[new THREE.TorusGeometry(.135,.012,5,16),new THREE.BoxGeometry(.012,.27,.012),new THREE.BoxGeometry(.016,.05,.06)];
+const walkGeo=[new THREE.CylinderGeometry(.02,.03,.075,7),new THREE.IcosahedronGeometry(.027,0),new THREE.IcosahedronGeometry(.028,0)];
+const puffMat=[];
+function buildDyn(T){if(dyn){scene.remove(dyn);}dyn=new THREE.Group();scene.add(dyn);sails=[];puffs=[];walkers=[];let n=0,pm=0;
+  for(let i=0;i<N;i++){const x=T.grid[i];if(!x)continue;const r=Math.floor(i/W),c=i%W;
+    if(x.k==='seifun'&&!(LANDS[T.land].mill>1)){const wrap=new THREE.Group();wrap.position.set(c+.5+.09*MS,.145*MS,r+CZ2+.205*MS);wrap.scale.setScalar(MS*.82);   // 水車：小屋の前で、樋の上を回る（こちらを向く）
+      const g0=new THREE.Group(),wm=mat('#6b4a2c'),add=o=>{o.castShadow=true;o.userData.i=i;g0.add(o);};g0.userData.i=i;
+      add(new THREE.Mesh(wheelGeo[0],wm));for(let k=0;k<4;k++){const sp=new THREE.Mesh(wheelGeo[1],wm);sp.rotation.z=k*Math.PI/4;add(sp);}
+      for(let k=0;k<8;k++){const a=k*Math.PI/4,pd=new THREE.Mesh(wheelGeo[2],mat('#8a6a4a'));pd.position.set(Math.cos(a)*.135,Math.sin(a)*.135,0);pd.rotation.z=a;add(pd);}
+      wrap.add(g0);dyn.add(wrap);sails.push(g0);}
+    else if(x.k==='seifun'){const g0=new THREE.Group();g0.position.set(c+.5,.5*MS,r+CZ2+.24*MS);g0.scale.setScalar(MS);g0.userData.i=i;
+      for(let k=0;k<4;k++){const g=new THREE.Group();g.rotation.z=k*Math.PI/2+.35;
+        const sp=new THREE.Mesh(sailGeo[0],mat('#6b4a2c'));sp.position.y=.175;const sl=new THREE.Mesh(sailGeo[1],mat('#fbf6e9'));sl.position.set(.058,.215,0);
+        const b1=new THREE.Mesh(sailGeo[2],mat('#6b4a2c'));b1.position.set(.058,.15,0);const b2=new THREE.Mesh(sailGeo[2],mat('#6b4a2c'));b2.position.set(.058,.28,0);
+        [sp,sl,b1,b2].forEach(o=>{o.castShadow=true;o.userData.i=i;g.add(o);});g0.add(g);}
+      const hub=new THREE.Mesh(sailGeo[3],mat('#5a3d24'));hub.rotation.x=Math.PI/2;hub.castShadow=true;hub.userData.i=i;g0.add(hub);dyn.add(g0);sails.push(g0);}
+    if(x.k==='panya'&&cells[i].smoke)for(let k=0;k<3;k++){const mt=puffMat[pm]||(puffMat[pm]=new THREE.MeshBasicMaterial({color:0xf6f3ec,transparent:true,opacity:0,depthWrite:false}));pm++;
+      const m=new THREE.Mesh(GI,mt);m.userData={p:cells[i].smoke,o:k/3};dyn.add(m);puffs.push(m);}
+    if(isHome(x.k)&&x.pop>0&&n<4&&c<W-1&&isBd(T,r,c+1)&&rnd(i,3)<.7){const g=new THREE.Group(),col=WKC[n%WKC.length];n++;   // 家から右どなりの建物へ、小道を行き来する人
+      const b=new THREE.Mesh(walkGeo[0],mat(col));b.position.y=.045;const h=new THREE.Mesh(walkGeo[1],mat('#f2cfa6'));h.position.y=.108;const t=new THREE.Mesh(walkGeo[2],mat(n%2?'#5a3d24':'#b8504a'));t.position.set(0,.118,-.004);t.scale.y=.75;
+      [b,h,t].forEach(o=>{o.castShadow=true;g.add(o);});g.userData={x0:c+.5,z:r+.87,d:9+rnd(i,22)*6,o:rnd(i,23)*20};dyn.add(g);walkers.push(g);}}}
+const WKC=['#d9634f','#4f7fb8','#5f9a6a','#c9953a','#8a67b0'];
+
+// ───────── 押したマスの印 ─────────
+const mark=new THREE.Group();{const p=new THREE.Mesh(new THREE.PlaneGeometry(.96,.96),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.34,depthWrite:false}));p.rotation.x=-Math.PI/2;
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(.96,.96)),new THREE.LineBasicMaterial({color:0x2b4a8b}));e.rotation.x=-Math.PI/2;mark.add(p,e);mark.position.y=.02;mark.visible=false;scene.add(mark);}
+// おすすめのマス（最初の手順のあいだ）：マスそのものを黄色く光らせて、ゆっくり明滅させる
+const recMat=new THREE.MeshBasicMaterial({color:0xffcf2e,transparent:true,opacity:.6,depthWrite:false}),recMark=new THREE.Group();
+{const p=new THREE.Mesh(new THREE.PlaneGeometry(.98,.98),recMat);p.rotation.x=-Math.PI/2;
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(.98,.98)),new THREE.LineBasicMaterial({color:0xffffff}));e.rotation.x=-Math.PI/2;e.position.y=.004;
+  const e2=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1.06,1.06)),new THREE.LineBasicMaterial({color:0xe08a00}));e2.rotation.x=-Math.PI/2;e2.position.y=.004;
+  recMark.add(p,e,e2);recMark.position.y=.03;recMark.visible=false;recMark.renderOrder=4;scene.add(recMark);}
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),hit=new THREE.Vector3();
+let onTap=null;
+stage.addEventListener('click',ev=>{if(!cam)return;if(moved){moved=false;return;}const b=stage.getBoundingClientRect();ndc.set((ev.clientX-b.left)/b.width*2-1,-(ev.clientY-b.top)/b.height*2+1);ray.setFromCamera(ndc,cam);
+  // 見えているものを押したら、それが立っているマス（屋根を押せばその建物、木を押せばその空き地、羽根を押せばその搗き屋）。地面を押したら、その地面のマス
+  const tg=[];cells.forEach(C=>{if(C.ms[0]&&C.ms[0].userData.i!=null)tg.push(C.ms[0]);});sails.forEach(s=>tg.push(s));
+  const h=ray.intersectObjects(tg,true)[0];let i=-1;
+  if(h&&h.point.y>.03&&h.object.userData.i!=null)i=h.object.userData.i;
+  else if(ray.ray.intersectPlane(plane,hit)){const c=Math.floor(hit.x),r=Math.floor(hit.z);if(c>=0&&c<W&&r>=0&&r<W)i=r*W+c;}
+  if(i>=0&&onTap)onTap(i);});
+
+// ───────── 数字の札（ふだん出さない。押したマス・「数字」を押している間・相手を選んでいる間の手がかりだけ） ─────────
+let cam=null,labs=[],denPs=[],labSig='',sw=0,shh=0;
+function relabel(T){const out=[],wi=isWinter(T),tool=S.tool,den=new Set(),hcell=[];
+  {const seen=new Set();for(let i=0;i<N;i++)if(!seen.has(i)&&burns(T.grid[i])){const b=fireBlock(T,i);for(const j of b)seen.add(j);if(b.length>=FIRE.dense)for(const j of b)den.add(j);}}
+  const selB=S.sel!=null&&den.has(S.sel)?new Set(fireBlock(T,S.sel)):null;   // こんだ区画の建物を押すと、つながった建物ぜんぶの札を出す
+  for(let i=0;i<N;i++){const x=T.grid[i],r=Math.floor(i/W),c=i%W,on=S.sel===i?' on':'';
+    if(x){let sub,bad=false;const f=x.k==='hatake';
+      if(f)sub=wi?(genCover(T,i)?'冬 半分':'冬 休み'):Math.round(fieldBase(T,i)*60)+'石';
+      else if(x.k==='seifun')sub=Math.round(millBase(T,i)*60)+'石';else if(x.k==='panya')sub=Math.round(bakeBase(T,i)*60)+'石';
+      else if(x.k==='hiroba'){bad=!!(x.off||x.bad);sub=x.off||x.bad>=3?'休止':x.bad===2?'神社 半分':x.bad===1?'神社 未払い':'神社';}
+      else if(x.k==='terakoya'||x.k==='hikeshi'||x.k==='bansho'){bad=!!(x.off||x.bad);sub=x.off||x.bad>=3?'休止':B[x.k].n+(x.bad?' 未払い':'');}
+      else if(x.k==='sakariba')sub=Math.round(sakaBase(T,i)*120)+'万円/年';
+      else if(x.k==='bokujo')sub=Math.round(pastBase(T,i)*60)+'貫';
+      else if(x.k==='ichiba')sub=Math.round(mktBase(T,i)*60)+'石';
+      else{bad=noisy(T,i);sub=(x.k==='kouei'?'共同 ':x.sold?'売 ':x.sale?'売出 ':'')+x.pop+'人'+(bad?' 騒':'');if(unmet(T,i)){bad=true;sub+=' 憩';}if(unmet2(T,i)){bad=true;sub+=' 欲';}if(unmet3a(T,i)){bad=true;sub+=' 守';}if(unmet3b(T,i)){bad=true;sub+=' 楽';}if(x.k==='kouei'&&x.bad){bad=true;sub+=' 未払い';}}
+      const lo=f||x.k==='bokujo',y=lo?.06:.26,z=r+(lo?.55:.72);
+      out.push([(bad?'bad':'')+(den.has(i)?' den':'')+on,sub+(den.has(i)?' 混':''),c+.5,y,z]);
+      if(x.by)out.push(['tag'+(here(T,x.by)?'':' away')+on,P[x.by].n,c+.5,y,z]);
+      if(bad)out.push(['warn','!',c+.5,.36*HS,r+CZ2+.1*HS]);
+      if(tool&&tool.slice(0,2)==='p:'&&P[tool.slice(2)].on.includes(x.k)){const id=tool.slice(2);   // この人をつけられる建物に、黄色い丸。すでに人がいる建物には、その人の名前を出す
+        if(x.by===id)out.push(['hint','いまここ',c+.5,f?.12:.5,r+.5]);else if(x.by)out.push(['hint bad',P[x.by].n+'がいる',c+.5,f?.12:.5,r+.5]);else out.push(['can','',c+.5,f?.12:.5,r+.5]);}
+    }else if(tool&&B[tool]&&terr(T,i)==='.'&&isOpen(T,i)){const hf=hintFor(T,i,tool);if(hf)hcell.push([i,hf.bad?6:2+(hf.lv||1)]);}}   // 建てる前に、そこへ建てたときの効き目（札は出さない。地面を色づける）
+  if(T.open){const pc=plotCost(T);for(let b=0;b<16;b++)if(canBuy(T,b))out.push(['plot'+(S.sel!=null&&!isOpen(T,S.sel)&&blk(S.sel)===b?' on':''),yenFix(pc+'万円'),b%4*4+2,.45,Math.floor(b/4)*4+2]);}   // 買える区画のまんなかに値札
+  const dl=[...den].map(i=>[i,selB&&selB.has(i)?1:0]).concat(hcell);
+  {const rc=recCells(T);if(rc&&rc.k==='hatake'&&rc.cells.length&&(!tool||tool==='hatake'))for(const j of fieldCells(T,rc.cells[0]))dl.push([j,7]);}   // 田のおすすめ：置かれるマスを全部
+  {const m=/^(pl|ow):(\d+)$/.exec(S.sure||'');if(m&&tool&&B[tool]){const i=+m[2],hf=!T.grid[i]?hintFor(T,i,tool):null;if(tool==='hatake'&&!T.grid[i])for(const j of fieldCells(T,i))dl.push([j,2]);else dl.push([i,2]);out.push(['pre'+(hf&&hf.bad?' warnp':''),(hf?hf.t+'\n':'')+B[tool].n+'：もう一度押すと建つ',i%W+.5,.3,Math.floor(i/W)+.5]);}}   // 建てる前の点滅
+  const sig=JSON.stringify([out,dl]);if(sig===labSig)return;labSig=sig;
+  const lab=$('lab');lab.textContent='';
+  {const NS='http://www.w3.org/2000/svg',sv=document.createElementNS(NS,'svg');denPs=dl.map(([i,o])=>{const g=document.createElementNS(NS,'polygon');if(o)g.setAttribute('class',['','on','pre','g1','g2','g3','bd','rc'][o]);sv.appendChild(g);return[g,i];});lab.appendChild(sv);}
+labs=out.map(([cls,txt,x,y,z])=>{const s=document.createElement('span');s.className=cls;s.textContent=txt;lab.appendChild(s);return[s,x,y,z];});placeLabs();}
+function placeLabs(){if(!cam)return;
+  for(const[g,i]of denPs){const c=i%W,r=Math.floor(i/W);let pts='';for(const[dx,dz]of[[0,0],[1,0],[1,1],[0,1]]){_v.set(c+dx,.03,r+dz).project(cam);pts+=((_v.x*.5+.5)*sw).toFixed(1)+','+((-_v.y*.5+.5)*shh).toFixed(1)+' ';}g.setAttribute('points',pts);}
+ for(const[s,x,y,z]of labs){_v.set(x,y,z).project(cam);let lx=(_v.x*.5+.5)*sw,ly=(-_v.y*.5+.5)*shh;
+    if(s.classList.contains('pre')){const hw=s.offsetWidth/2+4,hh=s.offsetHeight;lx=Math.max(hw,Math.min(sw-hw,lx));ly=Math.max(hh*1.9+4,ly);}   // 建てる前の札は、盤面の外へはみ出させない
+    s.style.left=lx.toFixed(1)+'px';s.style.top=ly.toFixed(1)+'px';}}
+function xy(i,h){if(!cam)return[0,0];_v.set(i%W+.5,h==null?.3:h,Math.floor(i/W)+.5).project(cam);return[(_v.x*.5+.5)*sw,(-_v.y*.5+.5)*shh];}   // マスのまんなかが、盤面の絵のどこに映るか（吹き出し・運ばれる点の置き場）
+{const b=$('nums'),on=f=>{stage.classList.toggle('nums',f);b.classList.toggle('on',f);};   // 押している間だけ、全部のマスの数字を出す
+  b.addEventListener('pointerdown',e=>{e.preventDefault();on(true);try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  for(const t of['pointerup','pointercancel','lostpointercapture','blur'])b.addEventListener(t,()=>on(false));
+  b.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();on(true);}});b.addEventListener('keyup',()=>on(false));
+  b.addEventListener('contextmenu',e=>e.preventDefault());}
+
+// ───────── カメラ（盤面は回さない。南から40度傾けるだけ＝横の列は水平のまま）。大きさは、枠（上の帯・中身の欄・下の帯を引いた残り）に入るいちばん大きい形 ─────────
+let need=true;
+const EL0=EL*Math.PI/180,SN=Math.sin(EL0),CS=Math.cos(EL0),HF=W/2,HX=HF+.44,VT=(HF+.2)*SN+.3*CS+.16,VB=-((HF+.2)*SN+.44*CS+.16);
+// 見え方：rot＝回した角度／z＝拡大（1〜3倍）／x,y＝見ているまんなか。CV が行き先、CN がいま映している値（少しずつ近づける）。更新しても残す
+const VKEY='machi.view.v4',R0=Math.PI/4,Z0=2;let CV={rot:R0,z:Z0,x:W/2,y:W/2};try{Object.assign(CV,JSON.parse(localStorage.getItem(VKEY)||'{}'));}catch(e){}
+const CN={rot:CV.rot,z:CV.z,x:CV.x,y:CV.y},keepV=()=>{try{localStorage.setItem(VKEY,JSON.stringify(CV));}catch(e){}};
+function clampV(){CV.z=Math.min(8,Math.max(1,CV.z));const m=CV.z>1.01?HF*(1-1/CV.z)+.5:0;CV.x=Math.min(HF+m,Math.max(HF-m,CV.x));CV.y=Math.min(HF+m,Math.max(HF-m,CV.y));}   // 等倍のときはまんなかに戻す。拡大したぶんだけずらせる
+function applyCam(){const kr=Math.abs(Math.cos(CN.rot))+Math.abs(Math.sin(CN.rot)),k=kr/CN.z;   // 斜めに回すと盤面の幅が広がるぶん、引いて全体を入れる
+  if(!cam)cam=new THREE.OrthographicCamera(-1,1,1,-1,1,90);
+  const asp=shh/sw,hw=Math.max(HX,(VT-VB)/2/asp)*k,hh=hw*asp,off=(VT+VB)/2*k;   // 枠の形に合わせて、盤面の全体が入るいちばん大きい映し方
+  cam.left=-hw;cam.right=hw;cam.top=hh+off;cam.bottom=-hh+off;
+  cam.position.set(CN.x+Math.sin(CN.rot)*CS*30,SN*30,CN.y+Math.cos(CN.rot)*CS*30);cam.lookAt(CN.x,0,CN.y);cam.updateMatrixWorld();cam.updateProjectionMatrix();
+  const hb=$('chome');if(hb)hb.hidden=!(Math.abs(CV.z-Z0)>.01||Math.abs(Math.sin((CV.rot-R0)/2))>.01||Math.abs(CV.x-HF)+Math.abs(CV.y-HF)>.05);
+  placeLabs();need=true;}
+function camStep(){let mv=false;for(const k of['rot','z','x','y']){const d=CV[k]-CN[k];if(Math.abs(d)>.0015){CN[k]+=d*.3;mv=true;}else CN[k]=CV[k];}if(mv)applyCam();return mv;}
+function view(){const bx=stage.parentNode,w=Math.max(120,bx.clientWidth),h=Math.max(120,bx.clientHeight);   // 盤面の絵は、枠（上の帯・中身の欄・下の帯を引いた残り）いっぱいに映す
+  stage.style.width=w+'px';stage.style.height=h+'px';renderer.setSize(w,h,false);sw=w;shh=h;clampV();applyCam();}
+// 指の操作：1本でずらす（拡大しているとき）／2本でつまんで拡大・縮小、ひねって回す。少しでも動かしたら「押した」にしない
+const pts=new Map();let moved=false,g0=null;
+stage.addEventListener('pointerdown',e=>{if(S.hm){S.hm=false;hima();ctx();}pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===1)moved=false;g0=null;});
+stage.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;
+  if(pts.size===1){const dx=e.clientX-p[0],dy=e.clientY-p[1];if(!moved&&Math.hypot(dx,dy)<8)return;
+    if(!moved){moved=true;try{stage.setPointerCapture(e.pointerId);}catch(_){}}
+    const kr=Math.abs(Math.cos(CN.rot))+Math.abs(Math.sin(CN.rot)),wpp=(cam.right-cam.left)/sw,c=Math.cos(CN.rot),sn=Math.sin(CN.rot);
+    CV.x+=-c*dx*wpp-sn*dy*wpp/SN;CV.y+=sn*dx*wpp-c*dy*wpp/SN;clampV();CN.x=CV.x;CN.y=CV.y;p[0]=e.clientX;p[1]=e.clientY;applyCam();}
+  else if(pts.size===2){p[0]=e.clientX;p[1]=e.clientY;const q=[...pts.values()],d=Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1])||1,an=Math.atan2(q[1][1]-q[0][1],q[1][0]-q[0][0]);moved=true;
+    if(!g0)g0={d,an,z:CV.z,rot:CV.rot};else{CV.z=g0.z*d/g0.d;let da=an-g0.an;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;CV.rot=g0.rot+da;clampV();CN.z=CV.z;CN.rot=CV.rot;CN.x=CV.x;CN.y=CV.y;applyCam();}}});
+for(const t of['pointerup','pointercancel'])stage.addEventListener(t,e=>{pts.delete(e.pointerId);g0=null;clampV();keepV();need=true;});
+stage.addEventListener('wheel',e=>{e.preventDefault();CV.z*=e.deltaY<0?1.15:1/1.15;clampV();keepV();need=true;},{passive:false});
+{const cb=$('cbar');if(cb)cb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.cam,q=Math.PI/4;   // ボタン：45度ずつ回す・1.5倍ずつ拡大・もとに戻す
+  if(k==='l')CV.rot=Math.round(CV.rot/q-1)*q;else if(k==='r')CV.rot=Math.round(CV.rot/q+1)*q;else if(k==='in')CV.z*=1.5;else if(k==='out')CV.z/=1.5;
+  else{const tw=2*Math.PI;CN.rot=((CN.rot%tw)+tw)%tw;if(CN.rot>Math.PI)CN.rot-=tw;CV.rot=R0;CV.z=Z0;CV.x=HF;CV.y=HF;}
+  clampV();keepV();need=true;});}
+
+// ───────── ゲームの状態に合わせる（render のたびに呼ぶ。変わったマスだけ作り直す） ─────────
+function sync(){const T=cur(),se=seasonOf(T);let ch=false;
+  if(curLand!==T.land){buildLand(T.land);cells.forEach(C=>{C.key='';});}
+  if(curTex!==T.land+se)setSeason(T.land,se);
+  for(let i=0;i<N;i++){const k=T.land+cellKey(T,i,se);if(cells[i].key!==k){cells[i].key=k;buildCell(T,i);ch=true;}}
+  if(ch)buildDyn(T);
+  setFog(T);relabel(T);
+  const s=S.sel;mark.visible=s!=null&&s>=0;if(mark.visible)mark.position.set(s%W+.5,.02,Math.floor(s/W)+.5);
+  {const rec=recCells(T),tl=S.tool;recMark.visible=!!(rec&&rec.cells.length&&(!tl||tl===rec.k)&&rec.k!=='hatake');if(recMark.visible){const i=rec.cells[0];recMark.position.set(i%W+.5,.03,Math.floor(i/W)+.5);}}   // 田のおすすめは、置かれるマスを全部 SVG の面で光らせる（relabel の rc）
+  need=true;}
+const tick=()=>{const T=cur();if(curTex!==T.land+seasonOf(T))sync();};   // 季節が変わったときだけ描き直す（hud から呼ぶ）
+
+let TT=0,last=0;const still=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function draw(){const sp=LANDS[curLand<0?0:curLand].mill;
+  for(const s of sails)s.rotation.z=-TT*.9*sp;flowTex.offset.y=-TT*.22;
+  for(const m of puffs){const u=(TT*.28+m.userData.o)%1,p=m.userData.p;m.position.set(p[0]+u*.1,p[1]+u*.34,p[2]);m.scale.setScalar(.03+u*.05);m.material.opacity=u<.2?u*4:.8*(1-u);}
+  for(const g of walkers){const d=g.userData,u=((TT+d.o)/d.d)%2,t=u<1?u:2-u;g.position.set(d.x0+t,Math.abs(Math.sin(TT*9+d.o))*.006,d.z);}
+  renderer.render(scene,cam);}
+function loop(ms){requestAnimationFrame(loop);if(document.hidden||!cam||ms-last<30)return;const dt=Math.min(.1,(ms-last)/1000);last=ms;
+  if(S&&!S.paused&&S.phase==='town'&&!still&&!looking()){TT+=dt*(S.speed>=8?2.6:S.speed===3?1.7:1);need=true;}   // 止めている間は、絵も止める（描き直さない＝電池を使わない）
+  if(camStep())need=true;
+  if(recMark.visible){recMat.opacity=.42+.3*Math.sin(ms/260);need=true;}   // 止めている間も、おすすめのマスだけは明滅させる
+  if(need){need=false;draw();}}
+{const bx=stage.parentNode;let k0='';const chk=()=>{const k=bx.clientWidth+'x'+bx.clientHeight;if(k!==k0){k0=k;view();}};if(window.ResizeObserver)new ResizeObserver(chk).observe(bx);addEventListener('resize',view);}   // 見張るのは盤面の枠そのもの（上下の帯の高さが変わっても、盤面を入れ直す）
+view();requestAnimationFrame(loop);
+return {sync,tick,view,xy,setTap(f){onTap=f;},scene,cells,get cam(){return cam;},get sails(){return sails;}};
+})();
+
+// ───────── 画面まわり：上の帯・つぎにやること・中身の欄・下の帯・引き出し ─────────
+const sv=(s,w)=>'<svg viewBox="0 0 24 24" width="'+w+'" height="'+w+'" aria-hidden="true">'+s+'</svg>';
+const TICON={   // 下の帯の建物の小さな絵
+  kouei:'<path d="M1.8 9.4 5 4.6h14l3.2 4.8z" fill="#7b838c"/><rect x="4" y="9.4" width="16" height="11.1" fill="#f2ead8"/><path d="M3 14.4h18" stroke="#5a6169" stroke-width="1.5"/><rect x="4" y="18" width="16" height="2.5" fill="#5f4a3c"/><rect x="5.2" y="10.4" width="2.8" height="2.6" fill="#4a3d33"/><rect x="5.5" y="15.4" width="2.2" height="4.4" fill="#f4eedc" stroke="#5f4a3c" stroke-width=".5"/><rect x="9.2" y="10.4" width="2.8" height="2.6" fill="#4a3d33"/><rect x="9.5" y="15.4" width="2.2" height="4.4" fill="#f4eedc" stroke="#5f4a3c" stroke-width=".5"/><rect x="13.2" y="10.4" width="2.8" height="2.6" fill="#4a3d33"/><rect x="13.5" y="15.4" width="2.2" height="4.4" fill="#f4eedc" stroke="#5f4a3c" stroke-width=".5"/><rect x="16.8" y="10.4" width="2.8" height="2.6" fill="#4a3d33"/><rect x="17.1" y="15.4" width="2.2" height="4.4" fill="#f4eedc" stroke="#5f4a3c" stroke-width=".5"/>',
+  bokujo:'<rect x="3" y="7" width="18" height="13" rx="2" fill="#a8895e"/><path d="M4 11h16M4 15h16M4 19h16" stroke="#8a6f49" stroke-width="1"/><circle cx="7" cy="10" r="1.7" fill="#5fa648"/><circle cx="7.5" cy="9.2" r="1.05" fill="#ffffff"/><circle cx="12" cy="10" r="1.7" fill="#5fa648"/><circle cx="12.5" cy="9.2" r="1.05" fill="#ffffff"/><circle cx="17" cy="10" r="1.7" fill="#5fa648"/><circle cx="17.5" cy="9.2" r="1.05" fill="#ffffff"/><circle cx="9.5" cy="14" r="1.7" fill="#5fa648"/><circle cx="10.0" cy="13.2" r="1.05" fill="#ffffff"/><circle cx="14.5" cy="14" r="1.7" fill="#5fa648"/><circle cx="15.0" cy="13.2" r="1.05" fill="#ffffff"/><circle cx="7" cy="18" r="1.7" fill="#5fa648"/><circle cx="7.5" cy="17.2" r="1.05" fill="#ffffff"/><circle cx="12" cy="18" r="1.7" fill="#5fa648"/><circle cx="12.5" cy="17.2" r="1.05" fill="#ffffff"/><circle cx="17" cy="18" r="1.7" fill="#5fa648"/><circle cx="17.5" cy="17.2" r="1.05" fill="#ffffff"/>',
+  ichiba:'<path d="M3 9 4.4 5.6h15.2L21 9z" fill="#8f775b"/><rect x="5" y="9" width="1.6" height="11" fill="#a98c66"/><rect x="17.4" y="9" width="1.6" height="11" fill="#a98c66"/><rect x="6.6" y="9" width="10.8" height="3.4" fill="#27406b"/><circle cx="12" cy="10.7" r="1" fill="#f4eedc"/><rect x="5" y="15" width="14" height="2.4" fill="#d9bd8f"/><circle cx="9" cy="14" r="1.3" fill="#f4f1e6"/><circle cx="12.2" cy="14" r="1.3" fill="#5fa648"/><circle cx="15.4" cy="14" r="1.3" fill="#c98845"/>',
+  sakariba:'<path d="M1.8 12 5 6.6h14l3.2 5.4z" fill="#8f775b"/><path d="M1.8 12h20.4" stroke="#6c5843" stroke-width="1.2"/><rect x="4" y="12" width="16" height="8.5" fill="#7a5a44"/><rect x="7.5" y="15.4" width="9" height="5.1" fill="#2b2320"/><rect x="7.5" y="12.8" width="9" height="3.2" fill="#27406b"/><path d="M10.5 12.8v3.2M13.5 12.8v3.2" stroke="#1b2c4c" stroke-width=".5"/><ellipse cx="5.4" cy="15" rx="1.7" ry="2.1" fill="#d24a2f"/><ellipse cx="18.6" cy="15" rx="1.7" ry="2.1" fill="#d24a2f"/><path d="M4.2 13.1h2.4M4.2 16.9h2.4M17.4 13.1h2.4M17.4 16.9h2.4" stroke="#3a2e26" stroke-width=".8"/>',
+  hikeshi:'<path d="M5.4 20.5 7 7.4h4.4L13 20.5" fill="none" stroke="#6b5140" stroke-width="1.5"/><path d="M6 16.4h6.4M6.5 12.4h5.4" stroke="#8a6a4a" stroke-width="1.2"/><path d="M4.4 7.6 9.2 3.6l4.8 4z" fill="#8f775b"/><path d="M9.2 7.6v1" stroke="#3a2e26" stroke-width=".8"/><path d="M8 8.6h2.4l.5 2.6H7.5z" fill="#c9a23a"/><path d="M13.2 15.2 15 12.6h5.6l1.6 2.6z" fill="#7b838c"/><rect x="14.4" y="15.2" width="6.8" height="5.3" fill="#efe6d2"/><rect x="16.4" y="16.6" width="2.8" height="3.9" fill="#3a2e26"/>',
+  bansho:'<path d="M1.8 12 5 6.6h14l3.2 5.4z" fill="#8f775b"/><path d="M1.8 12h20.4" stroke="#6c5843" stroke-width="1.2"/><rect x="4" y="12" width="13" height="8.5" fill="#7a5a44"/><rect x="6" y="14" width="5.4" height="6.5" fill="#2b2320"/><rect x="12.6" y="14" width="3" height="3" fill="#f4eedc" stroke="#3a2e26" stroke-width=".6"/><rect x="4" y="19" width="13" height="1.5" fill="#a59a86"/><path d="M20.2 20.5V5.2" stroke="#6b5140" stroke-width="1.3"/><path d="M18.4 4.6c0 2.6 3.6 2.6 3.6 0" fill="none" stroke="#8a8f94" stroke-width="1.3" stroke-linecap="round"/>',
+  terakoya:'<path d="M1.8 12 5 6.2h14l3.2 5.8z" fill="#7b838c"/><path d="M1.8 12h20.4" stroke="#5a6169" stroke-width="1.2"/><rect x="4" y="12" width="16" height="6.6" fill="#efe6d2"/><rect x="6.6" y="13" width="3.4" height="5.6" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/><rect x="10.3" y="13" width="3.4" height="5.6" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/><rect x="14.0" y="13" width="3.4" height="5.6" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/><rect x="2.8" y="18.6" width="18.4" height="1.9" fill="#8a6a4a"/><rect x="20.2" y="12.6" width="1.9" height="5" fill="#8a6a4a"/><path d="M21.15 13.6v3" stroke="#f4eedc" stroke-width=".7"/>',
+  hiroba:'<ellipse cx="12" cy="18" rx="9.5" ry="3.6" fill="#d9cfb8"/><path d="M7.2 18V8.6M16.8 18V8.6" stroke="#d24a2f" stroke-width="1.9" stroke-linecap="round"/><path d="M6 11.4h12" stroke="#d24a2f" stroke-width="1.5"/><path d="M4.2 7.6h15.6" stroke="#d24a2f" stroke-width="2.2" stroke-linecap="round"/><path d="M3.8 6.3h16.4" stroke="#3a3028" stroke-width="1.1" stroke-linecap="round"/>',
+  jutaku:'<path d="M1.8 12.4 5 6.6h14l3.2 5.8z" fill="#8f775b"/><path d="M1.8 12.4h20.4" stroke="#6c5843" stroke-width="1.2"/><rect x="4" y="12" width="16" height="8.5" fill="#efe6d2"/><rect x="4" y="17.6" width="16" height="2.9" fill="#6b5140"/><rect x="5.6" y="13.2" width="2.6" height="6.4" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/><rect x="10.7" y="13.2" width="2.6" height="6.4" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/><rect x="15.8" y="13.2" width="2.6" height="6.4" fill="#f4eedc" stroke="#6b5140" stroke-width=".6"/>',
+  hatake:'<rect x="3" y="5" width="18" height="15" rx="2" fill="#8a6a3c"/><rect x="5" y="7.1" width="14" height="2" rx="1" fill="#e2b94a"/><rect x="5" y="10.4" width="14" height="2" rx="1" fill="#e2b94a"/><rect x="5" y="13.7" width="14" height="2" rx="1" fill="#e2b94a"/><rect x="5" y="17" width="14" height="2" rx="1" fill="#e2b94a"/>',
+  seifun:'<path d="M3.5 21V13h10v8z" fill="#8f775b" stroke="#5f4a3c" stroke-width=".6"/><path d="M2.2 13.4 8.5 8.6l6.3 4.8z" fill="#6c5843"/><circle cx="17" cy="16" r="4.6" fill="none" stroke="#6b4a2c" stroke-width="1.5"/><path d="M17 11.4v9.2M12.4 16h9.2M13.8 12.8l6.4 6.4M20.2 12.8l-6.4 6.4" stroke="#6b4a2c" stroke-width=".9"/><path d="M12 21.4h10" stroke="#4a9be0" stroke-width="1.4" stroke-linecap="round"/>',
+  panya:'<path d="M1.8 12 5 6.2h14l3.2 5.8z" fill="#7b838c"/><path d="M1.8 12h20.4" stroke="#5a6169" stroke-width="1.2"/><rect x="4" y="12" width="16" height="8.5" fill="#efe6d2"/><rect x="4" y="17.6" width="16" height="2.9" fill="#6b5140"/><rect x="5.5" y="12.8" width="9" height="3.2" fill="#f4eedc" stroke="#cfc4ae" stroke-width=".4"/><rect x="5.5" y="16" width="9" height="4.5" fill="#3a2e26"/><ellipse cx="17.2" cy="18.6" rx="2.6" ry="1.9" fill="#d9bd6a" stroke="#a98c4a" stroke-width=".6"/>'};
+const face=(col,hat)=>'<path d="M4.5 23c0-5 3.3-7.6 7.5-7.6s7.5 2.6 7.5 7.6z" fill="'+col+'"/><circle cx="12" cy="10.6" r="5.2" fill="#f2cfa6"/>'+hat;
+const HAIR=c=>'<path d="M6.5 11c-.6-4.6 2-7.6 5.5-7.6s6.1 3 5.5 7.6c-1-2.7-2.8-4-5.5-4s-4.5 1.3-5.5 4z" fill="'+c+'"/>';
+const BRIM=(a,b)=>'<ellipse cx="12" cy="7.2" rx="8" ry="2" fill="'+a+'"/><path d="M8 7.2c0-2.7 1.7-4.2 4-4.2s4 1.500 4 4.200z" fill="'+b+'"/>';
+const FACE={   // 人の顔（盤面のコマと同じ色・帽子）
+  gen:face('#4f8a5a',BRIM('#e3c26a','#d4ad4e')),
+  hana:face('#4f7fb8',HAIR('#5a3d24')+'<circle cx="16.6" cy="5.8" r="1.7" fill="#e98fb0"/>'),
+  take:face('#c8553d','<path d="M7.2 8.2c0-3.4 2.1-5 4.8-5s4.8 1.6 4.8 5z" fill="#fbf6e9" stroke="#b9ad97" stroke-width=".6"/>'),
+  yuki:face('#7fa9d8','<path d="M7 8.800c0-3.600 2.200-5.400 5-5.400s5 1.800 5 5.400z" fill="#dfeaf6" stroke="#9fb6d6" stroke-width=".6"/><circle cx="12" cy="3" r="1.500" fill="#ffffff" stroke="#9fb6d6" stroke-width=".5"/>'),
+  fuu:face('#8a67b0',HAIR('#3d3550')+'<circle cx="12" cy="3.200" r="1.700" fill="#3d3550"/>'),
+  nami:face('#e08a2b','<path d="M7 8.600c.4-3.200 2.400-5 5-5s4.600 1.800 5 5c-3.400-1-6.600-1-10 0z" fill="#e2553a"/>'),
+  tsuchi:face('#8a6a3c',BRIM('#a47a4c','#8a6239'))};
+
+function render(){
+  if(B3D)B3D.sync();
+  dock();ctx();drawer();renderSheet();hud();dirty=false;
+}
+function hud(){
+  const T=cur(),L=LANDS[T.land],c=calc(T),cy=cycle(T),ph=T.t%cy,pr=prep(T),se=seasonOf(T),yr=Math.floor(T.t/cy)+1;
+  if(B3D)B3D.tick();
+  setH($('land'),'<b>'+L.n+(charOf(T)?'<i style="font-style:normal;font-size:11px;font-weight:700;margin-left:5px;padding:1px 5px;border-radius:9px;background:#2a3f8f;color:#fff;vertical-align:2px">'+charOf(T)+'</i>':'')+(chianOf(T)<CHIAN.mark?'<i style="font-style:normal;font-size:11px;font-weight:700;margin-left:5px;padding:1px 5px;border-radius:9px;background:#b3261e;color:#fff;vertical-align:2px">治安 '+Math.round(chianOf(T))+'</i>':'')+'</b><span>'+yr+'年め '+SEASON[se]+'</span>');
+  setH($('year'),'<span class="yb"><span class="w" style="flex:'+L.warm+'"></span><span class="s" style="flex:'+L.winter+'"></span><i style="left:'+(ph/cy*100).toFixed(1)+'%"></i></span><span class="num">'
+    +(!T.started?'建てると進みます':!S.paused&&looking()?'見ている間は停止':c.win?'春まで あと'+Math.max(1,Math.ceil((cy-ph)/10))+'か月':'冬まで あと'+Math.max(1,Math.ceil((L.warm-ph)/10))+'か月')+'</span><b class="num pp">人口'+c.pop+'</b>');
+  document.querySelectorAll('#clock button').forEach(b=>{const v=+b.dataset.sp;b.classList.toggle('on',v===0?S.paused:(!S.paused&&S.speed===v));});
+  const ok=pr.have>=pr.need,mn=Math.min(c.wheat,c.mill,c.bake),sur=(mn-c.eat)*60,mny=f0(S.money);
+  setH($('res'),'<div class="st"><span>資産</span><b class="num'+(mny>=1000?' long':'')+'">'+(mny>=10000?(mny/10000).toFixed(2)+'<small>億円</small>':mny.toLocaleString('ja-JP')+'<small>万円</small>')+'</b></div>'
+    +'<div class="st"><span>'+(c.win?'冬の残り':'冬の備え')+'</span><b class="num">'+f0(pr.have)+'<small>／'+Math.ceil(pr.need)+'</small></b><em class="'+(ok?'':'low')+'">'+(ok?'足りる':'あと'+Math.ceil(pr.need-pr.have))+'</em></div>'
+    +'<div class="st"><span>余り</span><b class="num '+(sur>=0?'plus':'minus')+'">'+sign(sur)+'<small>/半年</small></b></div>');
+  {const pb=$('pub');pb.hidden=!T.done;if(T.done){const ks=keepSum(T),nx=grantOf(T,true);
+    setH(pb,'<span>共同の資金 <b class="num">'+Math.floor(T.yosan||0)+'万円</b></span><span>維持費 <b class="num">'+ks+'万円/年</b></span><span class="'+(ks>nx?'low':'')+'">来年の見込み <b class="num">'+nx+'万円</b></span>');}}
+  const g=goals(T),F=frontier(),open=LANDS.map((_,k)=>k).filter(canReach),goMap=!!(canGo(T)&&open.length&&F===T);
+  let nx;
+  if(S.loc===0&&S.tip<TIPS.length)nx=TIPS[S.tip].t;
+  else if(!T.done)nx='「町の仕上げ」の'+g.length+'つをそろえる';
+  else if(goMap)nx='「'+RANK[rankOf(T)]+'」になりました。地図から次の土地を開けます';
+  else if(!canGo(T))nx='「町」をめざす（人口'+RANKPOP[2]+'人・いま'+c.pop+'人）。町になると次の土地へ';
+  else if(rankOf(T)<3)nx='いまは「'+RANK[rankOf(T)]+'」。人口'+RANKPOP[rankOf(T)+1]+'人で「'+RANK[rankOf(T)+1]+'」になる（いま'+c.pop+'人）';
+  else if(open.length)nx='この町は「市」です。'+LANDS[F.land].n+'を仕上げると次の土地を開けます';
+  else nx=S.towns.every(X=>X&&X.done)?'地方が仕上がりました':'残りの町を仕上げる';
+  const nb=$('next');nb.className='next'+(goMap?' go':'');
+  if(goMap){nb.dataset.act='map';delete nb.dataset.dr;}else{nb.dataset.dr='goal';delete nb.dataset.act;}
+  setH(nb,'<b><span>つぎ：</span>'+nx+'</b><i class="num">'+(goMap?'地図へ ›':g.filter(x=>x.ok).length+'／'+g.length+' ›')+'</i>');
+  dock();drnum();
+}
+function dock(){const T=cur();let h='<div class="tools">';
+  for(const k of ORDER){if(!canBuild(T,k))continue;const cost=costOf(T,k),on=S.tool===k,pb=isPub(k)&&T.done;   // 神社は「村」になってから並ぶ
+    h+='<button type="button" class="tool'+(on?' on':'')+((pb?Math.max(0,T.yosan||0)+S.money:S.money)<cost?' short':'')+'" data-tool="'+k+'" aria-pressed="'+on+'">'+sv(TICON[k],24)+'<b'+(B[k].n.length>3?' style="font-size:11.5px;letter-spacing:-.6px"':'')+'>'+B[k].n+'</b><small class="num"'+(pb?' style="font-size:9.5px;letter-spacing:-.5px"':'')+'>'+(pb?'資金':'')+cost+'万円</small></button>';}
+  h+='</div>';   // 人は下の並びに置かない。盤面の右下の「ひま」から選ぶ（hima）
+  const dk=$('dock'),tl=dk.querySelector('.tools'),sl=tl?tl.scrollLeft:0;setH(dk,h);const t2=dk.querySelector('.tools');if(t2&&sl)t2.scrollLeft=sl;hima();}   // 書き直しても、横に送った位置を保つ
+// 盤面の右下：ひまな人の印。押すと人の一覧が開き、そこから選ぶ（人が増えても下の並びが埋まらない。洋平さん 2026-11-22）
+// 絵文字ふうの顔。時代によらない（服もかぶり物も描かない）。hima＝手があいて、あくび／none＝みんな仕事中
+const EMO={hima:'<circle cx="8" cy="9.6" r="1.5" fill="#4a3320"/><path d="M13.6 9.9q2 -1.6 4 0" fill="none" stroke="#4a3320" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="12" cy="16" rx="3.1" ry="3.5" fill="#7a3b28"/><ellipse cx="12" cy="17.7" rx="1.9" ry="1.4" fill="#e9836a"/>',
+  none:'<circle cx="8" cy="9.8" r="1.5" fill="#4a3320"/><circle cx="16" cy="9.8" r="1.5" fill="#4a3320"/><path d="M7.6 14.6q4.4 4 8.8 0" fill="none" stroke="#4a3320" stroke-width="1.6" stroke-linecap="round"/>'};
+// 人の一覧は、盤面を隠さないように下の欄（ctx）に出す
+function himaList(T){const ids=staffHere(),at=id=>T.grid.findIndex(x=>x&&x.by===id),free=ids.filter(id=>at(id)<0&&T.chief!==id),busy=ids.filter(id=>!free.includes(id)),sel=S.tool&&S.tool.slice(0,2)==='p:'?S.tool.slice(2):null;
+  const row=id=>{const p=P[id],a=at(id);return '<button type="button" class="'+(sel===id?'on':'')+'" data-person="'+id+'" aria-pressed="'+(sel===id)+'">'+sv(FACE[id],28)+'<b>'+p.n+'<span>'+p.t+'</span></b><em class="'+(free.includes(id)?'free':'')+'">'+(a>=0?B[T.grid[a].k].n:T.chief===id?'支店長':'ひま')+'</em></button>';};
+  return '<div class="hd"><b>人をえらぶ</b><em>選んでから、建物を押す</em><button type="button" class="x" data-hm="1">閉じる</button></div>'
+    +(free.length?'<h4 class="hh">ひまな人</h4><div class="hl">'+free.map(row).join('')+'</div>':'<h4 class="hh">ひまな人はいません</h4>')
+    +(busy.length?'<h4 class="hh">仕事中の人（選ぶと、ほかの建物へ移せる）</h4><div class="hl">'+busy.map(row).join('')+'</div>':'');}
+function hima(){const el=$('hima');if(!el)return;const T=cur(),ids=staffHere();if(S.phase!=='town'||!T||!ids.length){setH(el,'');return;}
+  const at=id=>T.grid.findIndex(x=>x&&x.by===id),free=ids.filter(id=>at(id)<0&&T.chief!==id),sel=S.tool&&S.tool.slice(0,2)==='p:'?S.tool.slice(2):null;
+  let h='';
+  h+='<button type="button" class="hb'+(sel?' sel':free.length?' has':' none')+'" data-hm="1" aria-expanded="'+!!S.hm+'" aria-label="'+(sel?P[sel].n+'を選択中':free.length?'ひまな人 '+free.length+'人':'人の一覧（ひまな人はいません）')+'">'
+    +(sel?sv(FACE[sel],32):sv(free.length?EMO.hima:EMO.none,36))+(!sel&&free.length?'<i class="num">'+free.length+'</i>':'')+'</button>';
+  setH(el,h);}
+function ctx(){const T=cur(),L=LANDS[T.land],c=calc(T),tool=S.tool;let h='';
+  if(S.hm&&staffHere().length)h=himaList(T);
+  else if(tool&&isPub(tool)&&T.done){const cost=costOf(T,tool),y=Math.floor(T.yosan||0),ks=keepSum(T)+KEEP[tool],nx=grantOf(T,true);
+    h='<div class="hd">'+sv(TICON[tool],26)+'<b>'+B[tool].n+'</b><em class="num">資金から '+cost+'万円</em><button type="button" class="x" data-act="clear">やめる</button></div><p>'+B[tool].d+'</p>'
+      +'<p class="'+(ks>nx?'no':'sub')+'">建てると、維持費は毎年 '+ks+'万円になります。来年の資金の見込みは '+nx+'万円'+(ks>nx?'。維持費が資金を超えます':'（残り '+(nx-ks)+'万円）')+'</p>'
+      +(y+S.money<cost?'<p class="no">共同の資金（'+y+'万円）と会社のお金を合わせても足りません（あと'+Math.ceil(cost-y-S.money)+'万円）</p>'
+        :y<cost?'<p class="do">空き地か田を2回押すと建ちます。資金（'+y+'万円）で足りない '+(cost-Math.max(0,y))+'万円は、会社のお金で払います</p>'
+        :'<p class="do">建てる空き地か田を2回押すと建ちます（いまの資金 '+y+'万円）</p>');}
+  else if(tool&&B[tool]){const cost=costOf(T,tool),poor=S.money<cost;
+    h='<div class="hd">'+sv(TICON[tool],26)+'<b>'+B[tool].n+'</b><em class="num">'+cost+'万円</em><button type="button" class="x" data-act="clear">やめる</button></div><p>'+B[tool].d+'</p>'
+      +(poor?'<p class="no">お金が足りません（あと'+Math.ceil(cost-S.money)+'万円）</p>':'<p class="do">'+(tool==='hatake'?'建てる空き地':'建てる空き地か田')+'を2回押すと建ちます（1回めは点滅。つづけて建てられます）'+((recCells(T)||{}).k===tool?'。黄色く光っているマスがおすすめです':'')+'</p>');}
+  else if(tool){const id=tool.slice(2),p=P[id],at=T.grid.findIndex(x=>x&&x.by===id);
+    h='<div class="hd">'+sv(FACE[id],28)+'<b>'+p.n+'</b><span class="sk">'+p.t+(T.chief===id?'・この町の支店長':'')+'</span><button type="button" class="x" data-act="clear">やめる</button></div><p>'+p.d+'</p>'
+      +(S.sure&&S.sure.slice(0,4)==='rep:'&&T.grid[+S.sure.slice(4)]&&T.grid[+S.sure.slice(4)].by
+        ?'<p class="no">'+rc(+S.sure.slice(4))+'の'+B[T.grid[+S.sure.slice(4)].k].n+'は、'+P[T.grid[+S.sure.slice(4)].by].n+'の受け持ちです。もう一度押すと、'+P[T.grid[+S.sure.slice(4)].by].n+'を外して'+p.n+'をつけます</p>'
+        :'<p class="do">'+(at>=0?'いまの受け持ち：'+B[T.grid[at].k].n+'（'+rc(at)+'）。移すなら、':'')+'黄色い丸のついた建物（'+p.on.map(k=>B[k].n).join('・')+'）を押してください。赤い札は、もう人がいる建物です</p>')
+      +((S.hist[id]||[]).length?'<p class="sub">'+S.hist[id].join('、')+'</p>':'');}
+  else if(S.sel!=null){const i=S.sel,sc=T.grid[i],li=[];
+    if(!isOpen(T,i)){const b=blk(i),ok=canBuy(T,b),pc=plotCost(T);
+      h='<div class="hd"><b>まだ買っていない土地</b><em>'+T.open.filter(Boolean).length+'／16区画</em><button type="button" class="x" data-act="clear">閉じる</button></div>'
+        +(ok?'<p>この区画（4×4マス）を買うと、ここにも建てられます。買うたびに値段が上がります。</p>'+(S.money<pc?'<p class="no">お金が足りません（あと'+Math.ceil(pc-S.money)+'万円）</p>':'')
+            +'<div class="btns"><button type="button" data-act="plot">この区画を買う（'+pc+'万円）</button></div>'
+           :'<p class="no">となりの区画を先に買うと、ここも買えるようになります</p>');}
+    else if(sc){
+      if(sc.k==='hatake'){li.push('もと 半年で'+(75*soilOf(T,i))+'石'+(soilOf(T,i)!==1?(L.soil<1?'（土がやせている）':'（土がよい）'):'')+(L.soil<1&&soilOf(T,i)===1?'（土づくり：ツチ）':''));
+        if(sc.up)li.push('上田：とれ高 ×'+UPG.ta.mul);if(riverAdj(T,i))li.push('川のとなり ×1.5');else if(wet(T,i))li.push('水みち ×1.5（ハナ）');li[0]+='。'+(genCover(T,i)?'冬も半分とれる（ゲン）':'冬は休み');}
+      if(sc.k==='seifun'){li.push('もと 半年で'+750*L.mill+'石'+(L.mill>1?'（風車）':''));li.push('となりの田 '+adj(T,i,'hatake')+'つ → +'+25*adj(T,i,'hatake')+'%');li.push(cb(T,i,'fuu')?'となりの家をうるさがらせない（フウ）':'となりの家は10人しか住まない');}
+      if(sc.k==='panya'){li.push('もと 半年で750石');li.push((cb(T,i,'nami')?'となりとななめの家 ':'となりの家 ')+guests(T,i)+'軒 → +'+25*guests(T,i)+'%');}
+      if(sc.k==='bokujo'){li.push('もと 半年で600貫');li.push('まわりの空き地 '+emptyAround(T,i)+'／8 → ×'+(1+emptyAround(T,i)/8).toFixed(2));li.push('冬は半分。木綿は1貫'+WOOL+'万円で売れる');}
+      if(sc.k==='ichiba'){li.push('まわり3マスの家 '+housesNear(T,i)+'軒の「買い物がしたい」を満たす');li.push('その家の売上 +20%（寺子屋も届く家は+10%）');li.push('余った白米を1石'+MKT+'万円で売る。半年で'+Math.round(mktBase(T,i)*60)+'石まで');}
+      if(sc.k==='sakariba'){li.push('まわり3マスの住民 '+popNear(T,i,SAKA.r)+'人 → 年'+Math.round(sakaBase(T,i)*120)+'万円');li.push('まわり2マスの長屋の時価 −30%。春ごとに治安 −10');li.push(guarded(T,i)?'火消しが近くにある（火事はぼやで済む）':'火事のもとになる（近くに火消しが無い）');}
+      if(sc.k==='hikeshi'||sc.k==='bansho'){
+        if(sc.off)li.push('休止中。維持費はかからず、効き目もない');else if(sc.bad>=3)li.push('維持費が払えず、休止になった');
+        else li.push(sc.k==='hikeshi'?'まわり'+(sc.bad===2?1:3)+'マスの建物は、火事がぼやで済む（今年、火事が起きる見込み '+Math.round(Math.min(1,fireChance(T))*100)+'%）':'春ごとに治安 +10（いまの治安 '+Math.round(chianOf(T))+'）');
+        li.push('維持費 毎年'+KEEP[sc.k]+'万円（春に共同の資金から）');}
+      if(sc.k==='terakoya'){
+        if(sc.off)li.push('休止中。維持費はかからず、効き目もない');else if(sc.bad>=3)li.push('維持費が払えず、休止になった');
+        else li.push('まわり'+(sc.bad===2?1:3)+'マスの家の「学びたい」を満たす'+(sc.bad===2?'（維持費が払えず、効き目が半分）':''));
+        li.push('学び '+Math.round((T.edu||0)*10)/10+'年ぶん → 家賃と時価 +'+Math.round(Math.min(WANT2.rentMax,WANT2.rent*(T.edu||0))*100)+'%・とれ高と資金 +'+Math.round((eduMul(T)-1)*100)+'%');
+        li.push('維持費 毎年'+KEEP.terakoya+'万円（春に共同の資金から）');}
+      if(sc.k==='hiroba'){const pr=plazaR(sc);
+        if(sc.off)li.push('休止中。維持費はかからず、効き目もない');
+        else if(sc.bad>=3)li.push('維持費が払えず、休止になった');
+        else li.push('まわり'+pr+'マスの家 '+around(T,i,pr,j=>T.grid[j]&&isHome(T.grid[j].k))+'軒が、30人住める'+(sc.bad===2?'（維持費が払えず、効き目が半分）':''));
+        if(sc.bad===1)li.push('今年の維持費が払えていない。次の春も払えないと、効き目が半分になる');
+        li.push('維持費 毎年'+KEEP.hiroba+'万円（春に共同の資金から）');}
+      if(burns(sc)){const fb=fireBlock(T,i).length;if(fb>=FIRE.dense)li.push('<span class="no">こんだ区画（赤いマス '+fb+'軒）：火事で'+(guarded(T,i)?Math.ceil(FIRE.max/2):FIRE.max)+'軒まで燃える</span>');}
+      if(isHome(sc.k)){{const why=[];if(nearPlaza(T,i)&&!noisy(T,i))why.push('神社の近く');if(sc.up)why.push('2階建て');if(noisy(T,i))why.push('搗き屋のとなりでうるさい');
+          li.push('いま '+sc.pop+'人（入れるのは'+houseCap(T,i)+'人'+(why.length?'：'+why.join('・'):'')+'）');}
+        {const now=[],soon=[];   // ほしい物は1行にまとめる（いま足りない物／来年の春から要る物）
+          if(unmet(T,i))now.push('神社');else if(wantSoon(T)&&!wantOn(T)&&!nearPlaza(T,i))soon.push('神社');
+          if(unmet2(T,i))now.push('朝市か寺子屋');else if(want2Soon(T)&&!want2On(T)&&!nearShop(T,i)&&!nearSchool(T,i))soon.push('朝市か寺子屋');
+          if(want3Soon(T)){if(!nearGuard(T,i))(want3On(T)?now:soon).push('番所か火消し');if(!nearFun(T,i))(want3On(T)?now:soon).push('盛り場');}
+          if(now.length)li.push('近くに無く、10人ずつ出ていく：'+now.join('／'));
+          if(soon.length)li.push('来年の春から要る：'+soon.join('／'));}
+        if(L.eat>1)li.push(yukiCover(T,i)?'冬も食べる量が増えない（ユキ）':'冬は'+L.eat+'倍食べる');
+        if(sc.k==='jutaku'&&!sc.sale)li.push(sc.sold?'売った家。家賃は入らない。会社の物ではないので取り壊せない':'家賃 年'+houseRent(T,i)+'万円（毎月'+Math.round(houseRent(T,i)/12)+'万円ずつ入る。'+(rentLv(T)!==1?'家賃「'+RENTLV[rentLv(T)].n+'」・':'')+'1人'+Math.round(RENT*RENTLV[rentLv(T)].m)+'万円'+(learnMul(T,i)>1?'・学びで+'+Math.round((learnMul(T,i)-1)*100)+'%':'')+'）'+(sc.sold?'':'<button type="button" class="lk" data-dr="menu">家賃を変える</button>'));
+        if(sc.k==='jutaku'&&!sc.sold){li.push('時価 '+sellPrice(T,i)+'万円（町の入居率 '+Math.round(occ(T)*100)+'%'+(chianOf(T)<100?'・治安 '+Math.round(chianOf(T)):'')+'）'+(sc.sale&&sc.sale.cut?'。2割下げた値段':''));
+          if(sc.sale){const nd=saleNeed(T,sc),lf=Math.max(0,Math.ceil(nd-sc.sale.t));li.push('売り出し中：あと約'+Math.max(1,Math.ceil(lf/10))+'か月（家賃は入る）<div style="height:8px;border-radius:4px;background:#d9d4c6;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+Math.round(nd?Math.min(1,sc.sale.t/nd)*100:100)+'%;background:#2f6b3f"></div></div>');}}
+        else{li.push('家賃なし。維持費 毎年'+KEEP.kouei+'万円（空いていてもかかる）');
+          if(sc.bad)li.push(sc.bad>=2?'維持費が払えず、10人しか住めない':'今年の維持費が払えていない。次の春も払えないと、10人しか住めなくなる');
+          li.push(lockLeft(T,sc)?'あと'+lockLeft(T,sc)+'年は取り壊せない（建ててから'+LOCKY+'年）':'建ててから'+LOCKY+'年たったので、取り壊せる');}}
+      if(!isHome(sc.k)&&B[sc.k].need>0){li.push(cb(T,i,'take')?'人手いらず（タケ）':'人手 '+B[sc.k].need+'人');if(c.eff<1)li.push('町の人手が足りず、'+Math.round(c.eff*100)+'%で動いている');}
+      if(sc.by&&!here(T,sc.by))li.push(P[sc.by].n+'はいまこの町にいないので、力は効いていない');
+      let b=sc.by&&staffHere().includes(sc.by)?'<button type="button" data-act="un">'+P[sc.by].n+'を外す</button>':'';
+      if(isPub(sc.k)){const k=KEEP[sc.k];
+        if(sc.bad)b+='<button type="button" data-act="fund">会社のお金で維持費を払う（'+k+'万円）</button>';
+        if(sc.k!=='kouei')b+=sc.off?'<button type="button" data-act="pon">再開する（維持費'+k+'万円）</button>':'<button type="button" data-act="poff">'+(S.sure==='poff'?'もう一度押すと休止する':'休止する（維持費が止まる）')+'</button>';}
+      if(sc.k==='jutaku'&&!sc.sold&&!sc.sale&&!sc.up)b+='<button type="button" data-act="upie">'+(S.sure==='upie'?'もう一度押すと2階建てにする':'2階建て（'+UPG.ie.cost+'万円・+'+(noisy(T,i)?1:UPG.ie.add)*HN+'人）')+'</button>';
+      if(sc.k==='hatake'){const gr=taGroup(T,i);
+        if(!sc.up)b+='<button type="button" data-act="upta">上田 ×'+UPG.ta.mul+'（'+UPG.ta.cost+'万円）</button>';
+        if(gr.length>1)b+='<button type="button" data-act="uptaall">'+(S.sure==='uptaall'?'もう一度で'+gr.length+'マスを上田に':gr.length+'マスとも（'+gr.length*UPG.ta.cost+'万円）')+'</button>';}
+      if(sc.k==='jutaku'&&!sc.sold&&!sc.sale){const nd=Math.ceil(saleNeed(T,sc));b+='<button type="button" data-act="sell">'+(S.sure==='sell'?'もう一度押すと売りに出す':'売りに出す（'+(nd?'約'+Math.max(1,Math.ceil(nd/10))+'か月':'すぐ売れる')+'）')+'</button>';}
+      if(sc.sale){if(!sc.sale.cut)b+='<button type="button" data-act="salecut">2割下げる（時間が半分）</button>';b+='<button type="button" data-act="salestop">取り消す</button>';}
+      if(sc.sold);else if(lockLeft(T,sc))b+='<button type="button" disabled>取り壊せない（あと'+lockLeft(T,sc)+'年）</button>';
+      else if(!sc.sale)b+='<button type="button" class="danger" data-act="demo">'+(S.sure==='demo'?'もう一度押すと取り壊す（'+demoCost(sc.k)+'万円かかる）':'取り壊す（'+demoCost(sc.k)+'万円）')+'</button>';
+      h='<div class="hd"><b>'+(sc.sold?'売った家':B[sc.k].n)+'</b><em>'+rc(i)+(sc.by?'・受け持ち '+P[sc.by].n:'')+'</em><button type="button" class="x" data-act="clear">閉じる</button></div><ul><li>'+li.join('</li><li>')+'</li></ul><div class="btns">'+b+'</div>';}
+    else{const t=terr(T,i);
+      if(t==='.'){if(riverAdj(T,i))li.push('川のとなり：田を建てると1.5倍とれる');if(noisy(T,i))li.push('搗き屋のとなり：家を建てると10人しか住まない');
+        const f=adj(T,i,'hatake'),hs=adj(T,i,'jutaku');if(f)li.push('となりに田 '+f+'つ：搗き屋を建てると +'+25*f+'%');if(hs)li.push('となりに家 '+hs+'軒：米屋を建てると +'+25*hs+'%');
+        {let a=0,m=1;const seen=new Set();for(const j of nb(i))if(burns(T.grid[j])&&!seen.has(j)){a++;const b=fireBlock(T,j);for(const x of b)seen.add(x);m+=b.length;}if(a&&m>=FIRE.dense)li.push('火除け地：ここを空けておくと、火事がここで止まる（建てると'+m+'軒がつながる）');}}
+      else li.push(t==='~'?'建てられません。となりの田は1.5倍とれます':'建てられません');
+      h='<div class="hd"><b>'+tname(t)+'</b><em>'+rc(i)+'</em><button type="button" class="x" data-act="clear">閉じる</button></div>'+(li.length?'<ul><li>'+li.join('</li><li>')+'</li></ul>':'')
+        +(t==='.'?'<p class="do">下の建物を選んでから押すと、ここに建ちます</p>':'');}}
+  else{const pr=prep(T),rec=recCells(T);
+    h='<p class="hint">'+(!T.started?'下の建物を選んでから、空き地を押すと建ちます':'マスを押すと、ここに中身が出ます')+'</p>'
+      +(isKyo(T)?'<p class="no">今年は凶作です（田のとれ高が半分）'+(kyoPick(T)!=null?'。'+['高値のまま売る','お救い米','しぼって売る'][kyoPick(T)]:'')+'</p>':kyoSoon(T)&&isWinter(T)?'<p class="no">来年は凶作になりそうです。蔵の白米を増やしておきましょう</p>':'')
+      +(rec?'<p class="do">黄色く光っているマスがおすすめです。下で「'+B[rec.k].n+'」を選んでから、そのマスを2回押してください（1回めは点滅します）</p>':'')
+      +'<p class="sub">建てるときは、下で選んでからマスを押します。人をつけるときは、右下の顔のしるしから選んで、建物を押します。</p>'
+      +(S.log[0]?'<p class="sub">できごと：'+S.log[0]+'</p>':'')
+      +(T.started&&pr.have<pr.need?'<div class="btns"><button type="button" data-act="buy">行商から白米を買う（100石で1500万円。割高）</button></div>':'');}
+  setH($('ctx'),h);}
+function drnum(){const el=$('drnum');if(!el)return;const T=cur(),c=calc(T);   // 引き出しの中の、刻々と変わる数字だけを書き直す（引き出し全体を書き直すと、中のスクロールとボタンが飛ぶ）
+  const st=[['田',c.wheat],['搗き屋',c.mill],['米屋',c.bake]],mn=Math.min(c.wheat,c.mill,c.bake),has=c.mill>0||c.bake>0||c.ww>0;let ch='';
+  st.forEach(x=>{ch+='<em class="'+(has&&x[1]<=mn+1e-9&&x[1]<c.eat+.3?'thin':'')+'">'+x[0]+' '+Math.round(x[1]*60)+'</em>→';});
+  ch+='<em>食べる '+Math.round(c.eat*60)+'</em>＝<em class="'+(mn-c.eat>=0?'plus':'minus')+'">余り '+sign((mn-c.eat)*60)+'</em>';
+  if(c.eff<1)ch+='<em class="thin">人手が足りない（'+Math.round(c.eff*100)+'%で動く）</em>';
+  if(c.wool>0)ch+='<em>木綿 '+Math.round(c.wool*60)+'（'+Math.round(c.wool*60*WOOL)+'万円）</em>';if(c.mkt>0)ch+='<em>朝市で売れる 最大'+Math.round(c.mkt*60)+'</em>';
+  setH(el,'<div class="grid5"><div><span>お金</span><b class="num">'+f0(S.money)+'万円</b></div><div><span>もみ</span><b class="num">'+f0(T.wheat)+'</b></div><div><span>玄米</span><b class="num">'+f0(T.flour)+'</b></div><div><span>白米</span><b class="num">'+f0(T.bread)+'</b></div><div><span>人／人手</span><b class="num">'+c.pop+'／'+c.need+'</b></div></div>'
+    +'<h3>半年の流れ</h3><div class="flow num">'+ch+'</div>');}
+function drawer(){const el=$('drawer'),T=cur();el.hidden=!S.dr||S.phase!=='town';if(el.hidden){setH(el,'');return;}
+  const head=t=>'<div class="sh"><h2>'+t+'</h2><button type="button" data-act="drclose">閉じる</button></div>';let h='';
+  if(S.dr==='goal'){const g=goals(T);h=head('町の仕上げ'+(T.done?'　できた':''))+'<p>'+g.length+'つそろうと「村」になり、共同の資金が付きます。'+(T.land===0?'「町」（人口'+RANKPOP[2]+'人）になると、次の土地を開けます。':'次の土地を開けます。')+'</p>';
+    for(const x of g)h+='<div class="goal'+(x.ok?' done':'')+'"><span>'+x.t+'</span><em class="num">'+(x.ok?'できた　':'')+x.now+'</em></div>';
+    const rk=rankOf(T),pp=calc(T).pop;h+='<h3>町の位（上がると、便で送れる量が増える）</h3>';
+    for(const[n,t,e]of[[1,'村：町の仕上げができた',(T.land===0?'':'次の土地を開ける・')+'共同の資金が付く（神社を建てられる）'],[2,'町：人口400人','便が2倍'+(T.land===0?'・次の土地を開ける':'')],[3,'市：人口1000人','便が4倍']])
+      h+='<div class="goal'+(rk>=n?' done':'')+'"><span>'+t+'<br><small>'+e+'</small></span><em class="num">'+(rk>=n?'できた':n===1?'まだ':'いま '+pp+'人')+'</em></div>';}
+  else{const fs=founded();
+    h=head('メニュー')+'<h3>持ち物（'+LANDS[T.land].n+'）</h3><div id="drnum"></div>'
+      +'<div class="row"><button type="button" data-act="buy">行商から白米を買う（100石で1500万円。割高）</button></div>'
+      +'<h3>長屋の家賃（'+LANDS[T.land].n+'ぜんたい）</h3><div class="seg">'+RENTLV.map((r,j)=>'<button type="button" data-rl="'+j+'" class="'+(rentLv(T)===j?'on':'')+'">'+r.n+'（1人 年'+Math.round(RENT*r.m)+'万円）</button>').join('')+'</div>'
+      +'<p class="k">高いと、住む人が4分の3ほどに減ります（10人単位）。安いと、欲が1つ満たされなくても出ていきません。</p>'
+      +'<p class="num k">人が入りきった時の見込み：'+RENTLV.map((r,j)=>{const q=rentPlan(T,j);return r.n+' 年'+yenFix(q.yen+'万円')+'・'+q.pop+'人';}).join('／')+'</p>'
+      +'<h3>凶作への積み立て</h3><div class="row"><button type="button" data-act="tsumi">'+(T.tsumiOn?'積み立て中（押すとやめる）':'積み立てを始める')+'</button></div>'
+      +'<p class="num k">春ごとに '+yenFix(tsumiCost(T)+'万円')+'（1人1石ぶん）を払って積みます。いま '+Math.floor(T.tsumi||0)+'石（上限 '+tsumiCap(T)+'石＝5年分）。凶作の年の春に、蔵へ入ります。評判 '+(T.fame||0)+'。</p>'
+      +'<h3>地方（'+fs.length+'／'+LANDS.length+'の土地）</h3><div class="others">';
+    for(const X of fs){const r=X.route,me=X===T;
+      h+='<button type="button" class="other'+(me?' me':'')+'" data-go="'+X.land+'"><b>'+LANDS[X.land].n+(me?'（いまここ）':'')+'</b><span class="num">'+(X.done?'仕上がり　':'')+'人口'+calc(X).pop+(X.chief?'　支店長 '+P[X.chief].n:'')+'</span><span>'
+        +(r&&S.towns[r.to]?GOODS[r.good]+' → '+LANDS[r.to].n+(X.last?'（いま ひと月に'+X.last+'石）':''):'便なし')+'</span></button>';}
+    h+='</div><div class="row"><button type="button" data-act="map">地図を開く（便の行き先・新しい土地）</button></div>'
+      +'<h3>できごと</h3><ul class="log">'+(S.log.map(x=>'<li>'+x+'</li>').join('')||'<li>まだ何も起きていません</li>')+'</ul>'
+      +'<h3>そのほか</h3><div class="row"><button type="button" data-act="mute">音：'+(S.mute?'切':'入')+'</button><button type="button" data-act="reset">'+(S.sure==='reset'?'もう一度押すと最初から':'はじめから')+'</button></div>';}
+  setH(el,'<div class="in" role="dialog" aria-modal="true">'+h+'</div>');drnum();}
+function mini(k){const T=S.towns[k];let h='<span class="mini">';
+  for(let i=0;i<N;i++){const t=LANDS[k].map[Math.floor(i/W)][i%W],c=T&&T.grid[i];
+    h+='<i class="'+(c?'m-'+c.k:t==='~'?'m-river':t==='^'?'m-mount':t==='='?'m-sea':'')+'"></i>';}
+  return h+'</span>';}
+function mapHtml(){
+  const X=k=>LANDS[k].pos[0]*1.6,Y=k=>LANDS[k].pos[1]*1.1;
+  let svg='<svg viewBox="0 0 160 110" preserveAspectRatio="none" aria-hidden="true">';
+  LANDS.forEach((L,a)=>L.links.forEach(b=>{if(a<b)svg+='<line class="road" x1="'+X(a)+'" y1="'+Y(a)+'" x2="'+X(b)+'" y2="'+Y(b)+'"/>';}));
+  for(const T of founded()){const r=T.route;if(!r||!S.towns[r.to])continue;const a=T.land,b=r.to,mx=(X(a)+X(b))/2,my=(Y(a)+Y(b))/2;
+    svg+='<line class="route" x1="'+X(a)+'" y1="'+Y(a)+'" x2="'+X(b)+'" y2="'+Y(b)+'"/>'
+      +'<circle class="rdot" r="1.6"><animateMotion dur="2.4s" repeatCount="indefinite" path="M'+X(a)+' '+Y(a)+' L'+X(b)+' '+Y(b)+'"/></circle>'
+      +'<text class="rlab" x="'+mx+'" y="'+(my-1.5)+'" text-anchor="middle">'+GOODS[r.good]+(T.last?' '+T.last:'')+'</text>';}
+  svg+='</svg>';
+  let h='';
+  LANDS.forEach((L,k)=>{const T=S.towns[k];
+    h+='<button class="wnode'+(k===S.loc?' cur':'')+(k===S.mapSel?' sel':'')+(T?'':' un')+'" data-node="'+k+'" style="left:'+L.pos[0]+'%;top:'+L.pos[1]+'%">'+mini(k)
+      +'<b>'+L.n+'</b><small class="num">'+(T?(T.done?'仕上がり・':'')+'人口'+calc(T).pop:(canReach(k)?'まだ開いていない':'道がない'))+'</small></button>';});
+  return '<div class="wmap">'+svg+h+'</div>';
+}
+function detailHtml(k){
+  const L=LANDS[k],T=S.towns[k],G=L.goal;
+  const w=T?'':whyNot(k),btn=T?(k!==S.loc?'<button class="gobtn" data-go="'+k+'">ここへ行く</button>':''):(w?'':'<button class="gobtn" data-found="'+k+'">ここを開く</button>');
+  let h='<div class="wdetail"><div class="dh"><h3>'+L.n+(k===S.loc?'<small>いまここ</small>':'')+'</h3>'+btn+'</div><p>'+L.note+'</p><p><span class="k">町の仕上げ</span>冬を'+G.w+'回越す・人口'+G.pop+'人'+(G.sur?'・白米の余り半年で'+G.sur+'石':'')+'</p>';
+  if(L.recruit)h+='<p><span class="k">ここで加わる人</span>'+P[L.recruit].n+'「'+P[L.recruit].t+'」'+P[L.recruit].d+'</p>';
+  if(T){const c=calc(T);
+    h+='<p class="num"><span class="k">いまの様子</span>'+(T.done?'仕上がり。':'')+'人口 '+c.pop+'人　もみ '+f0(T.wheat)+'　玄米 '+f0(T.flour)+'　白米 '+f0(T.bread)+'　1年で余る白米 約'+Math.round(yearNet(T))+'石'
+      +'<br>支店長：'+(T.chief?P[T.chief].n+'「'+P[T.chief].t+'」':'いない')+'　これまでに送った '+T.sent+'石・届いた '+T.got+'石</p>';
+    if(k!==S.loc)h+='<p class="k">あなたがいないあいだ、この町の欲と治安は止まっています（米・家賃・冬・火事・便は動きます）。</p>';
+    h+='<p class="num"><span class="k">会社の収支</span>'+(T.ledPrev?'去年 '+ledLine(T.ledPrev)+'<br>':'')+'今年ここまで '+ledLine(T.led||{i:0,o:0})+'</p>';
+    const others=founded().filter(x=>x!==T);
+    if(others.length){const r=T.route;
+      h+='<div class="seg"><span>送るもの</span><button data-rg="none" class="'+(r?'':'on')+'">送らない</button>';
+      for(const g in GOODS)h+='<button data-rg="'+g+'" class="'+(r&&r.good===g?'on':'')+'">'+GOODS[g]+'</button>';
+      h+='</div><div class="seg"><span>行き先</span>';
+      for(const o of others)h+='<button data-rt="'+o.land+'" class="'+(r&&r.to===o.land?'on':'')+'">'+LANDS[o.land].n+'</button>';
+      h+='</div>';
+      if(r){h+='<div class="seg"><span>送る量</span>';AMT.forEach((a,j)=>{h+='<button data-ra="'+j+'" class="'+(amtOf(T)===j?'on':'')+'">'+a.n+'</button>';});
+        h+='</div><p class="k">'+AMT[amtOf(T)].d+'。ひと月ごとに'+shipOf(T)+'石まで。</p>';}
+      else h+='<p class="k">自分の冬の分を残して、余りを ひと月ごとに'+shipOf(T)+'石まで送れます。</p>';}
+  }else h+='<p class="k">'+(w||'開くと、'+LANDS[S.loc].n+'に1人残して、ここへ移ります。')+'</p>';
+  return h+'</div>';
+}
+function renderSheet(){
+  const sh=$('sheet'),cn='sheet'+(S.phase!=='town'?' map':'');if(sh.className!==cn)sh.className=cn;
+  if(S.phase==='map'){
+    setH(sh,'<div class="mapv"><div class="mh"><h1>地方の地図</h1><button type="button" data-act="back">町にもどる</button></div><p class="ml">町を押すと、様子と便が出ます。点線は道、色の線は便です。</p>'
+      +mapHtml()+detailHtml(S.mapSel)+'</div>');sh.hidden=false;}
+  else if(S.phase==='choose'){const T=cur(),L1=LANDS[S.pick];   // 支店長えらび：1人1枚の小さな札。残したときの町の様子を、札の中で比べられる
+    let h='<div class="mapv"><div class="mh"><h1>だれを残しますか</h1><button type="button" data-act="back">もどる</button></div>'
+      +'<p class="ml">残した人は'+LANDS[T.land].n+'の支店長になり、受け持ちを続けます。連れて行く人の力は、この町では効かなくなります（戻れば、また効きます）。<br>次の土地：<b>'+L1.n+'</b>（'+L1.note+'）'+(L1.recruit?'。'+P[L1.recruit].n+'「'+P[L1.recruit].t+'」が加わります':'')+'</p><div class="cv">';
+    for(const id of S.hand){const p=P[id],at=T.grid.findIndex(x=>x&&x.by===id),f=ifLeft(id),su=S.sure==='lv:'+id;
+      h+='<div class="pc"><div class="ph">'+sv(FACE[id],30)+'<b>'+p.n+'</b><i>'+p.t+'</i><button type="button" data-leave="'+id+'" class="'+(su?'sure':'')+'">'+(su?'もう一度押すと決まり':p.n+'を残す')+'</button></div>'
+        +'<p><span class="k">受け持ち</span>'+(at>=0?B[T.grid[at].k].n+'（'+rc(at)+'）':'なし（残しても力が出ません）')+'</p>'
+        +'<p class="num"><span class="k">残すと</span>1年で余る白米 約<b>'+Math.round(f.year)+'石</b>（いま 約'+Math.round(yearNet(T))+'石）・冬にできる白米 半年で'+Math.round(f.winter)+'石</p>'
+        +'<p>'+p.stay+'</p></div>';}
+    setH(sh,h+'<p class="ml">'+LANDS[T.land].n+'の余りは、ひと月ごとに次の土地へ届きます（あとで地図から変えられます）。</p></div></div>');sh.hidden=false;}
+  else if(S.phase==='kyo'){const T=cur(),c=calc(T),nm=LANDS[T.land].n,base=Math.round(c.pop*10*PRICE*LANDS[T.land].price),pr=prep(T);
+    const opt=(j,t,d)=>'<button type="button" class="ko" data-kyo="'+j+'"><b>'+t+'</b><span>'+d+'</span></button>';
+    setH(sh,'<div class="mapv kg"><div class="kh"><em>凶作の年</em><h1>'+nm+'は<br>今年、田のとれ高が半分です</h1><p>蔵の白米 '+f0(T.bread)+'石・冬の備え '+f0(pr.have)+'／'+Math.ceil(pr.need)+'石'+(pr.have<pr.need?'（足りない）':'')+'。米をどう扱うかを決めてください。</p></div>'
+      +'<div class="kb">'
+      +opt(0,'高値のまま売る','米の値が1.5倍。今年の米の売上 およそ +'+yenFix(Math.round(base*.5)+'万円')+'。治安 −10')
+      +opt(1,'お救い米を出す','今年は米をただで配る（売上 およそ −'+yenFix(base+'万円')+'）。治安 +20、町の評判 +1（春の共同の資金 +5%）')
+      +opt(2,'しぼって売る','食べる量を8割にして、米を2割浮かせる。値はふだんどおり。治安 −15')
+      +'<p>いまの治安 '+Math.round(chianOf(T))+'。評判 '+(T.fame||0)+'。</p><p>次の凶作にそなえる：春ごとに '+yenFix(tsumiCost(T)+'万円')+'（1人1石ぶん）を積み立てると、凶作の年の春に蔵へ入ります。</p>'
+      +'<button type="button" class="ko" data-act="tsumi"><b>'+(T.tsumiOn?'積み立て中':'積み立てを始める')+'</b><span>'+(T.tsumiOn?'押すとやめます（積んだ米は残ります）。いま '+Math.floor(T.tsumi||0)+'石':'今年の選びとは別です。あとでメニューからやめられます')+'</span></button></div></div>');sh.hidden=false;}
+  else if(S.phase==='kugiri'){const T=cur(),c=calc(T),nm=LANDS[T.land].n,open=LANDS.map((_,k)=>k).filter(canReach),lost=(T.lostAll||0)*HN;
+    const tile=(k,v,u)=>'<div class="kt"><span>'+k+'</span><b class="num">'+v+'<small>'+u+'</small></b></div>',yen=yenFix(Math.floor(S.money)+'万円'),ym=yen.match(/^([\d.,]+)(.*)$/)||[0,yen,''];
+    setH(sh,'<div class="mapv kg"><div class="kh"><em>一区切り</em><h1>'+nm+'が<br>「市」になりました</h1><p>町の位は「市」がいちばん上です。ここまでの記録です。</p></div>'
+      +'<div class="kts">'+tile('人口',c.pop,'人')+tile('かかった年数',yrOf(T),'年')+tile('冬に失った人',lost||'なし',lost?'人':'')+tile('会社の資産',ym[1],ym[2])+'</div>'
+      +'<div class="kb"><p><b>これからの市</b>：来年の春から、住民が「守り（番所か火消し）」と「楽しみ（盛り場）」も求めます。盛り場は治安を下げ、火事のもとになります。</p>'+(open.length?'<p>次の土地を開けます。'+nm+'には1人を残し、余った米は便で次の土地へ届きます。この町にはいつでも戻れます。</p>'
+          +'<button type="button" class="go" data-act="map">地図へ（次の土地を開く）</button>'
+        :'<p>ほかの町へは、上の「地図」から行けます。この町はこのまま動き続けます。</p>')
+      +'<button type="button" data-act="back">この町をつづける</button></div></div>');sh.hidden=false;}
+  else if(S.phase==='end'){let pop=0,rows='';
+    for(const T of founded()){const c=calc(T);pop+=c.pop;rows+='<p class="num"><span class="k">'+LANDS[T.land].n+'</span>人口 '+c.pop+'人'+(T.chief?'・支店長 '+P[T.chief].n:'')+'</p>';}
+    setH(sh,'<div class="mapv"><div class="mh"><h1>地方が仕上がりました</h1><button type="button" data-act="back">つづけて遊ぶ</button></div>'
+      +'<p class="ml">5つの土地がすべて仕上がりました。試作はここまでです。次の段では、この地方がまるごと「国」の地図の1マスになります（まだ作っていません）。</p>'
+      +'<div class="cv"><div class="pc"><div class="ph"><b>こんどの記録</b></div><p class="num"><span class="k">地方の人口</span><b>'+pop+'人</b></p><p class="num"><span class="k">かかった時間</span><b>'+Math.floor(S.clock/60)+'分'+Math.floor(S.clock%60)+'秒</b></p>'+rows+'</div>'
+      +'<p class="ml">町はそのまま動き続けます。行き来して手を入れられます。</p>'
+      +'<div class="erow"><button type="button" data-act="reset">'+(S.sure==='reset'?'もう一度押すと最初から':'はじめから')+'</button></div></div></div>');sh.hidden=false;}
+  else sh.hidden=true;
+}
+function popAt(i,text,cls){   // マスの上に出る短い吹き出し
+  const fx=$('fx');if(!fx||!B3D)return;const el=document.createElement('div'),n=fx.querySelectorAll('.pop[data-i="'+i+'"]').length,p=B3D.xy(i,.35),w=fx.clientWidth||300;
+  el.className='pop '+(cls||'');el.dataset.i=i;el.textContent=yenFix(text);
+  el.style.left=Math.min(w-46,Math.max(46,p[0]))+'px';el.style.top=(p[1]-n*19)+'px';
+  el.addEventListener('animationend',()=>el.remove());fx.appendChild(el);setTimeout(()=>el.remove(),2600);
+}
+function banner(t){const b=$('toast');b.firstElementChild.textContent=yenFix(t);b.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{b.hidden=true;},3200);}
+function dots(){
+  if(S.paused||S.phase!=='town'||document.hidden||!B3D)return;
+  const T=cur(),c=calc(T),of=k=>T.grid.map((x,i)=>x&&x.k===k?i:-1).filter(i=>i>=0),pick=a=>a[Math.floor(Math.random()*a.length)];
+  const F=of('hatake'),M=of('seifun'),Bk=of('panya'),Hs=T.grid.map((x,i)=>x&&isHome(x.k)?i:-1).filter(i=>i>=0);
+  if(c.wheat>0&&F.length&&M.length)dot(pick(F),pick(M),'w');
+  if(c.mill>0&&T.flour+T.wheat>0.5&&M.length&&Bk.length)dot(pick(M),pick(Bk),'f');
+  if(T.bread>0.5&&Bk.length&&Hs.length)dot(pick(Bk),pick(Hs),'b');
+}
+function dot(a,b,t){const fx=$('fx'),el=document.createElement('div');el.className='dot d-'+t;   // 運ばれるもの：w もみ／f 玄米／b 白米
+  const at=i=>{const p=B3D.xy(i,.14);el.style.left=p[0].toFixed(1)+'px';el.style.top=p[1].toFixed(1)+'px';};
+  at(a);fx.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>at(b)));setTimeout(()=>el.remove(),1000);}
+let actx=null;
+function beep(f,d){if(!S||S.mute)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.06,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
+
+// ───────── 保存 ─────────
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.v===6&&s.towns&&s.towns[0])return s;}catch(e){}return null;}
+
+// ───────── 押したとき ─────────
+// 下の建物の並び：マウスでつかんで左右に送れる（指はもとから送れる）。送った直後の指はなしは、ボタンを押したことにしない。ホイールでも送れる
+{const dk=$('dock'),tl=()=>dk.querySelector('.tools');let dn=null,moved=false;
+  dk.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||!e.target.closest('.tools'))return;dn={x:e.clientX,s:tl().scrollLeft};moved=false;});
+  window.addEventListener('pointermove',e=>{if(!dn)return;const dx=e.clientX-dn.x;if(!moved&&Math.abs(dx)<6)return;moved=true;const t=tl();if(t)t.scrollLeft=dn.s-dx;dk.style.cursor='grabbing';});
+  window.addEventListener('pointerup',()=>{if(dn){dn=null;dk.style.cursor='';setTimeout(()=>{moved=false;},0);}});
+  dk.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  dk.addEventListener('dragstart',e=>e.preventDefault());
+  dk.addEventListener('wheel',e=>{const t=tl();if(!t||!e.target.closest('.tools')||t.scrollWidth<=t.clientWidth)return;t.scrollLeft+=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault();},{passive:false});}
+document.addEventListener('click',e=>{
+  const el=e.target.closest('button');if(!el)return;const d=el.dataset;
+  if(d.tool){S.tool=S.tool===d.tool?null:d.tool;S.sel=null;S.sure=null;S.hm=false;}
+  else if(d.person){const t='p:'+d.person;S.tool=S.tool===t?null:t;S.sel=null;S.sure=null;S.hm=false;}
+  else if(d.hm){S.hm=!S.hm;hima();ctx();return;}
+  else if(d.sp!=null){const v=+d.sp;if(v===0)S.paused=true;else{S.paused=false;S.speed=v;}}
+  else if(d.dr){S.dr=d.dr;S.sure=null;}
+  else if(d.leave){if(S.sure==='lv:'+d.leave)leave(d.leave);else S.sure='lv:'+d.leave;}
+  else if(d.node!=null){S.mapSel=+d.node;}
+  else if(d.go!=null){S.dr='';if(+d.go===S.loc){S.phase='town';}else travel(+d.go);}
+  else if(d.found!=null){found(+d.found);}
+  else if(d.rg){setRoute(S.mapSel,d.rg,null);}
+  else if(d.rt!=null){setRoute(S.mapSel,null,+d.rt);}
+  else if(d.ra!=null){setAmt(S.mapSel,+d.ra);}
+  else if(d.rl!=null){setRentLv(+d.rl);}
+  else if(d.kyo!=null){kyoChoose(+d.kyo);}
+  else if(d.act==='tsumi'){tsumiToggle();}
+  else if(d.act==='map'){S.dr='';S.phase='map';S.mapSel=S.mapSel==null?S.loc:S.mapSel;S.sure=null;}
+  else if(d.act==='buy')buyBread();
+  else if(d.act==='plot')buyPlot(blk(S.sel));
+  else if(d.act==='clear'){S.tool=null;S.sel=null;S.sure=null;}
+  else if(d.act==='drclose'){S.dr='';S.sure=null;}
+  else if(d.act==='un')unassign(S.sel);
+  else if(d.act==='fund')pubFund(S.sel);
+  else if(d.act==='pon')pubOn(S.sel);
+  else if(d.act==='poff'){if(S.sure==='poff')pubOff(S.sel);else S.sure='poff';}
+  else if(d.act==='sell'){if(S.sure==='sell')sellHouse(S.sel);else S.sure='sell';}
+  else if(d.act==='upie'){if(S.sure==='upie')upHouse(S.sel);else S.sure='upie';}
+  else if(d.act==='upta')upField(S.sel,false);
+  else if(d.act==='uptaall'){if(S.sure==='uptaall')upField(S.sel,true);else S.sure='uptaall';}
+  else if(d.act==='salecut')saleCut(S.sel);
+  else if(d.act==='salestop')saleStop(S.sel);
+  else if(d.act==='demo'){if(S.sure==='demo')demolish(S.sel);else S.sure='demo';}
+  else if(d.act==='back'){S.phase='town';S.pick=null;S.sure=null;}
+  else if(d.act==='mute'){S.mute=!S.mute;}
+  else if(d.act==='reset'){if(S.sure==='reset'){restart();S.dr='';}else S.sure='reset';}
+  else return;
+  render();save();
+});
+{const s=$('drawer');let down=null;   // 引き出しの外を押して閉じるのは、押し始めも離したのも外のときだけ（中から外へずらして離しても閉じない）
+  s.addEventListener('pointerdown',e=>{down=e.target;});
+  s.addEventListener('click',e=>{if(e.target===s&&down===s){S.dr='';S.sure=null;render();save();}});}
+
+// ───────── 始める ─────────
+function start(){
+  S=load()||newGame();S.paused=true;S.sure=null;
+  S.towns.forEach(T=>{if(T&&!T.open)T.open=Array(16).fill(true);});   // 区画の決まりより前の保存は、全部買ってあることにする
+  if(B3D)B3D.setTap(i=>{tap(i);render();save();});
+  render();
+  setInterval(()=>{if(S.paused||S.phase!=='town'||looking()){return;}const n=Math.ceil(S.speed/3);for(let k=0;k<n&&S.phase==='town';k++)advance(.25*S.speed*SLOW/n,false);if(dirty)render();else hud();},250);   // 速さは 1・3・8倍。8倍は、1回の進みが粗くならないよう3つに分けて進める
+  setInterval(dots,1300);
+  setInterval(save,3000);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+}
+// 試験用：G.ff(60) で60秒ぶん進める
+// 遊ぶ人がお金を動かす手は、いま居る町の収支に数える
+place=ledWrap(place);placeField=ledWrap(placeField);overwrite=ledWrap(overwrite);buyPlot=ledWrap(buyPlot);demolish=ledWrap(demolish);upHouse=ledWrap(upHouse);upField=ledWrap(upField);pubFund=ledWrap(pubFund);pubOn=ledWrap(pubOn);buyBread=ledWrap(buyBread);
+window.G={get S(){return S;},canGo,KYO,kyoYears,isKyo,kyoSoon,kyoPick,kyoChoose,tsumiToggle,tsumiCost,RENTLV,rentLv,rentPlan,setRentLv,yrW,travel,setAmt,amtOf,AMT,setRoute,found,leave,set S(v){S=v;},placeField,overwrite,upHouse,upField,taGroup,UPG,costOf,plotCost,canBuy,nearPlaza,nearShop,nearSchool,isPub,SAKA,BAN,FIRE,fire,fireChance,fireBlock,denseMax,burns,guarded,nearSaka,sakaBase,popNear,CHIAN,chianOf,chianMul,unmetShare,learnMul,shopGain,houseRent,WANT2,want2Y,want2On,want2Soon,unmet2,WANT3,want3Y,want3On,want3Soon,nearGuard,nearFun,unmet3a,unmet3b,shopShare,schoolShare,eduMul,charOf,B,JIKA,occMul,saleNeed,saleCut,saleStop,WANT,wantY,wantOn,wantSoon,unmet,liveCap,occ,canBuild,isHome,rentOf,sellPrice,sellHouse,lockLeft,siteScore,joinOne,leaveOne,yrOf,newYear,grantOf,keepSum,pubFund,pubOff,pubOn,demolish,advance,LANDS,calc,prep,goals,yearNet,ifLeft,place,assign,found,leave,travel,setRoute,whyNot,restart,cur,render,tap,B3D,isOpen,buyPlot,blk,rankOf,houseCap,
+  ff(sec){for(let t=0;t<sec&&S.phase==='town';t+=.25)advance(.25,true);render();save();}};
+start();
+</script>
